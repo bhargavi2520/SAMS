@@ -10,15 +10,14 @@ createRoot(document.getElementById("root")!).render(<App />);*/
 import { BrowserRouter, Route, Routes } from "react-router-dom";
  import "./index.css";
  
- ReactDOM.createRoot(document.getElementById("root")!).render(
-   <React.StrictMode>
-+    <BrowserRouter basename="/SAMS">
-+      <Routes>
-+        <Route path="/*" element={<App />} />
-+      </Routes>
-     </BrowserRouter>
-   </React.StrictMode>
- );
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <BrowserRouter basename="/SAMS">
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+
 
 // Path: src\main.tsx
 
