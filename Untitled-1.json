@@ -7,3 +7,4 @@
       "deploy": "npm run build && gh-pages -d docs"
     }
   }
+ 
