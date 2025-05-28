@@ -59,12 +59,12 @@ const RegisterForm = () => {
   };
 
   const roleOptions = [
-    { value: 'STUDENT', label: 'Student', description: 'Student access to academic records' },
-    { value: 'FACULTY', label: 'Faculty', description: 'Faculty access to teaching modules' },
-    { value: 'ADMIN', label: 'Administrator', description: 'Full system administration access' },
-    { value: 'HOD', label: 'Head of Department', description: 'Department-level management access' },
-    { value: 'CLASS_TEACHER', label: 'Class Teacher', description: 'Class-specific teaching access' },
-    { value: 'GUEST', label: 'Guest', description: 'Limited time access' }
+    { value: 'STUDENT', label: 'Student'},
+    { value: 'FACULTY', label: 'Faculty'},
+    { value: 'ADMIN', label: 'Administrator' },
+    { value: 'HOD', label: 'Head of Department'},
+    { value: 'CLASS_TEACHER', label: 'Class Teacher'},
+    { value: 'GUEST', label: 'Guest'}
   ];
 
   return (
