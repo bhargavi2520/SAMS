@@ -71,7 +71,7 @@ const LoginForm = () => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="your.email@sams.edu"
+                placeholder="youremail@gmail.com"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -171,7 +171,7 @@ const LoginForm = () => {
           
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-500">
-              Demo credentials: Use any email from mockUsers with password "password123"
+              Demo credentials: Use any email from mockUsers with password "password123"(only for testing purpose)
             </p>
           </div>
         </CardContent>
