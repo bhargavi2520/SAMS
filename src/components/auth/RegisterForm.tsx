@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -96,7 +95,7 @@ const RegisterForm = () => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="your.email@sams.edu"
+                placeholder="your.email@gmail.com"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -115,7 +114,6 @@ const RegisterForm = () => {
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex flex-col">
                         <span className="font-medium">{option.label}</span>
-                        <span className="text-xs text-gray-500">{option.description}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -189,8 +187,11 @@ const RegisterForm = () => {
             
             <Button
               type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 transition-colors duration-200"
+              className="w-full border-2 border-green-600 text-green-600 bg-white hover:bg-green-600 hover:text-white transition duration-700 group"
+              style={{ boxShadow: '0 0 0 transparent' }}
               disabled={isLoading || formData.password !== formData.confirmPassword}
+              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 10px rgb(19, 197, 84)')}
+              onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 0 0 transparent')}
             >
               {isLoading ? (
                 <>
