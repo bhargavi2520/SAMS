@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuthStore } from '@/store/authStore';
@@ -52,9 +51,7 @@ const LoginForm = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>
-            Sign in to your SAMS account to continue
-          </CardDescription>
+          
         </CardHeader>
         
         <CardContent>
@@ -71,7 +68,7 @@ const LoginForm = () => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="youremail@gmail.com"
+                placeholder="your.email@sams.edu"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -138,7 +135,7 @@ const LoginForm = () => {
             
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+              className="w-full bg-white border-2 border-blue-700 text-blue-700 shadow-md hover:bg-blue-700 hover:text-white hover:shadow-blue-500/70 hover:shadow-lg transition-all duration-200"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -171,7 +168,7 @@ const LoginForm = () => {
           
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-500">
-              Demo credentials: Use any email from mockUsers with password "password123"(only for testing purpose)
+              Demo credentials: Use any email from mockUsers with password "password123"
             </p>
           </div>
         </CardContent>
