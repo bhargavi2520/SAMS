@@ -87,9 +87,6 @@ const RegisterForm = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>
-            Join SAMS and get access to the academic management system
-          </CardDescription>
         </CardHeader>
         
         <CardContent>
@@ -132,65 +129,7 @@ const RegisterForm = () => {
               </Select>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a strong password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  required
-                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-            </div>
-            
-            {/* Student-specific fields */}
+            {/* Role-specific fields */}
             {formData.role === 'STUDENT' && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -325,11 +264,39 @@ const RegisterForm = () => {
                     <SelectValue placeholder="Select transport" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Bus">Bus</SelectItem>
-                    <SelectItem value="Own">Own</SelectItem>
-                    <SelectItem value="None">None</SelectItem>
+                    <SelectItem value="College Bus">College Bus</SelectItem>
+                    <SelectItem value="RTC">RTC</SelectItem>
+                    <SelectItem value="Own Vehicle">Own Vehicle</SelectItem>
                   </SelectContent>
                 </Select>
+
+                {/* Show bus route if College Bus is selected */}
+                {formData.profileData.transport === "College Bus" && (
+                  <>
+                    <Label htmlFor="busRoute">Bus Route</Label>
+                    <Select
+                      value={formData.profileData.busRoute || ''}
+                      onValueChange={value =>
+                        handleProfileDataChange({
+                          target: { name: 'busRoute', value }
+                        } as React.ChangeEvent<HTMLInputElement>)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select bus route" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Vizag">Vizag</SelectItem>
+                        <SelectItem value="Parawada">Parawada</SelectItem>
+                        <SelectItem value="Anakapalle">Anakapalle</SelectItem>
+                        <SelectItem value="Chodawaram">Chodawaram</SelectItem>
+                        <SelectItem value="Narsipatnam">Narsipatnam</SelectItem>
+                        <SelectItem value="Tuni">Tuni</SelectItem>
+                        <SelectItem value="Yelamanchili">Yelamanchili</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
 
                 <Label htmlFor="address">Residential Address</Label>
                 <Input
@@ -342,29 +309,7 @@ const RegisterForm = () => {
                   required
                 />
 
-                <Label htmlFor="bloodGroup">Blood Group</Label>
-                <Select
-                  value={formData.profileData.bloodGroup || ''}
-                  onValueChange={value =>
-                    handleProfileDataChange({
-                      target: { name: 'bloodGroup', value }
-                    } as React.ChangeEvent<HTMLInputElement>)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select blood group" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="A+">A+</SelectItem>
-                    <SelectItem value="A-">A-</SelectItem>
-                    <SelectItem value="B+">B+</SelectItem>
-                    <SelectItem value="B-">B-</SelectItem>
-                    <SelectItem value="O+">O+</SelectItem>
-                    <SelectItem value="O-">O-</SelectItem>
-                    <SelectItem value="AB+">AB+</SelectItem>
-                    <SelectItem value="AB-">AB-</SelectItem>
-                  </SelectContent>
-                </Select>
+            
 
                 <Label htmlFor="parentPhoneNumber">Parent Phone Number</Label>
                 <Input
@@ -379,7 +324,6 @@ const RegisterForm = () => {
               </div>
             )}
 
-            {/* Teacher-specific fields */}
             {formData.role === 'FACULTY' && (
               <div className="space-y-2">
                 <Label htmlFor="subjectAssigned">Subject Assigned</Label>
@@ -426,7 +370,6 @@ const RegisterForm = () => {
               </div>
             )}
 
-            {/* Class Teacher-specific fields */}
             {formData.role === 'CLASS_TEACHER' && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -510,7 +453,6 @@ const RegisterForm = () => {
               </div>
             )}
 
-            {/* Administrator-specific fields */}
             {formData.role === 'ADMIN' && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -526,7 +468,6 @@ const RegisterForm = () => {
               </div>
             )}
 
-            {/* Guest-specific fields */}
             {formData.role === 'GUEST' && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -542,7 +483,6 @@ const RegisterForm = () => {
               </div>
             )}
 
-            {/* Head of Department-specific fields */}
             {formData.role === 'HOD' && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -569,12 +509,70 @@ const RegisterForm = () => {
               </div>
             )}
             
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a strong password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Confirm your password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required
+                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
             {formData.password !== formData.confirmPassword && formData.confirmPassword && (
               <Alert variant="destructive">
                 <AlertDescription>Passwords do not match</AlertDescription>
               </Alert>
             )}
-            
+
             <Button
               type="submit"
               className="w-full border-2 border-green-600 text-green-600 bg-white hover:bg-green-600 hover:text-white transition duration-700 group"
