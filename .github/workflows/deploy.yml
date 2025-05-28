@@ -27,8 +27,8 @@ jobs:
     - name: Build the project
       run: npm run build # or vite build
 
-    - name: Deploy to GitHub Pages 🚀
+    - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build # or ./dist based on your tool
+        publish_dir: ./build
