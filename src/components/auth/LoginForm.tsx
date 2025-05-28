@@ -68,11 +68,11 @@ const LoginForm = () => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="your.email@sams.edu"
+                placeholder="your email.gmail.com"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                className="transition-all duration-200 border-none focus:outline-none focus:ring-2 focus:ring-blue-700"
               />
             </div>
             
@@ -87,7 +87,7 @@ const LoginForm = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                  className="pr-10 transition-all duration-200 border-none focus:outline-none focus:ring-2 focus:ring-blue-700"
                 />
                 <Button
                   type="button"
@@ -107,13 +107,13 @@ const LoginForm = () => {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Checkbox
+                <input
+                  type="checkbox"
                   id="rememberMe"
                   name="rememberMe"
                   checked={formData.rememberMe}
-                  onCheckedChange={(checked) => 
-                    setFormData(prev => ({ ...prev, rememberMe: checked as boolean }))
-                  }
+                  onChange={handleInputChange}
+                  className="accent-blue-700"
                 />
                 <Label 
                   htmlFor="rememberMe" 
@@ -164,12 +164,6 @@ const LoginForm = () => {
             >
               Register here
             </Button>
-          </div>
-          
-          <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500">
-              Demo credentials: Use any email from mockUsers with password "password123"
-            </p>
           </div>
         </CardContent>
       </Card>
