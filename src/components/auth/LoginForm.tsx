@@ -72,7 +72,7 @@ const LoginForm = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="transition-all duration-200 border-none focus:outline-none focus:ring-2 focus:ring-blue-700"
+                className="transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700"
               />
             </div>
             
@@ -87,7 +87,7 @@ const LoginForm = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="pr-10 transition-all duration-200 border-none focus:outline-none focus:ring-2 focus:ring-blue-700"
+                  className="pr-10 transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700"
                 />
                 <Button
                   type="button"
