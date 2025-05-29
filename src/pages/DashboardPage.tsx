@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { useAuthStore } from '@/store/authStore';
 import StudentDashboard from '@/components/dashboard/StudentDashboard';
 import FacultyDashboard from '@/components/dashboard/FacultyDashboard';
 import AdminDashboard from '@/components/dashboard/AdminDashboard';
 import { Card, CardContent } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
 
 const DashboardPage = () => {
   const { user } = useAuthStore();
@@ -62,3 +62,8 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
+// Inside your Quick Actions section:
+<Link to="/admin/timetable" className="quick-action-link">
+  Timetable Management
+</Link>

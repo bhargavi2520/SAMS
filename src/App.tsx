@@ -1,8 +1,7 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -11,9 +10,32 @@ import AuthPage from "@/pages/AuthPage";
 import DashboardPage from "@/pages/DashboardPage";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
-import React, { useEffect } from 'react'; // Added React and useEffect
+import React, { useEffect, lazy, Suspense } from 'react';
+import { Outlet } from "react-router-dom"; // Import Outlet
+import TimetableDashboard from "@/pages/TimetableDashboard"; // Your TimetableDashboard page
+import AdminDashboard from "@/components/dashboard/AdminDashboard"; // Import the actual AdminDashboard
 
 const queryClient = new QueryClient();
+
+// --- Placeholder Components for Timetable Management Module ---
+// In a real scenario, you would import these from your Timetable Management module.
+// e.g., import TimetableDashboard from '@/modules/timetable/pages/Dashboard';
+const PlaceholderComponent = ({ name, path }: { name: string, path: string }) => (
+  <div className="p-6 bg-gray-50 rounded-lg shadow">
+    <h2 className="text-xl font-semibold text-gray-700">Timetable Module: {name}</h2>
+    <p className="text-sm text-gray-500">Current route (relative to timetable base): <code>{path}</code></p>
+    <p className="mt-2 text-gray-600">Content for the {name} page of the Timetable Management module will be rendered here.</p>
+  </div>
+);
+
+const TimetableModuleDashboard = () => <PlaceholderComponent name="Dashboard" path="/" />;
+const TimetableCreate = () => <PlaceholderComponent name="Timetable Create" path="timetable/create" />;
+const FacultyManagement = () => <PlaceholderComponent name="Faculty Management" path="faculty" />;
+const RoomManagement = () => <PlaceholderComponent name="Room Management" path="rooms" />;
+const SubjectMapping = () => <PlaceholderComponent name="Subject Mapping" path="subject-mapping" />;
+const TimetableReports = () => <PlaceholderComponent name="Reports" path="reports" />;
+const TimetableConflicts = () => <PlaceholderComponent name="Conflicts" path="conflicts" />;
+const TimetableModuleNotFound = () => <PlaceholderComponent name="404 Not Found" path="*" />;
 
 const App = () => {
   const { isAuthenticated } = useAuthStore();
@@ -43,7 +65,7 @@ const App = () => {
       } else if (!intendedPath.startsWith('/')) {
         intendedPath = '/' + intendedPath;
       }
-      
+
       const fullIntendedPath = intendedPath + targetUrl.search + targetUrl.hash;
 
       // Only navigate if the intended path is different from the current app path
@@ -96,18 +118,26 @@ const App = () => {
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route 
-                path="admin/*" 
+
+              {/* Admin Section */}
+              <Route
+                path="admin"
                 element={
                   <ProtectedRoute allowedRoles={['ADMIN']}>
-                    <div className="p-6">
-                      <h1 className="text-2xl font-bold">Admin Panel</h1>
-                      <p className="text-gray-600">Advanced administration features coming soon...</p>
-                    </div>
+                    <Outlet />
                   </ProtectedRoute>
-                } 
-              />
-              <Route 
+                }
+              >
+                {/* Redirect /admin to /admin/dashboard */}
+                <Route index element={<Navigate to="dashboard" replace />} />
+                {/* Admin Dashboard */}
+                <Route path="dashboard" element={<AdminDashboard />} />
+                {/* Timetable Management */}
+                <Route path="timetable" element={<TimetableDashboard />} />
+                {/* ...other admin routes... */}
+              </Route>
+
+              <Route
                 path="profile" 
                 element={
                   <div className="p-6">

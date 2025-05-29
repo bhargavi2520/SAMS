@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/store/authStore';
 import { AdminProfile } from '@/types/auth.types';
-import { Users, UserCheck, UserX, Shield, Activity, Database } from 'lucide-react';
+import { Users, UserCheck, Shield, Activity, Database, LayoutDashboard, CalendarDays } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const { user } = useAuthStore();
@@ -198,21 +199,32 @@ const AdminDashboard = () => {
           <CardDescription>Common administrative tasks</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link to="/admin/dashboard" className="block p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <LayoutDashboard className="h-8 w-8 text-indigo-500 mb-2" />
+              <h3 className="font-semibold">Admin Dashboard</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400">View system overview and stats</p>
+            </Link>
+            <Link to="/admin/timetable" className="block p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <CalendarDays className="h-8 w-8 text-teal-500 mb-2" />
+              <h3 className="font-semibold">Timetable Management</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Manage schedules and resources</p>
+            </Link>
+            {/* Existing Quick Actions - you can keep them or adjust as needed */}
+            <div className="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors" onClick={() => console.log('Manage Users clicked')}>
               <Users className="h-8 w-8 text-blue-500 mb-2" />
               <h3 className="font-semibold">Manage Users</h3>
-              <p className="text-xs text-gray-600">Add, edit, or remove user accounts</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Add, edit, or remove user accounts</p>
             </div>
-            <div className="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+            <div className="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors" onClick={() => console.log('System Reports clicked')}>
               <Database className="h-8 w-8 text-green-500 mb-2" />
               <h3 className="font-semibold">System Reports</h3>
-              <p className="text-xs text-gray-600">Generate system and user reports</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Generate system and user reports</p>
             </div>
-            <div className="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+            <div className="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors" onClick={() => console.log('Security Settings clicked')}>
               <Shield className="h-8 w-8 text-red-500 mb-2" />
               <h3 className="font-semibold">Security Settings</h3>
-              <p className="text-xs text-gray-600">Configure security policies</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Configure security policies</p>
             </div>
           </div>
         </CardContent>
