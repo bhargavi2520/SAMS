@@ -22,7 +22,6 @@ export interface StudentProfile {
   lastName: string;
   dateOfBirth: string;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
-  bloodGroup?: string;
   profilePictureUrl?: string;
   personalEmail?: string;
   phoneNumber?: string;
