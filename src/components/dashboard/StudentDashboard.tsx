@@ -220,7 +220,7 @@ const StudentDashboard = () => {
 						<div className="flex items-center justify-between mb-4 md:mb-8">
 							<div className="flex items-center space-x-2">
 								<span className="font-semibold text-lg text-gray-800">
-									{`Hello ${studentProfile?.name || "Student"}, welcome back!`}
+									{`Hello ${studentProfile?.firstName || "Student"}, welcome back!`}
 								</span>
 							</div>
 						</div>
