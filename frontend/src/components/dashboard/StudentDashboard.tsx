@@ -17,6 +17,20 @@ import {
 } from 'lucide-react';
 import { StudentProfile } from '@/types/auth.types';
 import dayjs from 'dayjs';
+import { Line } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title as ChartTitle,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend);
 
 const sidebarItems = [
 	{ label: 'Home', path: '#home', icon: <Home className="w-6 h-6" /> },
@@ -67,6 +81,14 @@ const schedule = [
 		{ time: '1:00 PM', subject: '3C - Chemistry' },
 		{ time: '2:00 PM', subject: '2A - Physics' },
 	],
+	[
+		{ time: '8:00 AM', subject: 'Saturday Class' },
+		{ time: '9:00 AM', subject: 'Saturday Class' },
+		{ time: '10:00 AM', subject: 'Saturday Class' },
+		{ time: '11:00 AM', subject: 'Saturday Class' },
+		{ time: '1:00 PM', subject: 'Saturday Class' },
+		{ time: '2:00 PM', subject: 'Saturday Class' },
+	],
 ];
 
 const announcements = [
@@ -74,11 +96,111 @@ const announcements = [
 	{ title: 'Holiday Notice', desc: 'School will be closed on Friday for a public holiday.' },
 ];
 
+const getWeekDates = (date: dayjs.Dayjs) => {
+	const startOfWeek = date.startOf('week').add(1, 'day'); // Monday
+	return Array.from({ length: 6 }, (_, i) => startOfWeek.add(i, 'day')); // 6 days: Mon-Sat
+};
+
+const attendanceData = [
+	{
+		label: 'overall attendance',
+		total: 150,
+		attended: 120,
+	},
+	{ label: 'subject A', total: 15, attended: 12 },
+	{ label: 'subject B', total: 15, attended: 15 },
+	{ label: 'subject C', total: 15, attended: 12 },
+	{ label: 'subject D', total: 15, attended: 15 },
+	{ label: 'subject E', total: 15, attended: 13 },
+	{ label: 'subject F', total: 15, attended: 14 },
+	{ label: 'subject G', total: 15, attended: 11 },
+	{ label: 'subject H', total: 15, attended: 12 },
+	{ label: 'subject I', total: 15, attended: 13 },
+	{ label: 'subject J', total: 15, attended: 15 },
+];
+
+// Example performance data (replace with real data as needed)
+const performanceData = {
+    labels: ['Term 1', 'Term 2', 'Term 3', 'Term 4', 'Term 5'],
+    datasets: [
+        {
+            label: 'Percentage',
+            data: [78, 82, 85, 80, 88],
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34,197,94,0.2)',
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: '#22c55e',
+            fill: true,
+        },
+    ],
+};
+
+const performanceOptions = {
+    responsive: true,
+    plugins: {
+        legend: {
+            display: false,
+        },
+        title: {
+            display: false,
+        },
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+                stepSize: 10,
+                callback: (value: number) => `${value}%`,
+            },
+        },
+    },
+};
+
+const subjectDetails = [
+    {
+        subject: 'Physics',
+        teacher: 'Dr. R. Sharma',
+        book: 'Concepts of Physics (H.C. Verma)',
+    },
+    {
+        subject: 'Chemistry',
+        teacher: 'Ms. S. Rao',
+        book: 'Modern Approach to Chemical Calculations (R.C. Mukherjee)',
+    },
+    {
+        subject: 'Mathematics',
+        teacher: 'Mr. A. Kumar',
+        book: 'Mathematics for Class 12 (R.D. Sharma)',
+    },
+    {
+        subject: 'Biology',
+        teacher: 'Dr. P. Singh',
+        book: 'Trueman’s Elementary Biology',
+    },
+    {
+        subject: 'English',
+        teacher: 'Mrs. N. Das',
+        book: 'Hornbill (NCERT)',
+    },
+];
+
 const StudentDashboard = () => {
 	const { user } = useAuthStore();
 	const studentProfile = user?.profile as StudentProfile;
 	const today = dayjs();
-	const [selectedDate, setSelectedDate] = useState<number | null>(today.date());
+	const [selectedDate, setSelectedDate] = useState<number>(today.date());
+	const [selectedMonth, setSelectedMonth] = useState<number>(today.month());
+	const [selectedYear, setSelectedYear] = useState<number>(today.year());
+
+	const selectedDay = dayjs()
+		.year(selectedYear)
+		.month(selectedMonth)
+		.date(selectedDate);
+
+	const weekDates = getWeekDates(selectedDay);
+
 	const [activeSection, setActiveSection] = useState<string>('Home');
 
 	// Section refs for scrolling
@@ -214,8 +336,8 @@ const StudentDashboard = () => {
                     md:px-0
                 "
 				>
-					{/* Home Section */}
-					<div ref={homeRef} id="home" className="xl:col-span-2 flex flex-col gap-4">
+					{/* Left: Home Section with Timetable */}
+					<div ref={homeRef} id="home" className="flex flex-col gap-4">
 						{/* Header row */}
 						<div className="flex items-center justify-between mb-4 md:mb-8">
 							<div className="flex items-center space-x-2">
@@ -229,8 +351,12 @@ const StudentDashboard = () => {
 						<section className="w-full">
 							<Card className="rounded-xl shadow bg-white">
 								<CardHeader>
-									<CardTitle>September 16 – 20</CardTitle>
-									<CardDescription>Work Week</CardDescription>
+									<CardTitle>
+										{weekDates[0].format('MMM D')} – {weekDates[5].format('D, YYYY')}
+									</CardTitle>
+									<CardDescription>
+										Week of {weekDates[0].format('dddd')}
+									</CardDescription>
 								</CardHeader>
 								<CardContent>
 									<div className="overflow-x-auto">
@@ -238,9 +364,11 @@ const StudentDashboard = () => {
 											<thead>
 												<tr>
 													<th className="p-2 font-bold text-center">Time</th>
-													{['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((day) => (
-														<th key={day} className="p-2 font-bold text-center">
-															{day}
+													{weekDates.map((date) => (
+														<th key={date.format()} className="p-2 font-bold text-center">
+															{date.format('ddd')}
+															<br />
+															<span className="text-xs font-normal">{date.format('D')}</span>
 														</th>
 													))}
 												</tr>
@@ -251,10 +379,10 @@ const StudentDashboard = () => {
 														<td className="p-2 text-center font-semibold">
 															{schedule[0][slotIdx]?.time}
 														</td>
-														{schedule.map((day, dayIdx) => (
+														{weekDates.map((_, dayIdx) => (
 															<td key={dayIdx} className="p-2 text-center">
 																<span className="inline-block bg-blue-100 rounded px-2 py-1 min-w-[80px]">
-																	{day[slotIdx]?.subject || ''}
+																	{schedule[dayIdx]?.[slotIdx]?.subject || ''}
 																</span>
 															</td>
 														))}
@@ -266,6 +394,173 @@ const StudentDashboard = () => {
 								</CardContent>
 							</Card>
 						</section>
+					</div>
+
+					{/* Right: Calendar and Subject Details */}
+					<div className="flex flex-col gap-4">
+						{/* Calendar */}
+						<Card className="rounded-xl shadow bg-white">
+							<CardHeader>
+								<CardTitle>
+									{dayjs().month(selectedMonth).format('MMMM')} {selectedYear}
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<div className="grid grid-cols-7 gap-1 text-center text-xs mb-2">
+									{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+										<div key={d} className="font-bold">
+											{d}
+										</div>
+									))}
+									{(() => {
+										const firstDay = dayjs()
+											.year(selectedYear)
+											.month(selectedMonth)
+											.date(1);
+										const daysInMonth = firstDay.daysInMonth();
+										const startDay = (firstDay.day() + 6) % 7; // Monday as first day
+										const cells = [];
+										for (let i = 0; i < startDay; i++) {
+											cells.push(<div key={`empty-${i}`}></div>);
+										}
+										for (let day = 1; day <= daysInMonth; day++) {
+											const isToday =
+												dayjs().isSame(
+													dayjs()
+														.year(selectedYear)
+														.month(selectedMonth)
+														.date(day),
+													'day'
+												);
+											const isSelected = selectedDate === day && selectedMonth === selectedDay.month() && selectedYear === selectedDay.year();
+											cells.push(
+												<button
+													key={day}
+													className={`py-1 rounded w-full outline-none
+                                                        ${isToday ? 'bg-green-300 font-bold' : ''}
+                                                        ${isSelected ? 'ring-2 ring-green-500' : ''}
+                                                        hover:bg-green-100 transition`}
+													onClick={() => setSelectedDate(day)}
+													type="button"
+												>
+													{day}
+												</button>
+											);
+										}
+										return cells;
+									})()}
+								</div>
+								<div className="flex justify-between mt-2">
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => {
+											if (selectedMonth === 0) {
+												setSelectedMonth(11);
+												setSelectedYear(selectedYear - 1);
+											} else {
+												setSelectedMonth(selectedMonth - 1);
+											}
+											setSelectedDate(1);
+										}}
+									>
+										Prev
+									</Button>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => {
+											if (selectedMonth === 11) {
+												setSelectedMonth(0);
+												setSelectedYear(selectedYear + 1);
+											} else {
+												setSelectedMonth(selectedMonth + 1);
+											}
+											setSelectedDate(1);
+										}}
+									>
+										Next
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+
+						{/* Subject Details Section (right side on desktop, below calendar) */}
+						<Card
+							className="rounded-xl shadow bg-white flex flex-col hidden xl:flex"
+							style={{
+								height: 'calc(100% - 320px)',
+								minHeight: '350px',
+								maxHeight: '600px',
+							}}
+						>
+							<CardHeader>
+								<CardTitle>Subject & Teacher Details</CardTitle>
+								<CardDescription>Key subjects, teachers, and reference books</CardDescription>
+							</CardHeader>
+							<CardContent
+								className="overflow-y-auto"
+								style={{
+									flex: 1,
+									minHeight: 0,
+									maxHeight: '350px',
+								}}
+							>
+								<table className="min-w-[300px] w-full text-xs md:text-sm">
+									<thead>
+										<tr>
+											<th className="p-2 text-left font-bold">Subject</th>
+											<th className="p-2 text-left font-bold">Teacher</th>
+											<th className="p-2 text-left font-bold">Book Name</th>
+										</tr>
+									</thead>
+									<tbody>
+										{subjectDetails.map((s) => (
+											<tr key={s.subject}>
+												<td className="p-2">{s.subject}</td>
+												<td className="p-2">{s.teacher}</td>
+												<td className="p-2">{s.book}</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</CardContent>
+						</Card>
+					</div>
+
+					{/* Subject Details Section for mobile (below timetable and calendar) */}
+					<div className="block xl:hidden w-full mt-4">
+						<Card className="rounded-xl shadow bg-white flex flex-col">
+							<CardHeader>
+								<CardTitle>Subject & Teacher Details</CardTitle>
+								<CardDescription>Key subjects, teachers, and reference books</CardDescription>
+							</CardHeader>
+							<CardContent
+								className="overflow-y-auto"
+								style={{
+									maxHeight: '300px',
+								}}
+							>
+								<table className="min-w-[300px] w-full text-xs md:text-sm">
+									<thead>
+										<tr>
+											<th className="p-2 text-left font-bold">Subject</th>
+											<th className="p-2 text-left font-bold">Teacher</th>
+											<th className="p-2 text-left font-bold">Book Name</th>
+										</tr>
+									</thead>
+									<tbody>
+										{subjectDetails.map((s) => (
+											<tr key={s.subject}>
+												<td className="p-2">{s.subject}</td>
+												<td className="p-2">{s.teacher}</td>
+												<td className="p-2">{s.book}</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</CardContent>
+						</Card>
 					</div>
 
 					{/* Exams Section */}
@@ -280,14 +575,17 @@ const StudentDashboard = () => {
 						</Card>
 					</div>
 
-					{/* Results Section */}
+					{/* Performance Section */}
 					<div ref={resultsRef} id="results" className="xl:col-span-2 flex flex-col gap-4">
 						<Card className="rounded-xl shadow bg-white">
 							<CardHeader>
-								<CardTitle>Results</CardTitle>
+								<CardTitle>Performance</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<p className="text-gray-600">Your results and grades will appear here.</p>
+								<p className="text-gray-600 mb-4">Your academic performance over recent terms:</p>
+								<div className="w-full max-w-xl mx-auto">
+                                    <Line data={performanceData} options={performanceOptions} />
+                                </div>
 							</CardContent>
 						</Card>
 					</div>
@@ -299,7 +597,43 @@ const StudentDashboard = () => {
 								<CardTitle>Attendance</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<p className="text-gray-600">Your attendance records will appear here.</p>
+								<div className="overflow-x-auto">
+									<table className="min-w-[500px] w-full text-xs md:text-sm">
+										<thead>
+											<tr>
+												<th className="p-2 text-left font-bold">Subject</th>
+												<th className="p-2 text-center font-bold">Number of Classes</th>
+												<th className="p-2 text-center font-bold">Attended Classes</th>
+												<th className="p-2 text-center font-bold">Present %</th>
+												<th className="p-2 text-left font-bold">Progress</th>
+											</tr>
+										</thead>
+										<tbody>
+											{attendanceData.map((row, idx) => {
+												const percent = row.total ? Math.round((row.attended / row.total) * 100) : 0;
+												let barColor = 'bg-green-500';
+												if (percent < 75) barColor = 'bg-red-400';
+												else if (percent < 90) barColor = 'bg-blue-400';
+												return (
+													<tr key={row.label + idx}>
+														<td className="p-2">{row.label}</td>
+														<td className="p-2 text-center">{row.total}</td>
+														<td className="p-2 text-center">{row.attended}</td>
+														<td className="p-2 text-center">{percent}%</td>
+														<td className="p-2">
+															<div className="w-32 h-2 bg-gray-200 rounded">
+																<div
+																	className={`${barColor} h-2 rounded`}
+																	style={{ width: `${percent}%` }}
+																></div>
+															</div>
+														</td>
+													</tr>
+												);
+											})}
+										</tbody>
+									</table>
+								</div>
 							</CardContent>
 						</Card>
 					</div>
@@ -323,76 +657,37 @@ const StudentDashboard = () => {
 						</Card>
 					</div>
 
-					{/* Calendar, Events (optional, keep if you want) */}
-					<section className="space-y-4 md:space-y-6 w-full">
-						<Card className="rounded-xl shadow bg-white">
-							<CardHeader>
-								<CardTitle>September 2024</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="grid grid-cols-7 gap-1 text-center text-xs">
-									{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-										<div key={d} className="font-bold">
-											{d}
-										</div>
-									))}
-									{[...Array(30)].map((_, i) => {
-										const day = i + 1;
-										const isToday =
-											today.month() === 8 && // September is month 8 (0-indexed)
-											today.date() === day &&
-											today.year() === 2024;
-										const isSelected = selectedDate === day;
-										return (
-											<button
-												key={i}
-												className={`py-1 rounded w-full outline-none
-                          ${isToday ? 'bg-green-300 font-bold' : ''}
-                          ${isSelected ? 'ring-2 ring-green-500' : ''}
-                          hover:bg-green-100 transition`}
-												onClick={() => setSelectedDate(day)}
-												type="button"
-											>
-												{day}
-											</button>
-										);
-									})}
-								</div>
-							</CardContent>
-						</Card>
-					</section>
-				</div>
-			</main>
-
-			{/* Bottom Navigation Bar (mobile only) */}
-			<nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw] max-w-md z-50 flex justify-center md:hidden">
-				<div
-					className="flex w-full justify-between px-2 py-2 rounded-2xl bg-white/60 backdrop-blur-md shadow-lg border border-white/30"
-					style={{
-						boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-						background: 'rgba(255,255,255,0.25)',
-						backdropFilter: 'blur(12px)',
-						WebkitBackdropFilter: 'blur(12px)',
-					}}
-				>
-					{sidebarItems.map((item) => (
-						<Button
-							key={item.label}
-							variant="ghost"
-							className={`flex-1 flex flex-col items-center justify-center text-xl font-medium transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] rounded-xl
+					{/* Bottom Navigation Bar (mobile only) */}
+					<nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw] max-w-md z-50 flex justify-center md:hidden">
+						<div
+							className="flex w-full justify-between px-2 py-2 rounded-2xl bg-white/60 backdrop-blur-md shadow-lg border border-white/30"
+							style={{
+								boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+								background: 'rgba(255,255,255,0.25)',
+								backdropFilter: 'blur(12px)',
+								WebkitBackdropFilter: 'blur(12px)',
+							}}
+						>
+							{sidebarItems.map((item) => (
+								<Button
+									key={item.label}
+									variant="ghost"
+									className={`flex-1 flex flex-col items-center justify-center text-xl font-medium transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] rounded-xl
         ${activeSection === item.label
             ? 'bg-green-100 text-green-700 scale-105 shadow-lg'
             : 'hover:bg-white/30 text-gray-700 scale-100'}`}
-							style={{
-								background: activeSection === item.label ? 'rgba(187,247,208,0.85)' : 'transparent',
-							}}
-							onClick={() => handleNavClick(item.label)}
-						>
-							{item.icon}
-						</Button>
-					))}
+									style={{
+										background: activeSection === item.label ? 'rgba(187,247,208,0.85)' : 'transparent',
+									}}
+									onClick={() => handleNavClick(item.label)}
+								>
+									{item.icon}
+								</Button>
+							))}
+						</div>
+					</nav>
 				</div>
-			</nav>
+			</main>
 		</div>
 	);
 };
