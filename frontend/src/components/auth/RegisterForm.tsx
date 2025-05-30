@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuthStore } from '@/store/authStore';
 import { RegisterData, UserRole } from '@/types/auth.types';
+import type { StudentProfile } from '@/types/auth.types';
 import { UserPlus, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const RegisterForm = () => {
@@ -132,13 +133,24 @@ const RegisterForm = () => {
             {/* Role-specific fields */}
             {formData.role === 'STUDENT' && (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Enter name"
-                  value={formData.profileData.name || ''}
+                  placeholder="Enter first name"
+                  value={formData.profileData.firstName || ''}
+                  onChange={handleProfileDataChange}
+                  required
+                />
+
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Enter last name"
+                  value={formData.profileData.lastName || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -160,7 +172,7 @@ const RegisterForm = () => {
                   name="aparId"
                   type="text"
                   placeholder="APAR id"
-                  value={formData.profileData.aparId || ''}
+                  value={formData.role === 'STUDENT' ? (formData.profileData as any).aparId || '' : ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -170,18 +182,22 @@ const RegisterForm = () => {
                   id="admissionDate"
                   name="admissionDate"
                   type="date"
-                  value={formData.profileData.admissionDate || ''}
+                  value={(formData.profileData as Partial<StudentProfile>).admission_academic_year || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
 
                 <Label htmlFor="year">Year</Label>
                 <Select
-                  value={formData.profileData.year || ''}
+                  value={(formData.profileData as any).year || ''}
                   onValueChange={value =>
-                    handleProfileDataChange({
-                      target: { name: 'year', value }
-                    } as React.ChangeEvent<HTMLInputElement>)
+                    setFormData(prev => ({
+                      ...prev,
+                      profileData: {
+                        ...prev.profileData,
+                        year: value
+                      }
+                    }))
                   }
                 >
                   <SelectTrigger>
@@ -200,14 +216,14 @@ const RegisterForm = () => {
                   id="dob"
                   name="dob"
                   type="date"
-                  value={formData.profileData.dob || ''}
+                  value={(formData.profileData as Partial<StudentProfile>).dateOfBirth || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
 
                 <Label htmlFor="semester">Semester</Label>
                 <Select
-                  value={formData.profileData.semester || ''}
+                  value={(formData.profileData as any).semester || ''}
                   onValueChange={value =>
                     handleProfileDataChange({
                       target: { name: 'semester', value }
@@ -231,7 +247,7 @@ const RegisterForm = () => {
 
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={formData.profileData.department || ''}
+                  value={(formData.profileData as any).department || ''}
                   onValueChange={value =>
                     handleProfileDataChange({
                       target: { name: 'department', value }
@@ -253,7 +269,7 @@ const RegisterForm = () => {
 
                 <Label htmlFor="transport">Transport</Label>
                 <Select
-                  value={formData.profileData.transport || ''}
+                  value={(formData.profileData as any).transport || ''}
                   onValueChange={value =>
                     handleProfileDataChange({
                       target: { name: 'transport', value }
@@ -271,11 +287,11 @@ const RegisterForm = () => {
                 </Select>
 
                 {/* Show bus route if College Bus is selected */}
-                {formData.profileData.transport === "College Bus" && (
+                {(formData.profileData as any).transport === "College Bus" && (
                   <>
                     <Label htmlFor="busRoute">Bus Route</Label>
                     <Select
-                      value={formData.profileData.busRoute || ''}
+                      value={(formData.profileData as any).busRoute || ''}
                       onValueChange={value =>
                         handleProfileDataChange({
                           target: { name: 'busRoute', value }
@@ -304,7 +320,7 @@ const RegisterForm = () => {
                   name="address"
                   type="text"
                   placeholder="residential address"
-                  value={formData.profileData.address || ''}
+                  value={(formData.profileData as any).address || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -317,7 +333,7 @@ const RegisterForm = () => {
                   name="parentPhoneNumber"
                   type="tel"
                   placeholder="Parent phone number"
-                  value={formData.profileData.parentPhoneNumber || ''}
+                  value={(formData.profileData as any).parentPhoneNumber || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -332,13 +348,13 @@ const RegisterForm = () => {
                   name="subjectAssigned"
                   type="text"
                   placeholder="Enter subject assigned"
-                  value={formData.profileData.subjectAssigned || ''}
+                  value={formData.profileData && 'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
                   onChange={handleProfileDataChange}
                   required
                 />
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={formData.profileData.department || ''}
+                  value={(formData.profileData as any).department || ''}
                   onValueChange={value =>
                     handleProfileDataChange({
                       target: { name: 'department', value }
@@ -363,7 +379,7 @@ const RegisterForm = () => {
                   name="classes"
                   type="text"
                   placeholder="Enter classes (comma separated)"
-                  value={formData.profileData.classes || ''}
+                  value={('classes' in formData.profileData ? (formData.profileData as any).classes : '') || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -372,13 +388,24 @@ const RegisterForm = () => {
 
             {formData.role === 'CLASS_TEACHER' && (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Enter name"
-                  value={formData.profileData.name || ''}
+                  placeholder="Enter first name"
+                  value={formData.profileData.firstName || ''}
+                  onChange={handleProfileDataChange}
+                  required
+                />
+
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Enter last name"
+                  value={formData.profileData.lastName || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -400,14 +427,14 @@ const RegisterForm = () => {
                   name="subjectAssigned"
                   type="text"
                   placeholder="Subject Assignment"
-                  value={formData.profileData.subjectAssigned || ''}
+                  value={'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
                   onChange={handleProfileDataChange}
                   required
                 />
 
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={formData.profileData.department || ''}
+                  value={(formData.profileData as any)?.department || ''}
                   onValueChange={value =>
                     handleProfileDataChange({
                       target: { name: 'department', value }
@@ -429,7 +456,7 @@ const RegisterForm = () => {
 
                 <Label htmlFor="semester">Semester</Label>
                 <Select
-                  value={formData.profileData.semester || ''}
+                  value={(formData.profileData as any)?.semester || ''}
                   onValueChange={value =>
                     handleProfileDataChange({
                       target: { name: 'semester', value }
@@ -455,13 +482,23 @@ const RegisterForm = () => {
 
             {formData.role === 'ADMIN' && (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Enter name"
-                  value={formData.profileData.name || ''}
+                  placeholder="Enter first name"
+                  value={formData.profileData.firstName || ''}
+                  onChange={handleProfileDataChange}
+                  required
+                />
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Enter last name"
+                  value={formData.profileData.lastName || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -470,13 +507,23 @@ const RegisterForm = () => {
 
             {formData.role === 'GUEST' && (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Enter name"
-                  value={formData.profileData.name || ''}
+                  placeholder="Enter first name"
+                  value={formData.profileData.firstName || ''}
+                  onChange={handleProfileDataChange}
+                  required
+                />
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Enter last name"
+                  value={formData.profileData.lastName || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -485,13 +532,24 @@ const RegisterForm = () => {
 
             {formData.role === 'HOD' && (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Enter name"
-                  value={formData.profileData.name || ''}
+                  placeholder="Enter first name"
+                  value={formData.profileData.firstName || ''}
+                  onChange={handleProfileDataChange}
+                  required
+                />
+
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Enter last name"
+                  value={formData.profileData.lastName || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -502,7 +560,7 @@ const RegisterForm = () => {
                   name="subjectAssigned"
                   type="text"
                   placeholder="Subject Assignment"
-                  value={formData.profileData.subjectAssigned || ''}
+                  value={'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
                   onChange={handleProfileDataChange}
                   required
                 />

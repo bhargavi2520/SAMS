@@ -487,7 +487,7 @@ const StudentDashboard = () => {
 
 						{/* Subject Details Section (right side on desktop, below calendar) */}
 						<Card
-							className="rounded-xl shadow bg-white flex flex-col hidden xl:flex"
+							className="rounded-xl shadow bg-white flex-col hidden xl:flex"
 							style={{
 								height: 'calc(100% - 320px)',
 								minHeight: '350px',

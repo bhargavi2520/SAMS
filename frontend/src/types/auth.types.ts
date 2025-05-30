@@ -1,6 +1,7 @@
 export type UserRole = 'ADMIN' | 'FACULTY' | 'STUDENT' | 'HOD' | 'CLASS_TEACHER' | 'GUEST';
 
 export interface User {
+  name:string;
   id: string;
   email: string;
   role: UserRole;
@@ -12,7 +13,7 @@ export interface User {
   profile?: StudentProfile | FacultyProfile | AdminProfile | HODProfile;
 }
 
-export interface StudentProfile {
+export interface StudentProfile {    
   id: string;
   userId: string;
   rollNumber: string;
@@ -24,7 +25,7 @@ export interface StudentProfile {
   bloodGroup?: string;
   profilePictureUrl?: string;
   personalEmail?: string;
-  personalPhone?: string;
+  phoneNumber?: string;
   parentGuardianName?: string;
   parentPhone?: string;
   currentSemester: number;
@@ -38,6 +39,7 @@ export interface StudentProfile {
   current_academic_year?: string;
   currentAddress?: string;
   permanentAddress?: string;
+  aparId?:string;
 }
 
 export interface FacultyProfile {
@@ -53,7 +55,7 @@ export interface FacultyProfile {
   employmentType: 'PERMANENT' | 'CONTRACT' | 'VISITING';
   officialEmail: string;
   personalEmail?: string;
-  personalPhone?: string;
+  phoneNumber?: string;
   profilePictureUrl?: string;
   highestQualification?: string;
   specialization?: string;
@@ -83,6 +85,7 @@ export interface HODProfile {
   appointmentDate: string;
   tenureEndDate?: string;
   faculty: FacultyProfile;
+  phoneNumber?: string;
 }
 
 export interface LoginCredentials {
