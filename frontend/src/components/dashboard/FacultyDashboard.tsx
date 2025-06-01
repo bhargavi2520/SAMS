@@ -12,6 +12,7 @@ import {
   Users,
   Award,
 } from 'lucide-react';
+import { format } from 'date-fns'; // Add this import at the top if you have date-fns installed
 
 // Sidebar items for navigation
 const sidebarItems = [
@@ -141,7 +142,7 @@ const AttendanceSwitch = ({ checked, onChange }: { checked: boolean; onChange: (
     aria-label={checked ? 'Present' : 'Absent'}
   >
     <span
-      className={`absolute left-0 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+      className={`absolute left-0 top-0 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
         checked ? 'translate-x-4' : 'translate-x-1'
       }`}
     />
@@ -189,6 +190,9 @@ const FacultyDashboard = () => {
     const today = new Date();
     return today.toISOString().slice(0, 10);
   });
+
+  // Format the agenda month and year based on attendanceDate
+  const agendaMonthYear = format(new Date(attendanceDate), 'MMMM yyyy');
 
   // Attendance state for selected class
   const [attendance, setAttendance] = useState<{ id: number; name: string; present: boolean }[]>(
@@ -454,7 +458,7 @@ const FacultyDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base sm:text-lg">Agenda</CardTitle>
-                  <CardDescription>September 2030</CardDescription>
+                  <CardDescription>{agendaMonthYear}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between mb-1 text-xs text-gray-500">
