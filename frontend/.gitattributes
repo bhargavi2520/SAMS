@@ -1,0 +1,18 @@
+# Auto detect text files and ensure they use LF
+* text=auto
+
+# Explicitly declare text files you want to always be LF
+*.js    text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.tsx   text eol=lf
+*.ts    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+
+# Declare files that will always have CRLF line endings (e.g., Windows batch files)
+# *.bat   text eol=crlf
+
+# Declare files that should be treated as binary and not have line endings changed
+# *.png   binary
+# *.jpg   binary
