@@ -570,29 +570,91 @@ const RegisterForm = () => {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a strong password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Create a strong password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+                className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-400" />
+                ) : (
+                <Eye className="h-4 w-4 text-gray-400" />
+                )}
+              </Button>
+              </div>
+              {/* Enhanced Password requirements */}
+              <div className="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 text-xs">
+              <div className="mb-2 font-semibold text-gray-800 dark:text-gray-200">
+                Your password must have:
+              </div>
+              <ul className="space-y-1 list-disc list-inside">
+                <li className={
+                formData.password
+                  ? formData.password.length >= 8
+                  ? "text-green-600 font-medium"
+                  : "text-red-600 font-medium"
+                  : "text-gray-600 dark:text-gray-400"
+                }>
+                Minimum <span className="font-bold">8 characters</span>
+                </li>
+                <li className={
+                formData.password
+                  ? /[A-Z]/.test(formData.password)
+                  ? "text-green-600 font-medium"
+                  : "text-red-600 font-medium"
+                  : "text-gray-600 dark:text-gray-400"
+                }>
+                At least <span className="font-bold">one uppercase letter</span> (A–Z)
+                </li>
+                <li className={
+                formData.password
+                  ? /[a-z]/.test(formData.password)
+                  ? "text-green-600 font-medium"
+                  : "text-red-600 font-medium"
+                  : "text-gray-600 dark:text-gray-400"
+                }>
+                At least <span className="font-bold">one lowercase letter</span> (a–z)
+                </li>
+                <li className={
+                formData.password
+                  ? /\d/.test(formData.password)
+                  ? "text-green-600 font-medium"
+                  : "text-red-600 font-medium"
+                  : "text-gray-600 dark:text-gray-400"
+                }>
+                At least <span className="font-bold">one number</span> (0–9)
+                </li>
+                <li className={
+                formData.password
+                  ? /[!@#$%^&*(),.?":{}|<>_\-\[\];'/`~+=]/.test(formData.password)
+                  ? "text-green-600 font-medium"
+                  : "text-red-600 font-medium"
+                  : "text-gray-600 dark:text-gray-400"
+                }>
+                At least <span className="font-bold">one special character</span> (e.g. @, #, $, %, !, &amp;, *)
+                </li>
+                <li className={
+                formData.password
+                  ? !/\s/.test(formData.password)
+                  ? "text-green-600 font-medium"
+                  : "text-red-600 font-medium"
+                  : "text-gray-600 dark:text-gray-400"
+                }>
+                <span className="font-bold">No spaces</span>
+                </li>
+              </ul>
               </div>
             </div>
 
