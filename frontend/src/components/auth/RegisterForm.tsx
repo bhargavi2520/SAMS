@@ -177,12 +177,12 @@ const RegisterForm = () => {
                   required
                 />
 
-                <Label htmlFor="admissionDate">Admission date</Label>
+                <Label htmlFor="admission_academic_year">Admission date</Label>
                 <Input
-                  id="admissionDate"
-                  name="admissionDate"
+                  id="admission_academic_year"
+                  name="admission_academic_year"
                   type="date"
-                  value={(formData.profileData as Partial<StudentProfile>).admission_academic_year || ''}
+                  value={(formData.profileData as any)['admission_academic_year'] || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
