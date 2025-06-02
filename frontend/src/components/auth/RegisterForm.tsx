@@ -211,10 +211,10 @@ const RegisterForm = () => {
                   </SelectContent>
                 </Select>
 
-                <Label htmlFor="dob">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
                 <Input
-                  id="dob"
-                  name="dob"
+                  id="dateOfBirth"
+                  name="dateOfBirth"
                   type="date"
                   value={(formData.profileData as Partial<StudentProfile>).dateOfBirth || ''}
                   onChange={handleProfileDataChange}
