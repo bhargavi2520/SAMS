@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/auth.types';
-import { LogOut, User, Settings, Bell } from 'lucide-react';
+import { LogOut, User, Settings, Bell, Moon, Search } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -73,6 +73,16 @@ const DashboardLayout = () => {
                   Student Academic Management System
                 </p>
               </div>
+              {/* Search Bar - Moved to the left */}
+              <div className="relative hidden md:block ml-6">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  aria-label="Search site"
+                />
+              </div>
             </div>
 
             {/* Right side - User info and actions */}
@@ -83,9 +93,13 @@ const DashboardLayout = () => {
               </span>
 
               {/* Notifications */}
-              <Button variant="ghost" size="sm" className="relative">
+              <Button variant="ghost" size="sm" className="relative" aria-label="View notifications">
                 <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
+                {/* Mark as decorative if it's just a visual cue for unread notifications */}
+                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full" aria-hidden="true" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => console.log('Toggle dark mode')} aria-label="Toggle dark mode"> {/* Add dark mode toggle logic here */}
+                <Moon className="h-5 w-5" />
               </Button>
 
               {/* User Menu */}

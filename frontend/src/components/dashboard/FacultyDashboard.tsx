@@ -381,7 +381,7 @@ const FacultyDashboard = () => {
 	/* Main Dashboard Layout */
 	<div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
 		{/* Sidebar */}
-		<aside className={`fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
+		<aside className={`fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out`}>
       {/* Logo */}
       <div className="p-4 md:p-6 border-b border-gray-200 flex items-center justify-between md:justify-start w-full">
         <div className="flex items-center space-x-2">
@@ -399,12 +399,12 @@ const FacultyDashboard = () => {
       </div>
       {/* Navigation */}
       <nav className="flex-1 p-4">
-        <div className="space-y-1">
+        <div className="space-y-1"> {/* Reduced space between items */}
           {sidebarItems.map((item) => (
             <button
               key={item.label}
               onClick={() => handleNavClick(item.section)}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full flex items-center space-x-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${ // Reduced vertical padding
                 activeSection === item.section
                   ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-700'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -418,12 +418,12 @@ const FacultyDashboard = () => {
       </nav>
       {/* Bottom Navigation */}
       <div className="p-4 border-t border-gray-200">
-        <div className="space-y-1">
+        <div className="space-y-0.5"> {/* Reduced space between items */}
           {bottomSidebarItems.map((item) => (
             <button
               key={item.label}
               onClick={() => handleNavClick(item.section)}
-              className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              className="w-full flex items-center space-x-3 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors" // Reduced vertical padding
             >
               {item.icon}
               <span>{item.label}</span>
@@ -438,43 +438,7 @@ const FacultyDashboard = () => {
     )}
 
     {/* Main Content */}
-    <main className="flex-1 overflow-auto">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between">
-        {/* Mobile menu button */}
-        <button className="md:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg mr-2" onClick={toggleSidebar}>
-          <Menu className="w-6 h-6" />
-        </button>
-        <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto">
-          <div className="relative w-full md:w-auto">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search"
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
-            <Bell className="w-5 h-5" />
-          </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
-            <Moon className="w-5 h-5" />
-          </button>
-          <div className="flex items-center space-x-2 md:space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4 text-white" />
-            </div>
-            <div className="text-sm hidden md:block">
-              <div className="font-medium text-gray-900">
-                {facultyProfile.firstName} {facultyProfile.lastName}
-              </div>
-              <div className="text-gray-500">{facultyProfile.email}</div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <main className="flex-1 overflow-auto md:ml-64">
 
       {/* Dashboard Content */}
       <div className="p-4 md:p-6">
