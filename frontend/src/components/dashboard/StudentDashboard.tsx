@@ -475,6 +475,84 @@ const AttendanceGraph = () => {
     );
 };
 
+// StudentSidebarNav component (adapted from FacultySidebarNav)
+const StudentSidebarNav = ({
+    activeSection,
+    onNavClick,
+    isSidebarOpen,
+    toggleSidebar,
+    sidebarItems,
+    bottomSidebarItems
+}: {
+    activeSection: string;
+    onNavClick: (section: string) => void;
+    isSidebarOpen: boolean;
+    toggleSidebar: () => void;
+	sidebarItems: Array<{ label: string; path: string; icon: React.ReactNode }>;
+	bottomSidebarItems: Array<{ label: string; path: string; icon: React.ReactNode }>;
+}) => (
+    <>
+        {/* Mobile Sidebar */}
+        <aside className={`fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out`}>
+            {/* Logo and Close button */}
+            <div className="p-4 md:p-6 border-b border-gray-200 flex items-center justify-between md:justify-start w-full">
+                <div className="flex items-center space-x-2">
+                    <BookOpen className="w-6 h-6 text-blue-600" />
+                    <div>
+                        <span className="font-bold text-lg text-gray-900">Student Portal</span>
+                    </div>
+                </div>
+                <button className="md:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg" onClick={toggleSidebar}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 p-4">
+                <div className="space-y-1">
+                    {sidebarItems.map((item) => (
+                        <button
+                            key={item.label}
+                            onClick={() => onNavClick(item.label)}
+                            className={`w-full flex items-center space-x-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                activeSection === item.label
+                                    ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-700'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        >
+                            {item.icon}
+                            <span>{item.label}</span>
+                        </button>
+                    ))}
+                </div>
+            </nav>
+
+            {/* Bottom Navigation */}
+            <div className="p-4 border-t border-gray-200">
+                <div className="space-y-0.5">
+                    {bottomSidebarItems.map((item) => (
+                        <button
+                            key={item.label}
+                            onClick={() => onNavClick(item.label)}
+                            className="w-full flex items-center space-x-3 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                        >
+                            {item.icon}
+                            <span>{item.label}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </aside>
+
+        {/* Overlay for mobile sidebar */}
+        {isSidebarOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={toggleSidebar}></div>
+        )}
+    </>
+);
+
 
 const StudentDashboard = () => {
 	// const { user } = useAuthStore(); // Removed problematic import
@@ -493,6 +571,17 @@ const StudentDashboard = () => {
 	const [activeSection, setActiveSection] = useState<string>('My Profile'); // Set initial active section to My Profile
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar visibility
 
+    // State for Exam Prep Assistant
+    const [examTopicInput, setExamTopicInput] = useState('');
+    const [studyPlanResponse, setStudyPlanResponse] = useState('');
+    const [isLoadingStudyPlan, setIsLoadingStudyPlan] = useState(false);
+
+    // State for Feedback Analyzer
+    const [feedbackMessageInput, setFeedbackMessageInput] = useState('');
+    const [feedbackAnalysisResult, setFeedbackAnalysisResult] = useState('');
+    const [isLoadingFeedbackAnalysis, setIsLoadingFeedbackAnalysis] = useState(false);
+
+
 	// Section refs for scrolling
 	const dashboardRef = useRef<HTMLDivElement>(null);
 	const myProfileRef = useRef<HTMLDivElement>(null);
@@ -504,6 +593,7 @@ const StudentDashboard = () => {
 	const calendarRef = useRef<HTMLDivElement>(null);
 	const notificationsRef = useRef<HTMLDivElement>(null);
 	const feedbackRef = useRef<HTMLDivElement>(null);
+	const fullProfileRef = useRef<HTMLDivElement>(null); // Ref for the full profile section
 
 
 	const sectionRefs = {
@@ -517,6 +607,7 @@ const StudentDashboard = () => {
 		Calendar: calendarRef,
 		Notifications: notificationsRef,
 		Feedback: feedbackRef, // Corrected syntax here
+		'Full Profile': fullProfileRef, // Added full profile section
 	};
 
 	const handleNavClick = (label: string) => {
@@ -532,8 +623,122 @@ const StudentDashboard = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
-	// The `if (!studentProfile)` check is no longer strictly necessary since studentProfile is now mocked
-	// but keeping it as a safeguard or if the mock logic changes in the future.
+    // Function to handle generating study plan using Gemini API
+    const handleGenerateStudyPlan = async () => {
+        if (!examTopicInput.trim()) {
+            setStudyPlanResponse('Please enter an exam topic to generate a study plan.');
+            return;
+        }
+
+        setIsLoadingStudyPlan(true);
+        setStudyPlanResponse(''); // Clear previous response
+
+        try {
+            const prompt = `Generate a study plan for a student preparing for an exam on "${examTopicInput}". Include key concepts, suggested study activities, and potential practice questions. Format the response as a markdown list.`;
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                setStudyPlanResponse(text);
+            } else {
+                setStudyPlanResponse('Failed to generate study plan. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error calling Gemini API:', error);
+            setStudyPlanResponse('An error occurred while generating the study plan.');
+        } finally {
+            setIsLoadingStudyPlan(false);
+        }
+    };
+
+    // Function to handle analyzing feedback using Gemini API
+    const handleAnalyzeFeedback = async () => {
+        if (!feedbackMessageInput.trim()) {
+            setFeedbackAnalysisResult('Please enter feedback to analyze.');
+            return;
+        }
+
+        setIsLoadingFeedbackAnalysis(true);
+        setFeedbackAnalysisResult(''); // Clear previous result
+
+        try {
+            const prompt = `Analyze the sentiment of the following student feedback and categorize it (e.g., Academic, Administrative, Facilities, Other). Also, suggest a brief improvement or action based on the feedback.
+            Feedback: "${feedbackMessageInput}"
+            Format the response as:
+            Sentiment: [Positive/Neutral/Negative]
+            Category: [Category]
+            Suggestion: [Brief suggestion]`;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                setFeedbackAnalysisResult(text);
+            } else {
+                setFeedbackAnalysisResult('Failed to analyze feedback. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error calling Gemini API:', error);
+            setFeedbackAnalysisResult('An error occurred while analyzing the feedback.');
+        } finally {
+            setIsLoadingFeedbackAnalysis(false);
+        }
+    };
+
+
+    // Listen to scroll to update active section
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollPosition = window.scrollY + 120; // Offset for header/nav
+
+            let current = 'My Profile'; // Default to My Profile
+            // Iterate through sidebarItems to find the active section
+            for (const item of sidebarItems) {
+                const ref = sectionRefs[item.label]; // Use item.label to access sectionRefs
+                if (ref && ref.current) {
+                    const offsetTop = ref.current.offsetTop;
+                    const offsetBottom = ref.current.offsetTop + ref.current.offsetHeight;
+
+                    // Check if the scroll position is within the current section's bounds
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
+                        current = item.label;
+                        break; // Found the active section, no need to check further
+                    }
+                }
+            }
+            setActiveSection(current);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [sectionRefs, sidebarItems]);
+
+
 	if (!studentProfile) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
@@ -547,72 +752,24 @@ const StudentDashboard = () => {
 
 	return (
 		<div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
-			{/* Sidebar */}
-			<aside className={`fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-				{/* Logo */}
-				<div className="p-4 md:p-6 border-b border-gray-200 flex items-center justify-between md:justify-start w-full">
-					<div className="flex items-center space-x-2">
-						<BookOpen className="w-6 h-6 text-blue-600" />
-						<div>
-							<span className="font-bold text-lg text-gray-900">Student Portal</span>
-						</div>
-					</div>
-					{/* Close button for mobile sidebar */}
-					<button className="md:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg" onClick={toggleSidebar}>
-						<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-					</button>
-				</div>
-
-				{/* Navigation */}
-				<nav className="flex-1 p-4">
-					<div className="space-y-1"> {/* Reduced space between items */}
-						{sidebarItems.map((item) => (
-							<button
-								key={item.label}
-								onClick={() => handleNavClick(item.label)}
-								className={`w-full flex items-center space-x-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${ // Reduced vertical padding
-									activeSection === item.label
-										? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-700'
-										: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-								}`}
-							>
-								{item.icon}
-								<span>{item.label}</span>
-							</button>
-						))}
-					</div>
-				</nav>
-
-				{/* Bottom Navigation */}
-				<div className="p-4 border-t border-gray-200">
-					<div className="space-y-0.5"> {/* Reduced space between items */}
-						{bottomSidebarItems.map((item) => (
-							<button
-								key={item.label}
-								onClick={() => handleNavClick(item.label)}
-								className="w-full flex items-center space-x-3 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors" // Reduced vertical padding
-							>
-								{item.icon}
-								<span>{item.label}</span>
-							</button>
-						))}
-					</div>
-				</div>
-			</aside>
-
-            {/* Overlay for mobile sidebar */}
-            {isSidebarOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={toggleSidebar}></div>
-            )}
+			{/* Student Sidebar Navigation */}
+            <StudentSidebarNav
+                activeSection={activeSection}
+                onNavClick={handleNavClick}
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+                sidebarItems={sidebarItems}
+                bottomSidebarItems={bottomSidebarItems}
+            />
 
 			{/* Main Content */}
-			<main className="flex-1 overflow-auto md:ml-64">
+			<main className="flex-1 overflow-auto ml-0 md:ml-64"> {/* Adjusted ml for sidebar width */}
+				
+
 				{/* Dashboard Content */}
 				<div className="p-4 md:p-6">
 					{/* My Profile Section (now first) */}
-					<div ref={myProfileRef} className="space-y-4 md:space-y-6">
+					<div ref={myProfileRef} id="my-profile" className="space-y-4 md:space-y-6 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
 							<div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
 								<div className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -640,7 +797,10 @@ const StudentDashboard = () => {
 										</div>
 									</div>
 									<div className="mt-4 md:mt-6">
-										<Button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium">
+										<Button 
+											className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
+											onClick={() => handleNavClick('Full Profile')} // Navigate to Full Profile section
+										>
 											View Profile
 										</Button>
 									</div>
@@ -649,8 +809,45 @@ const StudentDashboard = () => {
 						</Card>
 					</div>
 
+					{/* Full Profile Section (New) */}
+					<div ref={fullProfileRef} id="full-profile" className="pt-4 md:pt-8 scroll-mt-24">
+						<Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+							<CardHeader>
+								<CardTitle className="text-xl md:text-2xl font-bold text-gray-900">
+									Full Profile Details
+								</CardTitle>
+								<CardDescription>Comprehensive information for {studentProfile?.firstName} {studentProfile?.lastName}.</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+									<div>
+										<p className="text-sm font-medium text-gray-500">Full Name</p>
+										<p className="text-md text-gray-800">{studentProfile?.firstName} {studentProfile?.lastName}</p>
+									</div>
+									<div>
+										<p className="text-sm font-medium text-gray-500">Email Address</p>
+										<p className="text-md text-gray-800">{studentProfile?.email}</p>
+									</div>
+									<div>
+										<p className="text-sm font-medium text-gray-500">National ID (CPF)</p>
+										<p className="text-md text-gray-800">{studentProfile?.cpf}</p>
+									</div>
+									<div>
+										<p className="text-sm font-medium text-gray-500">Date of Birth</p>
+										<p className="text-md text-gray-800">{dayjs(studentProfile?.birthDate).format('DD MMMM, YYYY')}</p>
+									</div>
+									<div>
+										<p className="text-sm font-medium text-gray-500">Phone Number</p>
+										<p className="text-md text-gray-800">{studentProfile?.phone}</p>
+									</div>
+								</div>
+								{/* You can add more detailed information fields here as needed */}
+							</CardContent>
+						</Card>
+					</div>
+
 					{/* Dashboard Section - Updated Content */}
-					<div ref={dashboardRef} className="pt-4 md:pt-8">
+					<div ref={dashboardRef} id="dashboard" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg font-semibold text-gray-900">Dashboard Overview</CardTitle>
@@ -756,7 +953,7 @@ const StudentDashboard = () => {
 
 
 					{/* Timetable Section */}
-					<div ref={timetableRef} className="pt-4 md:pt-8">
+					<div ref={timetableRef} id="timetable" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg">Class Timetable</CardTitle>
@@ -799,7 +996,7 @@ const StudentDashboard = () => {
 					</div>
 
 					{/* Subjects Faculty Section (now below Timetable) */}
-					<div ref={subjectsFacultyRef} className="pt-4 md:pt-8">
+					<div ref={subjectsFacultyRef} id="subjects-faculty" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg">Subjects Faculty Info</CardTitle>
@@ -831,7 +1028,7 @@ const StudentDashboard = () => {
 					</div>
 
 					{/* Exams Section */}
-					<div ref={examsRef} className="pt-4 md:pt-8">
+					<div ref={examsRef} id="exams" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg">Exams</CardTitle>
@@ -849,15 +1046,53 @@ const StudentDashboard = () => {
 										</div>
 									))}
 								</div>
+
+                                {/* New: Exam Prep Assistant powered by Gemini API */}
+                                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <h4 className="text-lg font-semibold text-blue-800 mb-3">Exam Prep Assistant ✨</h4>
+                                    <p className="text-sm text-blue-700 mb-3">Enter an exam topic and get a tailored study plan!</p>
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                                        <input
+                                            type="text"
+                                            id="examTopicInput" // Added ID for accessibility
+                                            className="flex-1 p-2 border border-blue-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            placeholder="e.g., 'Thermodynamics', 'World War II causes'"
+                                            value={examTopicInput}
+                                            onChange={(e) => setExamTopicInput(e.target.value)}
+                                        />
+                                        <Button
+                                            onClick={handleGenerateStudyPlan}
+                                            disabled={isLoadingStudyPlan}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex-shrink-0"
+                                        >
+                                            {isLoadingStudyPlan ? (
+                                                <span className="flex items-center">
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Generating...
+                                                </span>
+                                            ) : (
+                                                'Generate Study Plan ✨'
+                                            )}
+                                        </Button>
+                                    </div>
+                                    {studyPlanResponse && (
+                                        <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-md text-sm text-blue-900 whitespace-pre-wrap">
+                                            {studyPlanResponse}
+                                        </div>
+                                    )}
+                                </div>
 							</CardContent>
 						</Card>
 					</div>
 
 					{/* Performance Section */}
-					<div ref={performanceRef} className="pt-4 md:pt-8">
+					<div ref={performanceRef} id="performance" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
-								<CardTitle className="text-base md:text-lg">Performance</CardTitle> {/* Corrected closing tag from </Title> to </CardTitle> */}
+								<CardTitle className="text-base md:text-lg">Performance</CardTitle>
 							</CardHeader>
 							<CardContent>
 								<p className="text-gray-600 text-sm">Your academic performance overview.</p>
@@ -869,7 +1104,7 @@ const StudentDashboard = () => {
 					</div>
 
 					{/* Attendance Section */}
-					<div ref={attendanceRef} className="pt-4 md:pt-8">
+					<div ref={attendanceRef} id="attendance" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg">Attendance</CardTitle>
@@ -918,7 +1153,7 @@ const StudentDashboard = () => {
 					</div>
 
 					{/* Calendar Section */}
-					<div ref={calendarRef} className="pt-4 md:pt-8">
+					<div ref={calendarRef} id="calendar" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg">Calendar</CardTitle>
@@ -930,7 +1165,7 @@ const StudentDashboard = () => {
 					</div>
 
 					{/* Notifications Section */}
-					<div ref={notificationsRef} className="pt-4 md:pt-8">
+					<div ref={notificationsRef} id="notifications" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg">Notifications</CardTitle>
@@ -960,7 +1195,7 @@ const StudentDashboard = () => {
 					</div>
 
 					{/* Feedback Section */}
-					<div ref={feedbackRef} className="pt-4 md:pt-8">
+					<div ref={feedbackRef} id="feedback" className="pt-4 md:pt-8 scroll-mt-24">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
 								<CardTitle className="text-base md:text-lg">Feedback</CardTitle>
@@ -984,12 +1219,42 @@ const StudentDashboard = () => {
 											rows={4}
 											className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
 											placeholder="Write your feedback here..."
+                                            value={feedbackMessageInput}
+                                            onChange={(e) => setFeedbackMessageInput(e.target.value)}
 										></textarea>
 									</div>
 									<Button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium">
 										Submit Feedback
 									</Button>
 								</form>
+
+                                {/* New: Smart Feedback Analyzer powered by Gemini API */}
+                                <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                                    <h4 className="text-lg font-semibold text-green-800 mb-3">Smart Feedback Analyzer ✨</h4>
+                                    <p className="text-sm text-green-700 mb-3">Analyze your feedback for sentiment and categorization.</p>
+                                    <Button
+                                        onClick={handleAnalyzeFeedback}
+                                        disabled={isLoadingFeedbackAnalysis || !feedbackMessageInput.trim()}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium w-full sm:w-auto"
+                                    >
+                                        {isLoadingFeedbackAnalysis ? (
+                                            <span className="flex items-center">
+                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Analyzing...
+                                            </span>
+                                        ) : (
+                                            'Analyze Feedback ✨'
+                                        )}
+                                    </Button>
+                                    {feedbackAnalysisResult && (
+                                        <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded-md text-sm text-green-900 whitespace-pre-wrap">
+                                            {feedbackAnalysisResult}
+                                        </div>
+                                    )}
+                                </div>
 							</CardContent>
 						</Card>
 					</div>

@@ -199,6 +199,17 @@ const FacultyDashboard = () => {
     return today.toISOString().slice(0, 10);
   });
 
+  // State for AI Study Material Generator
+  const [studyMaterialTopicInput, setStudyMaterialTopicInput] = useState('');
+  const [studyMaterialResponse, setStudyMaterialResponse] = useState('');
+  const [isLoadingStudyMaterial, setIsLoadingStudyMaterial] = useState(false);
+
+  // State for AI Announcement Drafter
+  const [announcementTopicInput, setAnnouncementTopicInput] = useState('');
+  const [announcementResponse, setAnnouncementResponse] = useState('');
+  const [isLoadingAnnouncement, setIsLoadingAnnouncement] = useState(false);
+
+
   // Format the agenda month and year based on attendanceDate
   const agendaMonthYear = format(new Date(attendanceDate), 'MMMM yyyy');
 
@@ -275,6 +286,78 @@ const FacultyDashboard = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Function to handle generating study material using Gemini API
+  const handleGenerateStudyMaterial = async () => {
+    if (!studyMaterialTopicInput.trim()) {
+      setStudyMaterialResponse('Please enter a topic to generate study material.');
+      return;
+    }
+    setIsLoadingStudyMaterial(true);
+    setStudyMaterialResponse('');
+
+    try {
+      const prompt = `As a faculty member, generate concise study material, key concepts, or example practice questions for the topic: "${studyMaterialTopicInput}". The material should be suitable for college-level students. Format the response clearly, perhaps using markdown lists.`;
+      const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+      const payload = { contents: chatHistory };
+      const apiKey = ""; // Replace with your API key if needed for models other than gemini-2.0-flash
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+
+      if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+        setStudyMaterialResponse(result.candidates[0].content.parts[0].text);
+      } else {
+        setStudyMaterialResponse('Failed to generate study material. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error calling Gemini API for study material:', error);
+      setStudyMaterialResponse('An error occurred while generating study material.');
+    } finally {
+      setIsLoadingStudyMaterial(false);
+    }
+  };
+
+  // Function to handle drafting an announcement using Gemini API
+  const handleDraftAnnouncement = async () => {
+    if (!announcementTopicInput.trim()) {
+      setAnnouncementResponse('Please enter a topic for the announcement.');
+      return;
+    }
+    setIsLoadingAnnouncement(true);
+    setAnnouncementResponse('');
+
+    try {
+      const prompt = `As a faculty member, draft a professional and concise announcement for students regarding: "${announcementTopicInput}". Ensure the tone is appropriate for an academic setting. Provide a clear subject line and body.`;
+      const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+      const payload = { contents: chatHistory };
+      const apiKey = ""; // Replace with your API key if needed
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+
+      if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+        setAnnouncementResponse(result.candidates[0].content.parts[0].text);
+      } else {
+        setAnnouncementResponse('Failed to draft announcement. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error calling Gemini API for announcement:', error);
+      setAnnouncementResponse('An error occurred while drafting the announcement.');
+    } finally {
+      setIsLoadingAnnouncement(false);
+    }
+  };
+
   // Top statistics data
   const stats = [
     { label: 'Students', value: '124,684', color: 'bg-yellow-100', icon: <Users className="text-yellow-500" /> },
@@ -330,7 +413,39 @@ const FacultyDashboard = () => {
           <CardDescription>Upcoming and past exams overview.</CardDescription>
         </CardHeader>
         <CardContent>
-          <span className="text-gray-400">[Exams content here]</span>
+          <p className="text-gray-400 mb-4">[Exams content here, e.g., list of upcoming exams]</p>
+
+          {/* AI Study Material Generator */}
+          <div className="mt-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+            <h4 className="text-lg font-semibold text-indigo-800 mb-3">AI Study Material Generator ✨</h4>
+            <p className="text-sm text-indigo-700 mb-3">Enter an exam topic to generate key study points or practice questions.</p>
+            <div className="flex flex-col sm:flex-row gap-2 mb-3">
+              <input
+                type="text"
+                className="flex-1 p-2 border border-indigo-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                placeholder="e.g., 'Quantum Mechanics Basics', 'Shakespearean Sonnets'"
+                value={studyMaterialTopicInput}
+                onChange={(e) => setStudyMaterialTopicInput(e.target.value)}
+              />
+              <Button
+                onClick={handleGenerateStudyMaterial}
+                disabled={isLoadingStudyMaterial}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex-shrink-0"
+              >
+                {isLoadingStudyMaterial ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Generating...
+                  </span>
+                ) : 'Generate Material'}
+              </Button>
+            </div>
+            {studyMaterialResponse && (
+              <div className="mt-4 p-3 bg-indigo-100 border border-indigo-300 rounded-md text-sm text-indigo-900 whitespace-pre-wrap">
+                {studyMaterialResponse}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -360,7 +475,39 @@ const FacultyDashboard = () => {
           <CardDescription>Important announcements and updates.</CardDescription>
         </CardHeader>
         <CardContent>
-          <span className="text-gray-400">[Announcements content here]</span>
+          <p className="text-gray-400 mb-4">[Existing announcements content here, e.g., list of announcements]</p>
+
+          {/* AI Announcement Drafter */}
+          <div className="mt-6 p-4 bg-teal-50 rounded-lg border border-teal-200">
+            <h4 className="text-lg font-semibold text-teal-800 mb-3">AI Announcement Drafter ✨</h4>
+            <p className="text-sm text-teal-700 mb-3">Enter the subject of your announcement to get a draft.</p>
+            <div className="flex flex-col sm:flex-row gap-2 mb-3">
+              <input
+                type="text"
+                className="flex-1 p-2 border border-teal-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                placeholder="e.g., 'Upcoming Midterm Schedule', 'Guest Lecture on AI Ethics'"
+                value={announcementTopicInput}
+                onChange={(e) => setAnnouncementTopicInput(e.target.value)}
+              />
+              <Button
+                onClick={handleDraftAnnouncement}
+                disabled={isLoadingAnnouncement}
+                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex-shrink-0"
+              >
+                {isLoadingAnnouncement ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Drafting...
+                  </span>
+                ) : 'Draft Announcement'}
+              </Button>
+            </div>
+            {announcementResponse && (
+              <div className="mt-4 p-3 bg-teal-100 border border-teal-300 rounded-md text-sm text-teal-900 whitespace-pre-wrap">
+                {announcementResponse}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -689,42 +836,39 @@ const FacultyDashboard = () => {
 
         {/* Exams Section */}
         <div ref={examsRef} className="pt-4 md:pt-8">
-          {/* ...reuse your exams section, but styled like StudentDashboard... */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Exams</CardTitle>
               <CardDescription>Upcoming and past exams overview.</CardDescription>
             </CardHeader>
             <CardContent>
-              <span className="text-gray-400">[Exams content here]</span>
+              {examsSection}
             </CardContent>
           </Card>
         </div>
 
         {/* Results Section */}
         <div ref={resultsRef} className="pt-4 md:pt-8">
-          {/* ...reuse your results section, but styled like StudentDashboard... */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Results</CardTitle>
               <CardDescription>Results overview.</CardDescription>
             </CardHeader>
             <CardContent>
-              <span className="text-gray-400">[Results content here]</span>
+              {resultsSection}
             </CardContent>
           </Card>
         </div>
 
         {/* Announcements Section */}
         <div ref={announcementsRef} className="pt-4 md:pt-8">
-          {/* ...reuse your announcements section, but styled like StudentDashboard... */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Announcements</CardTitle>
               <CardDescription>Important announcements and updates.</CardDescription>
             </CardHeader>
             <CardContent>
-              <span className="text-gray-400">[Announcements content here]</span>
+              {announcementsSection}
             </CardContent>
           </Card>
         </div>
