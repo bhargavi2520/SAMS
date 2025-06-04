@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/auth.types';
-import { LogOut, User, Settings, Bell, Moon, Search } from 'lucide-react';
+import { LogOut, User, Settings, Bell, Moon, Search, Menu, Sparkles } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -22,6 +22,11 @@ const DashboardLayout = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleOpenAiAssistant = () => {
+    // Placeholder: Implement logic to open AI assistant modal or navigate to AI page
+    console.log('AI Assistant clicked');
   };
 
   const getRoleColor = (role: UserRole) => {
@@ -63,13 +68,20 @@ const DashboardLayout = () => {
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo and Title */}
+            {/* Left side: Menu button (mobile), Logo, Title, Search */}
             <div className="flex items-center">
+              {/* Hamburger Menu for mobile */}
+              <div className="md:hidden mr-2">
+                <Button variant="ghost" size="sm" onClick={() => console.log('Mobile menu clicked')} aria-label="Open menu">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </div>
+
               <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                   SAMS
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
                   Student Academic Management System
                 </p>
               </div>
@@ -101,6 +113,11 @@ const DashboardLayout = () => {
               <Button variant="ghost" size="sm" onClick={() => console.log('Toggle dark mode')} aria-label="Toggle dark mode"> {/* Add dark mode toggle logic here */}
                 <Moon className="h-5 w-5" />
               </Button>
+              {/* AI Assistant Button */}
+              <Button variant="ghost" size="sm" onClick={handleOpenAiAssistant} aria-label="Open AI Assistant">
+                <Sparkles className="h-5 w-5 text-purple-500" />
+              </Button>
+
 
               {/* User Menu */}
               <DropdownMenu>
