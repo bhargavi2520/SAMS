@@ -1062,71 +1062,7 @@ const StudentDashboard = () => {
                 </div>
               </div>
             </Card>
-          </div>
-
-          {/* Full Profile Section (New) */}
-          <div
-            ref={fullProfileRef}
-            id="full-profile"
-            className="pt-4 md:pt-8 scroll-mt-24"
-          >
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
-              <CardHeader>
-                <CardTitle className="text-xl md:text-2xl font-bold text-gray-900">
-                  Full Profile Details
-                </CardTitle>
-                <CardDescription>
-                  Comprehensive information for {studentProfile?.firstName}{" "}
-                  {studentProfile?.lastName}.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Full Name
-                    </p>
-                    <p className="text-md text-gray-800">
-                      {studentProfile?.firstName} {studentProfile?.lastName}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Email Address
-                    </p>
-                    <p className="text-md text-gray-800">
-                      {studentProfile?.email}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      National ID (CPF)
-                    </p>
-                    <p className="text-md text-gray-800">
-                      {studentProfile?.cpf}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Date of Birth
-                    </p>
-                    <p className="text-md text-gray-800">
-                      {dayjs(studentProfile?.birthDate).format("DD MMMM, YYYY")}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Phone Number
-                    </p>
-                    <p className="text-md text-gray-800">
-                      {studentProfile?.phone}
-                    </p>
-                  </div>
-                </div>
-                {/* You can add more detailed information fields here as needed */}
-              </CardContent>
-            </Card>
-          </div>
+          </div>    
 
           {/* Dashboard Section - Updated Content */}
           <div
