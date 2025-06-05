@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
-import { UserRole } from '@/types/auth.types';
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { UserRole } from "@/types/auth.types";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,10 +9,10 @@ interface ProtectedRouteProps {
   requireAuth?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
   allowedRoles,
-  requireAuth = true 
+  requireAuth = true,
 }) => {
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();

@@ -1,8 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useAuthStore } from '@/store/authStore';
-import { AdminProfile } from '@/types/auth.types';
+import React, { useState, useRef } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useAuthStore } from "@/store/authStore";
+import { AdminProfile } from "@/types/auth.types";
 import {
   Users,
   UserCheck,
@@ -17,40 +23,108 @@ import {
   HelpCircle,
   BookOpen,
   Menu,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Search, Bell, Moon, Edit } from 'lucide-react';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Bell, Moon, Edit } from "lucide-react";
 
 const sidebarItems = [
-  { label: 'Dashboard', path: '#dashboard', icon: <Home className="w-5 h-5" /> },
-  { label: 'Manage Users', path: '#manage-users', icon: <Users className="w-5 h-5" /> },
-  { label: 'Timetable', path: '#timetable', icon: <CalendarDays className="w-5 h-5" /> },
-  { label: 'System Reports', path: '#system-reports', icon: <Database className="w-5 h-5" /> },
-  { label: 'Security Settings', path: '#security-settings', icon: <Shield className="w-5 h-5" /> },
+  {
+    label: "Dashboard",
+    path: "#dashboard",
+    icon: <Home className="w-5 h-5" />,
+  },
+  {
+    label: "Manage Users",
+    path: "#manage-users",
+    icon: <Users className="w-5 h-5" />,
+  },
+  {
+    label: "Timetable",
+    path: "#timetable",
+    icon: <CalendarDays className="w-5 h-5" />,
+  },
+  {
+    label: "System Reports",
+    path: "#system-reports",
+    icon: <Database className="w-5 h-5" />,
+  },
+  {
+    label: "Security Settings",
+    path: "#security-settings",
+    icon: <Shield className="w-5 h-5" />,
+  },
 ];
 
 const bottomSidebarItems = [
-  { label: 'Settings', path: '#settings', icon: <Settings className="w-5 h-5" /> },
-  { label: 'Help', path: '#help', icon: <HelpCircle className="w-5 h-5" /> },
+  {
+    label: "Settings",
+    path: "#settings",
+    icon: <Settings className="w-5 h-5" />,
+  },
+  {
+    label: "Help",
+    path: "#help",
+    icon: <HelpCircle className="w-5 h-5" />,
+  },
 ];
 
 const systemStats = [
-  { title: 'Total Users', value: '1,247', change: '+12 from last month', icon: <Users className="h-4 w-4 text-muted-foreground" /> },
-  { title: 'Active Students', value: '980', change: '78.6% of total users', icon: <UserCheck className="h-4 w-4 text-muted-foreground" /> },
-  { title: 'Faculty Members', value: '185', change: 'across all departments', icon: <Users className="h-4 w-4 text-muted-foreground" /> },
-  { title: 'System Health', value: '99.9%', change: 'uptime this month', icon: <Activity className="h-4 w-4 text-muted-foreground" />, color: 'text-green-600' },
+  {
+    title: "Total Users",
+    value: "1,247",
+    change: "+12 from last month",
+    icon: <Users className="h-4 w-4 text-muted-foreground" />,
+  },
+  {
+    title: "Active Students",
+    value: "980",
+    change: "78.6% of total users",
+    icon: <UserCheck className="h-4 w-4 text-muted-foreground" />,
+  },
+  {
+    title: "Faculty Members",
+    value: "185",
+    change: "across all departments",
+    icon: <Users className="h-4 w-4 text-muted-foreground" />,
+  },
+  {
+    title: "System Health",
+    value: "99.9%",
+    change: "uptime this month",
+    icon: <Activity className="h-4 w-4 text-muted-foreground" />,
+
+    color: "text-green-600",
+  },
 ];
 
 const recentActivity = [
-  { title: 'New User Registration', description: '5 new students registered today', badge: 'Today', icon: <UserCheck className="h-4 w-4 text-green-500" />, bg: 'bg-green-50 dark:bg-green-900/20' },
-  { title: 'Database Backup', description: 'Automatic backup completed successfully', badge: '2 hours ago', icon: <Database className="h-4 w-4 text-blue-500" />, bg: 'bg-blue-50 dark:bg-blue-900/20' },
-  { title: 'Security Alert', description: 'Multiple failed login attempts detected', badge: 'Yesterday', icon: <Shield className="h-4 w-4 text-orange-500" />, bg: 'bg-orange-50 dark:bg-orange-900/20' },
+  {
+    title: "New User Registration",
+    description: "5 new students registered today",
+    badge: "Today",
+    icon: <UserCheck className="h-4 w-4 text-green-500" />,
+    bg: "bg-green-50 dark:bg-green-900/20",
+  },
+  {
+    title: "Database Backup",
+    description: "Automatic backup completed successfully",
+    badge: "2 hours ago",
+    icon: <Database className="h-4 w-4 text-blue-500" />,
+    bg: "bg-blue-50 dark:bg-blue-900/20",
+  },
+  {
+    title: "Security Alert",
+    description: "Multiple failed login attempts detected",
+    badge: "Yesterday",
+    icon: <Shield className="h-4 w-4 text-orange-500" />,
+    bg: "bg-orange-50 dark:bg-orange-900/20",
+  },
 ];
 
 const AdminDashboard = () => {
   const { user } = useAuthStore();
   const profile = user?.profile as AdminProfile;
-  const [activeSection, setActiveSection] = useState<string>('Dashboard');
+  const [activeSection, setActiveSection] = useState<string>("Dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Section refs for scrolling (add more as needed)
@@ -62,17 +136,17 @@ const AdminDashboard = () => {
 
   const sectionRefs = {
     Dashboard: dashboardRef,
-    'Manage Users': manageUsersRef,
+    "Manage Users": manageUsersRef,
     Timetable: timetableRef,
-    'System Reports': systemReportsRef,
-    'Security Settings': securitySettingsRef,
+    "System Reports": systemReportsRef,
+    "Security Settings": securitySettingsRef,
   };
 
   const handleNavClick = (label: string) => {
     setActiveSection(label);
     const ref = sectionRefs[label];
     if (ref && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
       setIsSidebarOpen(false);
     }
   };
@@ -95,17 +169,24 @@ const AdminDashboard = () => {
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
+      <aside
+        className={`fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col z-50 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}
+      >
         {/* Logo */}
         <div className="p-4 md:p-6 border-b border-gray-200 flex items-center justify-between md:justify-start w-full">
           <div className="flex items-center space-x-2">
             <BookOpen className="w-6 h-6 text-blue-600" />
             <div>
-              <span className="font-bold text-lg text-gray-900">Admin Portal</span>
+              <span className="font-bold text-lg text-gray-900">
+                Admin Portal
+              </span>
             </div>
           </div>
           {/* Close button for mobile sidebar */}
-          <button className="md:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg" onClick={toggleSidebar}>
+          <button
+            className="md:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+            onClick={toggleSidebar}
+          >
             <Menu className="h-6 w-6" />
           </button>
         </div>
@@ -119,8 +200,8 @@ const AdminDashboard = () => {
                 onClick={() => handleNavClick(item.label)}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeSection === item.label
-                    ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? "bg-blue-50 text-blue-700 md:border-r-2 border-blue-700"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
                 {item.icon}
@@ -149,12 +230,14 @@ const AdminDashboard = () => {
 
       {/* Overlay for mobile sidebar */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={toggleSidebar}></div>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={toggleSidebar}
+        ></div>
       )}
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-
         {/* Dashboard Content */}
         <div className="p-4 md:p-6">
           {/* Dashboard Overview */}
@@ -164,7 +247,8 @@ const AdminDashboard = () => {
                 System Administration
               </h1>
               <p className="text-gray-600">
-                Welcome, {profile.firstName} {profile.lastName} - {profile.designation}
+                Welcome, {profile.firstName} {profile.lastName} -{" "}
+                {profile.designation}
               </p>
             </div>
 
@@ -173,12 +257,18 @@ const AdminDashboard = () => {
               {systemStats.map((stat, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      {stat.title}
+                    </CardTitle>
                     {stat.icon}
                   </CardHeader>
                   <CardContent>
-                    <div className={`text-2xl font-bold ${stat.color || ''}`}>{stat.value}</div>
-                    <p className="text-xs text-muted-foreground">{stat.change}</p>
+                    <div className={`text-2xl font-bold ${stat.color || ""}`}>
+                      {stat.value}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {stat.change}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -188,18 +278,27 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Recent System Activity</CardTitle>
-                <CardDescription>Latest system events and administrative actions</CardDescription>
+                <CardDescription>
+                  Latest system events and administrative actions
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {recentActivity.map((activity, index) => (
-                    <div key={index} className={`flex items-center space-x-3 p-3 rounded-lg ${activity.bg}`}>
+                    <div
+                      key={index}
+                      className={`flex items-center space-x-3 p-3 rounded-lg ${activity.bg}`}
+                    >
                       {activity.icon}
                       <div>
                         <p className="text-sm font-medium">{activity.title}</p>
-                        <p className="text-xs text-gray-600">{activity.description}</p>
+                        <p className="text-xs text-gray-600">
+                          {activity.description}
+                        </p>
                       </div>
-                      <Badge variant="outline" className="ml-auto">{activity.badge}</Badge>
+                      <Badge variant="outline" className="ml-auto">
+                        {activity.badge}
+                      </Badge>
                     </div>
                   ))}
                 </div>
@@ -215,7 +314,9 @@ const AdminDashboard = () => {
                 <CardTitle>Manage Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>This section is under construction. Please check back later.</p>
+                <p>
+                  This section is under construction. Please check back later.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -227,7 +328,9 @@ const AdminDashboard = () => {
                 <CardTitle>Timetable Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>This section is under construction. Please check back later.</p>
+                <p>
+                  This section is under construction. Please check back later.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -239,7 +342,9 @@ const AdminDashboard = () => {
                 <CardTitle>System Reports</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>This section is under construction. Please check back later.</p>
+                <p>
+                  This section is under construction. Please check back later.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -251,7 +356,9 @@ const AdminDashboard = () => {
                 <CardTitle>Security Settings</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>This section is under construction. Please check back later.</p>
+                <p>
+                  This section is under construction. Please check back later.
+                </p>
               </CardContent>
             </Card>
           </div>

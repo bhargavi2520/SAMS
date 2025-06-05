@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import KpiCard from '../components/dashboard/KpiCard';
-import WeeklySchedule from '../components/dashboard/WeeklySchedule';
-import QuickActions from '../components/dashboard/QuickActions';
-import useTimetable from '../hooks/useTimetable';
-import { BookOpen, FlaskConical, Users, MapPin } from 'lucide-react';
-import { TimetableEntry } from '../types/timetable.types'; // Still relevant for data.schedule
+import React, { useMemo } from "react";
+import KpiCard from "../components/dashboard/KpiCard";
+import WeeklySchedule from "../components/dashboard/WeeklySchedule";
+import QuickActions from "../components/dashboard/QuickActions";
+import useTimetable from "../hooks/useTimetable";
+import { BookOpen, FlaskConical, Users, MapPin } from "lucide-react";
+import { TimetableEntry } from "../types/timetable.types"; // Still relevant for data.schedule
 
 interface KpiDataItem {
   title: string;
@@ -16,14 +16,24 @@ interface KpiDataItem {
 const TimetableDashboard = () => {
   // Example: Fetch schedule for the current week.
   // You might want a more sophisticated way to determine the weekId or params.
-  const { data, loading, error } = useTimetable({ weekId: 'current' }); // Using the hook
+  const { data, loading, error } = useTimetable({ weekId: "current" }); // Using the hook
 
   // Memoize Kpi data to prevent re-computation if not needed
   const kpiDisplayData = useMemo(() => {
     if (!data?.metrics) return [];
     return [
-      { title: "Total Classes", value: data.metrics.totalClasses, trend: "+5%", icon: <BookOpen className="h-5 w-5 text-muted-foreground" /> },
-      { title: "Labs Scheduled", value: data.metrics.labsScheduled, trend: "-2%", icon: <FlaskConical className="h-5 w-5 text-muted-foreground" /> },
+      {
+        title: "Total Classes",
+        value: data.metrics.totalClasses,
+        trend: "+5%",
+        icon: <BookOpen className="h-5 w-5 text-muted-foreground" />,
+      },
+      {
+        title: "Labs Scheduled",
+        value: data.metrics.labsScheduled,
+        trend: "-2%",
+        icon: <FlaskConical className="h-5 w-5 text-muted-foreground" />,
+      },
       // Add other KPIs based on data.metrics.
       // For example, if you add facultyOccupancy and roomUtilization to TimetableMetrics:
       // { title: "Faculty Occupancy", value: data.metrics.facultyOccupancy || 0, trend: "+1.2%", icon: <Users className="h-5 w-5 text-muted-foreground" /> },
@@ -43,16 +53,26 @@ const TimetableDashboard = () => {
   }, []);
 
   if (loading) {
-    return <div className="container mx-auto p-4 md:p-6 text-center">Loading dashboard data...</div>;
+    return (
+      <div className="container mx-auto p-4 md:p-6 text-center">
+        Loading dashboard data...
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="container mx-auto p-4 md:p-6 text-center text-red-500">Error loading data: {error.message}</div>;
+    return (
+      <div className="container mx-auto p-4 md:p-6 text-center text-red-500">
+        Error loading data: {error.message}
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold text-foreground">Timetable Dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+        Timetable Dashboard
+      </h1>
 
       {/* KPI Cards Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

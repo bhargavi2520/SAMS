@@ -1,33 +1,33 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuthStore } from '@/store/authStore';
-import { LoginCredentials } from '@/types/auth.types';
-import { LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuthStore } from "@/store/authStore";
+import { LoginCredentials } from "@/types/auth.types";
+import { LogIn, Eye, EyeOff, Loader2 } from "lucide-react";
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, clearError } = useAuthStore();
-  
+
   const [formData, setFormData] = useState<LoginCredentials>({
-    email: '',
-    password: '',
-    rememberMe: false
+    email: "",
+    password: "",
+    rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    
+
     try {
       await login(formData);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
       // Error is handled by the store
     }
@@ -35,9 +35,9 @@ const LoginForm = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -51,16 +51,15 @@ const LoginForm = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          
         </CardHeader>
-        
+
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
@@ -75,20 +74,21 @@ const LoginForm = () => {
                 className="transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleInputChange}
                   required
                   className="pr-10 transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700"
                 />
+
                 <Button
                   type="button"
                   variant="ghost"
@@ -104,7 +104,7 @@ const LoginForm = () => {
                 </Button>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <input
@@ -115,24 +115,25 @@ const LoginForm = () => {
                   onChange={handleInputChange}
                   className="accent-blue-700"
                 />
-                <Label 
-                  htmlFor="rememberMe" 
+
+                <Label
+                  htmlFor="rememberMe"
                   className="text-sm text-gray-600 dark:text-gray-400"
                 >
                   Remember me
                 </Label>
               </div>
-              
+
               <Button
                 variant="link"
                 size="sm"
                 className="px-0 text-blue-600 hover:text-blue-800"
-                onClick={() => navigate('/forgot-password')}
+                onClick={() => navigate("/forgot-password")}
               >
                 Forgot password?
               </Button>
             </div>
-            
+
             <Button
               type="submit"
               className="w-full bg-white border-2 border-blue-700 text-blue-700 shadow-md hover:bg-blue-700 hover:text-white hover:shadow-blue-500/70 hover:shadow-lg transition-all duration-200"
@@ -151,16 +152,16 @@ const LoginForm = () => {
               )}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
             </span>
             <Button
               variant="link"
               size="sm"
               className="px-0 text-blue-600 hover:text-blue-800"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate("/register")}
             >
               Register here
             </Button>

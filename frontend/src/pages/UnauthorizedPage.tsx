@@ -1,9 +1,14 @@
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 const UnauthorizedPage = () => {
   const navigate = useNavigate();
@@ -19,13 +24,13 @@ const UnauthorizedPage = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Access Denied</CardTitle>
           <CardDescription>
-            You don't have permission to access this page. Please contact your administrator 
-            if you believe this is an error.
+            You don't have permission to access this page. Please contact your
+            administrator if you believe this is an error.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            onClick={() => navigate('/dashboard')} 
+          <Button
+            onClick={() => navigate("/dashboard")}
             className="w-full"
             variant="outline"
           >

@@ -1,26 +1,38 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuthStore } from '@/store/authStore';
-import { RegisterData, UserRole } from '@/types/auth.types';
-import type { StudentProfile } from '@/types/auth.types';
-import { UserPlus, Eye, EyeOff, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuthStore } from "@/store/authStore";
+import { RegisterData, UserRole } from "@/types/auth.types";
+import type { StudentProfile } from "@/types/auth.types";
+import { UserPlus, Eye, EyeOff, Loader2 } from "lucide-react";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
   const { register, isLoading, error, clearError } = useAuthStore();
-  
+
   const [formData, setFormData] = useState<RegisterData>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'STUDENT',
-    profileData: {}
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "STUDENT",
+    profileData: {},
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -28,15 +40,15 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    
+
     if (formData.password !== formData.confirmPassword) {
       // Handle password mismatch
       return;
     }
-    
+
     try {
       await register(formData);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
       // Error is handled by the store
     }
@@ -44,38 +56,38 @@ const RegisterForm = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleRoleChange = (role: UserRole) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       role,
-      profileData: {} // Reset profile data when role changes
+      profileData: {}, // Reset profile data when role changes
     }));
   };
 
   const handleProfileDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       profileData: {
         ...prev.profileData,
-        [name]: value
-      }
+        [name]: value,
+      },
     }));
   };
 
   const roleOptions = [
-    { value: 'STUDENT', label: 'Student'},
-    { value: 'FACULTY', label: 'Faculty'},
-    { value: 'ADMIN', label: 'Administrator' },
-    { value: 'HOD', label: 'Head of Department'},
-    { value: 'CLASS_TEACHER', label: 'Class Teacher'},
-    { value: 'GUEST', label: 'Guest'}
+    { value: "STUDENT", label: "Student" },
+    { value: "FACULTY", label: "Faculty" },
+    { value: "ADMIN", label: "Administrator" },
+    { value: "HOD", label: "Head of Department" },
+    { value: "CLASS_TEACHER", label: "Class Teacher" },
+    { value: "GUEST", label: "Guest" },
   ];
 
   return (
@@ -89,14 +101,14 @@ const RegisterForm = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
         </CardHeader>
-        
+
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
@@ -111,7 +123,7 @@ const RegisterForm = () => {
                 className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select value={formData.role} onValueChange={handleRoleChange}>
@@ -129,9 +141,9 @@ const RegisterForm = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Role-specific fields */}
-            {formData.role === 'STUDENT' && (
+            {formData.role === "STUDENT" && (
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -139,7 +151,7 @@ const RegisterForm = () => {
                   name="firstName"
                   type="text"
                   placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
+                  value={formData.profileData.firstName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -150,7 +162,7 @@ const RegisterForm = () => {
                   name="lastName"
                   type="text"
                   placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
+                  value={formData.profileData.lastName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -161,7 +173,7 @@ const RegisterForm = () => {
                   name="phoneNumber"
                   type="tel"
                   placeholder="Phone number"
-                  value={formData.profileData.phoneNumber || ''}
+                  value={formData.profileData.phoneNumber || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -172,7 +184,11 @@ const RegisterForm = () => {
                   name="aparId"
                   type="text"
                   placeholder="APAR id"
-                  value={formData.role === 'STUDENT' ? (formData.profileData as any).aparId || '' : ''}
+                  value={
+                    formData.role === "STUDENT"
+                      ? (formData.profileData as any).aparId || ""
+                      : ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -182,21 +198,24 @@ const RegisterForm = () => {
                   id="admission_academic_year"
                   name="admission_academic_year"
                   type="date"
-                  value={(formData.profileData as any)['admission_academic_year'] || ''}
+                  value={
+                    (formData.profileData as any)["admission_academic_year"] ||
+                    ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
 
                 <Label htmlFor="year">Year</Label>
                 <Select
-                  value={(formData.profileData as any).year || ''}
-                  onValueChange={value =>
-                    setFormData(prev => ({
+                  value={(formData.profileData as any).year || ""}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
                       ...prev,
                       profileData: {
                         ...prev.profileData,
-                        year: value
-                      }
+                        year: value,
+                      },
                     }))
                   }
                 >
@@ -216,17 +235,20 @@ const RegisterForm = () => {
                   id="dateOfBirth"
                   name="dateOfBirth"
                   type="date"
-                  value={(formData.profileData as Partial<StudentProfile>).dateOfBirth || ''}
+                  value={
+                    (formData.profileData as Partial<StudentProfile>)
+                      .dateOfBirth || ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
 
                 <Label htmlFor="semester">Semester</Label>
                 <Select
-                  value={(formData.profileData as any).semester || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).semester || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'semester', value }
+                      target: { name: "semester", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -247,10 +269,10 @@ const RegisterForm = () => {
 
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={(formData.profileData as any).department || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).department || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'department', value }
+                      target: { name: "department", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -269,10 +291,10 @@ const RegisterForm = () => {
 
                 <Label htmlFor="transport">Transport</Label>
                 <Select
-                  value={(formData.profileData as any).transport || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).transport || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'transport', value }
+                      target: { name: "transport", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -291,10 +313,10 @@ const RegisterForm = () => {
                   <>
                     <Label htmlFor="busRoute">Bus Route</Label>
                     <Select
-                      value={(formData.profileData as any).busRoute || ''}
-                      onValueChange={value =>
+                      value={(formData.profileData as any).busRoute || ""}
+                      onValueChange={(value) =>
                         handleProfileDataChange({
-                          target: { name: 'busRoute', value }
+                          target: { name: "busRoute", value },
                         } as React.ChangeEvent<HTMLInputElement>)
                       }
                     >
@@ -308,7 +330,9 @@ const RegisterForm = () => {
                         <SelectItem value="Chodawaram">Chodawaram</SelectItem>
                         <SelectItem value="Narsipatnam">Narsipatnam</SelectItem>
                         <SelectItem value="Tuni">Tuni</SelectItem>
-                        <SelectItem value="Yelamanchili">Yelamanchili</SelectItem>
+                        <SelectItem value="Yelamanchili">
+                          Yelamanchili
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </>
@@ -320,12 +344,10 @@ const RegisterForm = () => {
                   name="address"
                   type="text"
                   placeholder="residential address"
-                  value={(formData.profileData as any).address || ''}
+                  value={(formData.profileData as any).address || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
-
-            
 
                 <Label htmlFor="parentPhoneNumber">Parent Phone Number</Label>
                 <Input
@@ -333,14 +355,14 @@ const RegisterForm = () => {
                   name="parentPhoneNumber"
                   type="tel"
                   placeholder="Parent phone number"
-                  value={(formData.profileData as any).parentPhoneNumber || ''}
+                  value={(formData.profileData as any).parentPhoneNumber || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
               </div>
             )}
 
-            {formData.role === 'FACULTY' && (
+            {formData.role === "FACULTY" && (
               <div className="space-y-2">
                 <Label htmlFor="subjectAssigned">Subject Assigned</Label>
                 <Input
@@ -348,16 +370,22 @@ const RegisterForm = () => {
                   name="subjectAssigned"
                   type="text"
                   placeholder="Enter subject assigned"
-                  value={formData.profileData && 'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
+                  value={
+                    formData.profileData &&
+                    "subjectAssigned" in formData.profileData
+                      ? (formData.profileData as any).subjectAssigned || ""
+                      : ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
+
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={(formData.profileData as any).department || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).department || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'department', value }
+                      target: { name: "department", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -379,14 +407,18 @@ const RegisterForm = () => {
                   name="classes"
                   type="text"
                   placeholder="Enter classes (comma separated)"
-                  value={('classes' in formData.profileData ? (formData.profileData as any).classes : '') || ''}
+                  value={
+                    ("classes" in formData.profileData
+                      ? (formData.profileData as any).classes
+                      : "") || ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
               </div>
             )}
 
-            {formData.role === 'CLASS_TEACHER' && (
+            {formData.role === "CLASS_TEACHER" && (
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -394,7 +426,7 @@ const RegisterForm = () => {
                   name="firstName"
                   type="text"
                   placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
+                  value={formData.profileData.firstName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -405,7 +437,7 @@ const RegisterForm = () => {
                   name="lastName"
                   type="text"
                   placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
+                  value={formData.profileData.lastName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -416,7 +448,7 @@ const RegisterForm = () => {
                   name="phoneNumber"
                   type="tel"
                   placeholder="Phone number"
-                  value={formData.profileData.phoneNumber || ''}
+                  value={formData.profileData.phoneNumber || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -427,17 +459,21 @@ const RegisterForm = () => {
                   name="subjectAssigned"
                   type="text"
                   placeholder="Subject Assignment"
-                  value={'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
+                  value={
+                    "subjectAssigned" in formData.profileData
+                      ? (formData.profileData as any).subjectAssigned || ""
+                      : ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
 
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={(formData.profileData as any)?.department || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any)?.department || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'department', value }
+                      target: { name: "department", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -456,10 +492,10 @@ const RegisterForm = () => {
 
                 <Label htmlFor="semester">Semester</Label>
                 <Select
-                  value={(formData.profileData as any)?.semester || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any)?.semester || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'semester', value }
+                      target: { name: "semester", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -480,7 +516,7 @@ const RegisterForm = () => {
               </div>
             )}
 
-            {formData.role === 'ADMIN' && (
+            {formData.role === "ADMIN" && (
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -488,24 +524,25 @@ const RegisterForm = () => {
                   name="firstName"
                   type="text"
                   placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
+                  value={formData.profileData.firstName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
+
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
                   name="lastName"
                   type="text"
                   placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
+                  value={formData.profileData.lastName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
               </div>
             )}
 
-            {formData.role === 'GUEST' && (
+            {formData.role === "GUEST" && (
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -513,24 +550,25 @@ const RegisterForm = () => {
                   name="firstName"
                   type="text"
                   placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
+                  value={formData.profileData.firstName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
+
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
                   name="lastName"
                   type="text"
                   placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
+                  value={formData.profileData.lastName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
               </div>
             )}
 
-            {formData.role === 'HOD' && (
+            {formData.role === "HOD" && (
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -538,7 +576,7 @@ const RegisterForm = () => {
                   name="firstName"
                   type="text"
                   placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
+                  value={formData.profileData.firstName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -549,7 +587,7 @@ const RegisterForm = () => {
                   name="lastName"
                   type="text"
                   placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
+                  value={formData.profileData.lastName || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -560,101 +598,126 @@ const RegisterForm = () => {
                   name="subjectAssigned"
                   type="text"
                   placeholder="Subject Assignment"
-                  value={'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
+                  value={
+                    "subjectAssigned" in formData.profileData
+                      ? (formData.profileData as any).subjectAssigned || ""
+                      : ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Create a strong password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-400" />
-                ) : (
-                <Eye className="h-4 w-4 text-gray-400" />
-                )}
-              </Button>
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a strong password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                />
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </Button>
               </div>
               {/* Enhanced Password requirements */}
               <div className="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 text-xs">
-              <div className="mb-2 font-semibold text-gray-800 dark:text-gray-200">
-                Your password must have:
-              </div>
-              <ul className="space-y-1 list-disc list-inside">
-                <li className={
-                formData.password
-                  ? formData.password.length >= 8
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                Minimum <span className="font-bold">8 characters</span>
-                </li>
-                <li className={
-                formData.password
-                  ? /[A-Z]/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one uppercase letter</span> (A–Z)
-                </li>
-                <li className={
-                formData.password
-                  ? /[a-z]/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one lowercase letter</span> (a–z)
-                </li>
-                <li className={
-                formData.password
-                  ? /\d/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one number</span> (0–9)
-                </li>
-                <li className={
-                formData.password
-                  ? /[!@#$%^&*(),.?":{}|<>_\-\[\];'/`~+=]/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one special character</span> (e.g. @, #, $, %, !, &amp;, *)
-                </li>
-                <li className={
-                formData.password
-                  ? !/\s/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                <span className="font-bold">No spaces</span>
-                </li>
-              </ul>
+                <div className="mb-2 font-semibold text-gray-800 dark:text-gray-200">
+                  Your password must have:
+                </div>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li
+                    className={
+                      formData.password
+                        ? formData.password.length >= 8
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    Minimum <span className="font-bold">8 characters</span>
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /[A-Z]/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least{" "}
+                    <span className="font-bold">one uppercase letter</span>{" "}
+                    (A–Z)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /[a-z]/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least{" "}
+                    <span className="font-bold">one lowercase letter</span>{" "}
+                    (a–z)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /\d/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least <span className="font-bold">one number</span> (0–9)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /[!@#$%^&*(),.?":{}|<>_\-\[\];'/`~+=]/.test(
+                            formData.password,
+                          )
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least{" "}
+                    <span className="font-bold">one special character</span>{" "}
+                    (e.g. @, #, $, %, !, &amp;, *)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? !/\s/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    <span className="font-bold">No spaces</span>
+                  </li>
+                </ul>
               </div>
             </div>
 
@@ -664,13 +727,14 @@ const RegisterForm = () => {
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
                   className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
                 />
+
                 <Button
                   type="button"
                   variant="ghost"
@@ -687,19 +751,26 @@ const RegisterForm = () => {
               </div>
             </div>
 
-            {formData.password !== formData.confirmPassword && formData.confirmPassword && (
-              <Alert variant="destructive">
-                <AlertDescription>Passwords do not match</AlertDescription>
-              </Alert>
-            )}
+            {formData.password !== formData.confirmPassword &&
+              formData.confirmPassword && (
+                <Alert variant="destructive">
+                  <AlertDescription>Passwords do not match</AlertDescription>
+                </Alert>
+              )}
 
             <Button
               type="submit"
               className="w-full border-2 border-green-600 text-green-600 bg-white hover:bg-green-600 hover:text-white transition duration-700 group"
-              style={{ boxShadow: '0 0 0 transparent' }}
-              disabled={isLoading || formData.password !== formData.confirmPassword}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 10px rgb(19, 197, 84)')}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 0 0 transparent')}
+              style={{ boxShadow: "0 0 0 transparent" }}
+              disabled={
+                isLoading || formData.password !== formData.confirmPassword
+              }
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.boxShadow = "0 0 10px rgb(19, 197, 84)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.boxShadow = "0 0 0 transparent")
+              }
             >
               {isLoading ? (
                 <>
@@ -714,16 +785,16 @@ const RegisterForm = () => {
               )}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              Already have an account?{" "}
             </span>
             <Button
               variant="link"
               size="sm"
               className="px-0 text-green-600 hover:text-green-800"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
             >
               Sign in here
             </Button>

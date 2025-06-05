@@ -1,5 +1,5 @@
-import React from 'react';
-import { TimetableEntry } from '../../types/timetable.types'; // Assuming TimetableEntry might be used for other schedule items
+import React from "react";
+import { TimetableEntry } from "../../types/timetable.types"; // Assuming TimetableEntry might be used for other schedule items
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -23,15 +23,19 @@ interface WeeklyScheduleProps {
 const getWeekDates = (monday: Date): { date: Date; label: string }[] => {
   const days = [];
   // Ensure consistent locale for day and date formatting
-  const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
-  const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'numeric', day: 'numeric' });
+  const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "numeric",
+    day: "numeric",
+  });
 
-  for (let i = 0; i < 5; i++) { // Monday to Friday
+  for (let i = 0; i < 5; i++) {
+    // Monday to Friday
     const currentDate = new Date(monday);
     currentDate.setDate(monday.getDate() + i);
     days.push({
       date: currentDate,
-      label: `${dayFormatter.format(currentDate)} (${dateFormatter.format(currentDate)})`
+      label: `${dayFormatter.format(currentDate)} (${dateFormatter.format(currentDate)})`,
     });
   }
   return days;
@@ -40,7 +44,7 @@ const getWeekDates = (monday: Date): { date: Date; label: string }[] => {
 const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
   dateRange,
   scheduleData, // This prop is accepted but not fully utilized in this specific implementation for the lunch break
-  title = "Weekly Schedule"
+  title = "Weekly Schedule",
 }) => {
   const weekDayHeaders = getWeekDates(dateRange.startOfWeek);
   const lunchTimeSlot = "12:00 PM";
@@ -56,8 +60,13 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px] min-w-[100px]">Time</TableHead>
-                {weekDayHeaders.map(header => (
-                  <TableHead key={header.label} className="text-center min-w-[120px]">{header.label}</TableHead>
+                {weekDayHeaders.map((header) => (
+                  <TableHead
+                    key={header.label}
+                    className="text-center min-w-[120px]"
+                  >
+                    {header.label}
+                  </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
@@ -65,8 +74,11 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
               {/* Lunch Break Row */}
               <TableRow>
                 <TableCell className="font-medium">{lunchTimeSlot}</TableCell>
-                {weekDayHeaders.map(header => (
-                  <TableCell key={`lunch-${header.label}`} className="text-center bg-muted/30">
+                {weekDayHeaders.map((header) => (
+                  <TableCell
+                    key={`lunch-${header.label}`}
+                    className="text-center bg-muted/30"
+                  >
                     LUNCH BREAK
                   </TableCell>
                 ))}
