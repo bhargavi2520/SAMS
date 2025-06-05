@@ -1,6 +1,7 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
+  "homepage": "https://bhargavi2520.github.io/SAMS/",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
