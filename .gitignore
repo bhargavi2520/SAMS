@@ -13,6 +13,10 @@ dist-ssr
     frontend/build/
 *.local
 
+# Build directories
+build/
+assets/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
