@@ -4,12 +4,8 @@ import WeeklySchedule from '../components/dashboard/WeeklySchedule';
 import QuickActions from '../components/dashboard/QuickActions';
 import useTimetable from '../hooks/useTimetable';
 import { BookOpen, FlaskConical, Users, MapPin } from 'lucide-react';
-<<<<<<< HEAD:frontend/src/pages/TimetableDashboard.tsx
 import { TimetableEntry } from '../types/timetable.types'; // Still relevant for data.schedule
-import DashboardNav from '../components/dashboard/DashboardNav';
-=======
-import { TimetableEntry } from '../types/timetable.types';
->>>>>>> ffaeda5037ef87a935df4531d3a7637fb49b3347:frontend/src/modules/timetable2/pages/TimetableDashboard.tsx
+import DashboardNav from '../../../components/dashboard/DashboardNav';
 
 interface KpiDataItem {
   title: string;

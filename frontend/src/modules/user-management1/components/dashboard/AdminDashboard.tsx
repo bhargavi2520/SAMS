@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/common/components/ui/button';
 import { Search, Bell, Moon, Edit } from 'lucide-react';
-import DashboardNav from './DashboardNav';
+import DashboardNav from '../../../../components/dashboard/DashboardNav';
 
 const systemStats = [
   { title: 'Total Users', value: '1,247', change: '+12 from last month', icon: <Users className="h-4 w-4 text-muted-foreground" /> },

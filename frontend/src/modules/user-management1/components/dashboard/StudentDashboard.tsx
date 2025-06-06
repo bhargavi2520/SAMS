@@ -43,7 +43,7 @@ import {
 	BarElement, // Added BarElement for bar chart
     ChartOptions // Import ChartOptions for explicit typing
 } from 'chart.js';
-import DashboardNav from './DashboardNav';
+import DashboardNav from '../../../../components/dashboard/DashboardNav';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend, ArcElement, BarElement);
@@ -134,11 +134,17 @@ const announcements = [
 ];
 
 const attendanceData = [
-	{ label: 'Physics', attended: 12, total: 15 },
-	{ label: 'Chemistry', attended: 15, total: 15 },
-	{ label: 'Math', attended: 12, total: 15 },
-	{ label: 'English', attended: 13, total: 15 },
-	{ label: 'Biology', attended: 14, total: 15 },
+    { label: 'overall attendance', attended: 10, total: 15 },
+    { label: 'subject A', attended: 12, total: 15 },
+    { label: 'subject B', attended: 15, total: 15 },
+    { label: 'subject C', attended: 12, total: 15 },
+    { label: 'subject D', attended: 15, total: 15 },
+    { label: 'subject E', attended: 13, total: 15 },
+    { label: 'subject F', attended: 14, total: 15 },
+    { label: 'subject G', attended: 11, total: 15 },
+    { label: 'subject H', attended: 12, total: 15 },
+    { label: 'subject I', attended: 13, total: 15 },
+    { label: 'subject J', attended: 15, total: 15 },
 ];
 
 const performanceData = {
@@ -341,26 +347,26 @@ const CalendarComponent = () => {
 };
 
 const GPA_Calculator = () => {
-    const [grades, setGrades] = useState(mockGrades);
-    const [gpa, setGpa] = useState<string | null>(null);
+	const [grades, setGrades] = useState(mockGrades);
+	const [gpa, setGpa] = useState<string | null>(null);
 
-    const calculateGpa = useCallback(() => {
-        let totalGradePoints = 0;
-        let totalCredits = 0;
-        grades.forEach(item => {
-            totalGradePoints += item.grade * item.credits;
-            totalCredits += item.credits;
-        });
-        if (totalCredits === 0) {
-            setGpa('N/A');
-        } else {
-            setGpa((totalGradePoints / totalCredits).toFixed(2));
-        }
-    }, [grades]);
+	const calculateGpa = useCallback(() => {
+		let totalGradePoints = 0;
+		let totalCredits = 0;
+		grades.forEach(item => {
+			totalGradePoints += item.grade * item.credits;
+			totalCredits += item.credits;
+		});
+		if (totalCredits === 0) {
+			setGpa('N/A');
+		} else {
+			setGpa((totalGradePoints / totalCredits).toFixed(2));
+		}
+	}, [grades]);
 
-    useEffect(() => {
-        calculateGpa(); // Calculate GPA on initial load
-    }, [grades, calculateGpa]);
+	useEffect(() => {
+		calculateGpa(); // Calculate GPA on initial load
+	}, [grades, calculateGpa]);
 
     const handleGradeChange = (index: number, field: string, value: string) => {
         const newGrades = [...grades];
@@ -376,36 +382,36 @@ const GPA_Calculator = () => {
         <div className="p-4">
             <h4 className="text-lg font-semibold mb-4">GPA Calculator</h4>
             <div className="space-y-3">
-                {grades.map((item, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                        <input
-                            type="text"
-                            placeholder="Subject"
-                            value={item.subject}
-                            onChange={(e) => handleGradeChange(index, 'subject', e.target.value)}
-                            className="w-full sm:flex-1 border border-gray-300 rounded-md px-2 py-1 text-sm"
-                        />
-                        <input
-                            type="number"
-                            step="0.1"
-                            min="0"
-                            max="4"
-                            placeholder="Grade (0-4)"
-                            value={item.grade}
-                            onChange={(e) => handleGradeChange(index, 'grade', e.target.value)}
-                            className="w-full sm:w-24 border border-gray-300 rounded-md px-2 py-1 text-sm"
-                        />
-                        <input
-                            type="number"
-                            step="1"
-                            min="0"
-                            placeholder="Credits"
-                            value={item.credits}
-                            onChange={(e) => handleGradeChange(index, 'credits', e.target.value)}
-                            className="w-full sm:w-20 border border-gray-300 rounded-md px-2 py-1 text-sm"
-                        />
-                    </div>
-                ))}
+				{grades.map((item, index) => (
+					<div key={index} className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+						<input
+							type="text"
+							placeholder="Subject"
+							value={item.subject}
+							onChange={(e) => handleGradeChange(index, 'subject', e.target.value)}
+							className="w-full sm:flex-1 border border-gray-300 rounded-md px-2 py-1 text-sm"
+						/>
+						<input
+							type="number"
+							step="0.1"
+							min="0"
+							max="4"
+							placeholder="Grade (0-4)"
+							value={item.grade}
+							onChange={(e) => handleGradeChange(index, 'grade', e.target.value)}
+							className="w-full sm:w-24 border border-gray-300 rounded-md px-2 py-1 text-sm"
+						/>
+						<input
+							type="number"
+							step="1"
+							min="0"
+							placeholder="Credits"
+							value={item.credits}
+							onChange={(e) => handleGradeChange(index, 'credits', e.target.value)}
+							className="w-full sm:w-20 border border-gray-300 rounded-md px-2 py-1 text-sm"
+						/>
+					</div>
+				))}
             </div>
             <Button onClick={addSubject} variant="outline" className="mt-4 text-sm w-full sm:w-auto">Add Subject</Button>
             <div className="mt-4 text-lg font-bold text-gray-800">
@@ -476,6 +482,43 @@ const AttendanceGraph = () => {
     );
 };
 
+// CircularProgress for attendance percentage (no percentage text inside)
+const CircularProgress = ({ percent }: { percent: number }) => {
+    let color = "#22c55e"; // green
+    if (percent < 75) color = "#ef4444"; // red
+    else if (percent < 90) color = "#3b82f6"; // blue
+
+    const radius = 16;
+    const stroke = 4;
+    const normalizedRadius = radius - stroke / 2;
+    const circumference = 2 * Math.PI * normalizedRadius;
+    const offset = circumference * (1 - percent / 100);
+
+    return (
+        <svg width={radius * 2} height={radius * 2}>
+            <circle
+                cx={radius}
+                cy={radius}
+                r={normalizedRadius}
+                stroke="#e5e7eb"
+                strokeWidth={stroke}
+                fill="none"
+            />
+            <circle
+                cx={radius}
+                cy={radius}
+                r={normalizedRadius}
+                stroke={color}
+                strokeWidth={stroke}
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 0.3s" }}
+            />
+        </svg>
+    );
+};
 
 const StudentDashboard = () => {
 	// const { user } = useAuthStore(); // Removed problematic import
@@ -600,13 +643,6 @@ const StudentDashboard = () => {
 								<Card className="bg-gray-50 rounded-lg shadow-sm border border-gray-200">
 									<CardContent>
 										<GPA_Calculator />
-									</CardContent>
-								</Card>
-
-								{/* Current Semester and Attendance Graph */}
-								<Card className="bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-									<CardContent>
-										<AttendanceGraph />
 									</CardContent>
 								</Card>
 
@@ -810,52 +846,71 @@ const StudentDashboard = () => {
 
 					{/* Attendance Section */}
 					<div ref={attendanceRef} className="pt-4 md:pt-8">
-						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-							<CardHeader>
-								<CardTitle className="text-base md:text-lg">Attendance</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p className="text-gray-600 text-sm">Your attendance records.</p>
-								<div className="overflow-x-auto mt-4">
-									<table className="min-w-full text-xs md:text-sm">
-										<thead>
-											<tr className="text-left border-b border-gray-200">
-												<th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">Category</th>
-												<th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">Attended</th>
-												<th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">Total</th>
-												<th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">Percentage</th>
-											</tr>
-										</thead>
-										<tbody>
-											{/* Using the original attendanceData for this table, not the one for the graph */}
-											{[
-												{ label: 'overall attendance', total: 150, attended: 120 },
-												{ label: 'subject A', total: 15, attended: 12 },
-												{ label: 'subject B', total: 15, attended: 15 },
-												{ label: 'subject C', total: 15, attended: 12 },
-												{ label: 'subject D', total: 15, attended: 15 },
-												{ label: 'subject E', total: 15, attended: 13 },
-												{ label: 'subject F', total: 15, attended: 14 },
-												{ label: 'subject G', total: 15, attended: 11 },
-												{ label: 'subject H', total: 15, attended: 12 },
-												{ label: 'subject I', total: 15, attended: 13 },
-												{ label: 'subject J', total: 15, attended: 15 },
-											].map((item, index) => (
-												<tr key={index} className="border-b border-gray-100 last:border-b-0">
-													<td className="py-2 md:py-3 text-gray-600 capitalize">{item.label}</td>
-													<td className="py-2 md:py-3 text-gray-600">{item.attended}</td>
-													<td className="py-2 md:py-3 text-gray-600">{item.total}</td>
-													<td className="py-2 md:py-3 text-gray-600">
-														{((item.attended / item.total) * 100).toFixed(0)}%
-													</td>
-												</tr>
-											))}
-										</tbody>
-									</table>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
+    <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <CardHeader>
+            <CardTitle className="text-base md:text-lg">Attendance</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p className="text-gray-600 text-sm mb-4">Your attendance records.</p>
+            {/* Desktop/tablet table */}
+            <div className="overflow-x-auto mt-4 hidden sm:block">
+                <table className="min-w-full text-xs md:text-sm">
+                    <thead>
+                        <tr className="border-b border-gray-100">
+                            <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-left">Category</th>
+                            <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">Number of Classes<br className="hidden md:block" />Till Date</th>
+                            <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">Attended<br className="hidden md:block" />Classes</th>
+                            <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">Present<br className="hidden md:block" />Percentage</th>
+                            <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {attendanceData.map((item, index) => {
+                            const percent = item.total > 0 ? Math.round((item.attended / item.total) * 100) : 0;
+                            return (
+                                <tr
+                                    key={index}
+                                    className={`transition-colors ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                                >
+                                    <td className="py-3 px-2 text-gray-700 capitalize font-medium">{item.label}</td>
+                                    <td className="py-3 px-2 text-center text-gray-700">{item.total}</td>
+                                    <td className="py-3 px-2 text-center text-gray-700">{item.attended}</td>
+                                    <td className="py-3 px-2 text-center text-gray-900 font-semibold">{percent}%</td>
+                                    <td className="py-3 px-2 w-20 text-center">
+                                        <CircularProgress percent={percent} />
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+            {/* Mobile cards */}
+            <div className="sm:hidden flex flex-col gap-3 mt-2">
+                {attendanceData.map((item, index) => {
+                    const percent = item.total > 0 ? Math.round((item.attended / item.total) * 100) : 0;
+                    return (
+                        <div
+                            key={index}
+                            className="flex items-center justify-between bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100"
+                        >
+                            <div className="flex items-center gap-3">
+                                <CircularProgress percent={percent} />
+                                <span className="ml-2 mr-2 text-base font-semibold text-gray-900">{percent}%</span>
+                                <div>
+                                    <div className="font-semibold text-gray-800 capitalize text-sm">{item.label}</div>
+                                    <div className="text-xs text-gray-500">
+                                        <span className="font-medium">{item.attended}</span> / {item.total} classes
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </CardContent>
+    </Card>
+</div>
 
 					{/* Calendar Section */}
 					<div ref={calendarRef} className="pt-4 md:pt-8">
