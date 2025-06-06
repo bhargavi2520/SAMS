@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns'; // Add this import at the top if you have date-fns installed
 import { ChartOptions } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import DashboardNav from './DashboardNav';
 
 // Mock Attendance Data
 const attendanceData = [
@@ -72,7 +73,7 @@ const LineChart = () => (
 
 // Helper to generate roll numbers in format "23815A0405"
 const getRollNo = (id: number) => {
-  // Example: 23815A0401, 23815A0402, ...
+  // Example: 23815A04${id.toString().padStart(2, '0')}
   return `23815A04${id.toString().padStart(2, '0')}`;
 };
 
@@ -211,21 +212,6 @@ const FacultyDashboard = () => {
   React.useEffect(() => {
     setAttendance(classStudents[selectedClass].map((s) => ({ ...s, present: false })));
   }, [selectedClass]);
-
-  // Sidebar items (similar to StudentDashboard)
-  const sidebarItems = [
-    { label: 'My Profile', section: 'my-profile', icon: <Users className="w-5 h-5" /> },
-    { label: 'Dashboard', section: 'dashboard', icon: <Home className="w-5 h-5" /> },
-    { label: 'Timetable', section: 'timetable', icon: <Calendar className="w-5 h-5" /> },
-    { label: 'Attendance', section: 'attendance', icon: <CheckSquare className="w-5 h-5" /> },
-    { label: 'Exams', section: 'exams', icon: <FileText className="w-5 h-5" /> },
-    { label: 'Results', section: 'results', icon: <BarChart2 className="w-5 h-5" /> },
-    { label: 'Announcements', section: 'announcements', icon: <Megaphone className="w-5 h-5" /> },
-  ];
-  const bottomSidebarItems = [
-    { label: 'Settings', section: 'settings', icon: <Settings className="w-5 h-5" /> },
-    { label: 'Help', section: 'help', icon: <HelpCircle className="w-5 h-5" /> },
-  ];
 
   const sectionRefs = {
     'my-profile': myProfileRef,
@@ -380,104 +366,10 @@ const FacultyDashboard = () => {
   return (
 	/* Main Dashboard Layout */
 	<div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
-		{/* Sidebar */}
-		<aside className={`fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-      {/* Logo */}
-      <div className="p-4 md:p-6 border-b border-gray-200 flex items-center justify-between md:justify-start w-full">
-        <div className="flex items-center space-x-2">
-          <BookOpen className="w-6 h-6 text-blue-600" />
-          <div>
-            <span className="font-bold text-lg text-gray-900">Faculty Portal</span>
-          </div>
-        </div>
-        {/* Close button for mobile sidebar */}
-        <button className="md:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg" onClick={toggleSidebar}>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <div className="space-y-1">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => handleNavClick(item.section)}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeSection === item.section
-                  ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-      {/* Bottom Navigation */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="space-y-1">
-          {bottomSidebarItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => handleNavClick(item.section)}
-              className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </aside>
-    {/* Overlay for mobile sidebar */}
-    {isSidebarOpen && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={toggleSidebar}></div>
-    )}
-
+		<DashboardNav activeSection={activeSection} onNavClick={handleNavClick} dashboardType="faculty" />
     {/* Main Content */}
-    <main className="flex-1 overflow-auto">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between">
-        {/* Mobile menu button */}
-        <button className="md:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg mr-2" onClick={toggleSidebar}>
-          <Menu className="w-6 h-6" />
-        </button>
-        <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto">
-          <div className="relative w-full md:w-auto">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search"
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
-            <Bell className="w-5 h-5" />
-          </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
-            <Moon className="w-5 h-5" />
-          </button>
-          <div className="flex items-center space-x-2 md:space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4 text-white" />
-            </div>
-            <div className="text-sm hidden md:block">
-              <div className="font-medium text-gray-900">
-                {facultyProfile.firstName} {facultyProfile.lastName}
-              </div>
-              <div className="text-gray-500">{facultyProfile.email}</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Dashboard Content */}
-      <div className="p-4 md:p-6">
+    <main className="flex-1 overflow-auto md:ml-20 pb-16 md:pb-0">
+      <div className="p-2 sm:p-4 md:p-6 space-y-4 md:space-y-6">
         {/* My Profile Section */}
         <div ref={myProfileRef} className="space-y-4 md:space-y-6">
           <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
@@ -575,7 +467,6 @@ const FacultyDashboard = () => {
               <CardDescription className="text-xs md:text-sm">Weekly class schedule</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* ...reuse your timetable table or similar structure as in StudentDashboard... */}
               <div className="overflow-x-auto">
                 <table className="min-w-full text-xs md:text-sm">
                   <thead>

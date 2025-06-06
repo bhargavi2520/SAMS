@@ -5,6 +5,7 @@ import QuickActions from '../components/dashboard/QuickActions';
 import useTimetable from '../hooks/useTimetable';
 import { BookOpen, FlaskConical, Users, MapPin } from 'lucide-react';
 import { TimetableEntry } from '../types/timetable.types'; // Still relevant for data.schedule
+import DashboardNav from '../components/dashboard/DashboardNav';
 
 interface KpiDataItem {
   title: string;
@@ -51,29 +52,36 @@ const TimetableDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold text-foreground">Timetable Dashboard</h1>
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+      <DashboardNav activeSection={"Timetable"} onNavClick={() => {}} dashboardType="timetable" />
+      <main className="flex-1 overflow-auto md:ml-20 pb-16 md:pb-0">
+        <div className="p-2 sm:p-4 md:p-6 space-y-4 md:space-y-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Timetable Dashboard</h1>
 
-      {/* KPI Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {kpiDisplayData.map((kpi) => (
-          <KpiCard
-            key={kpi.title}
-            title={kpi.title}
-            value={kpi.value ?? 0} // Provide a fallback for value if it can be undefined
-            trend={kpi.trend}
-            icon={kpi.icon}
-          />
-        ))}
-      </div>
+          {/* KPI Cards Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {kpiDisplayData.map((kpi) => (
+              <KpiCard
+                key={kpi.title}
+                title={kpi.title}
+                value={kpi.value ?? 0} // Provide a fallback for value if it can be undefined
+                trend={kpi.trend}
+                icon={kpi.icon}
+              />
+            ))}
+          </div>
 
-      <QuickActions />
+          <QuickActions />
 
-      <WeeklySchedule
-        scheduleData={data?.schedule || []}
-        title="Weekly Schedule"
-        dateRange={{ startOfWeek: startOfWeekForSchedule }}
-      />
+          <div className="overflow-x-auto w-full">
+            <WeeklySchedule
+              scheduleData={data?.schedule || []}
+              title="Weekly Schedule"
+              dateRange={{ startOfWeek: startOfWeekForSchedule }}
+            />
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
