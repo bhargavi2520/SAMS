@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider, } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/modules/user-management1/store/authStore";
 import ProtectedRoute from "@/modules/user-management1/components/ProtectedRoute";
-import DashboardLayout from "@/common/dashboard/DashboardLayout";
+import DashboardLayout from "@/common/components/dashboard/DashboardLayout";
 import AuthPage from "@/modules/user-management1/pages/AuthPage";
 import DashboardPage from "@/modules/user-management1/pages/DashboardPage";
 import UnauthorizedPage from "@/common/pages/UnauthorizedPage";
