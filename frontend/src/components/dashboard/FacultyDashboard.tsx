@@ -117,60 +117,59 @@ const classStudents: Record<string, { id: number; name: string }[]> = {
   })),
 };
 
-// Example: Faculty's teaching timetable (replace with real data as needed)
+// Example: Faculty's teaching timetable (now with department names instead of 1A, 2A, etc.)
 const facultyTimetable = [
   // Each array represents a day (Monday to Saturday)
   [
-    { time: '8:00 AM', subject: 'Physics - 4A' },
-    { time: '9:00 AM', subject: 'Physics - 3B' },
-    { time: '10:00 AM', subject: 'Physics - 2B' },
-    { time: '11:00 AM', subject: 'Free' },
-    { time: '1:00 PM', subject: 'Chemistry - 6A' },
-    { time: '2:00 PM', subject: 'Free' },
+    { time: '8:00 AM', class: 'CSE', subject: 'Physics' },
+    { time: '9:00 AM', class: 'ECE', subject: 'Physics' },
+    { time: '10:00 AM', class: 'EEE', subject: 'Physics' },
+    { time: '11:00 AM', rest: true },
+    { time: '1:00 PM', class: 'MECH', subject: 'Chemistry' },
+    { time: '2:00 PM', class: 'CSE', subject: 'Chemistry' },
   ],
   [
-    { time: '8:00 AM', subject: 'Physics - 4A' },
-    { time: '9:00 AM', subject: 'Physics - 2B' },
-    { time: '10:00 AM', subject: 'Physics - 3A' },
-    { time: '11:00 AM', subject: 'Free' },
-    { time: '1:00 PM', subject: 'Free' },
-    { time: '2:00 PM', subject: 'Physics - 2D' },
+    { time: '8:00 AM', class: 'CSE', subject: 'Chemistry' },
+    { time: '9:00 AM', class: 'EEE', subject: 'Physics' },
+    { time: '10:00 AM', class: 'ECE', subject: 'Physics' },
+    { time: '11:00 AM', class: 'MECH', subject: 'Physics' },
+    { time: '1:00 PM', class: 'CSE', subject: '' },
+    { time: '2:00 PM', rest: true },
   ],
   [
-    { time: '8:00 AM', subject: 'Free' },
-    { time: '9:00 AM', subject: 'Physics - 6A' },
-    { time: '10:00 AM', subject: 'Physics - 2B' },
-    { time: '11:00 AM', subject: 'Physics - 5B' },
-    { time: '1:00 PM', subject: 'Free' },
-    { time: '2:00 PM', subject: 'Physics - 2C' },
+    { time: '8:00 AM', class: 'MECH', subject: 'Chemistry' },
+    { time: '9:00 AM', class: 'CSE', subject: 'Physics' },
+    { time: '10:00 AM', class: 'EEE', subject: 'Physics' },
+    { time: '11:00 AM', class: 'ECE', subject: 'Physics' },
+    { time: '1:00 PM', class: 'CSE', subject: 'Chemistry' },
+    { time: '2:00 PM', class: 'EEE', subject: 'Physics' },
   ],
   [
-    { time: '8:00 AM', subject: 'Free' },
-    { time: '9:00 AM', subject: 'Physics - 3B' },
-    { time: '10:00 AM', subject: 'Free' },
-    { time: '11:00 AM', subject: 'Physics - 5C' },
-    { time: '1:00 PM', subject: 'Chemistry - 6A' },
-    { time: '2:00 PM', subject: 'Free' },
+    { time: '8:00 AM', class: 'CSE', subject: 'Chemistry' },
+    { time: '9:00 AM', class: 'ECE', subject: 'Physics' },
+    { time: '10:00 AM', class: 'MECH', subject: 'Chemistry' },
+    { time: '11:00 AM', class: 'EEE', subject: 'Physics' },
+    { time: '1:00 PM', class: 'CSE', subject: 'Chemistry' },
+    { time: '2:00 PM', rest: true },
   ],
   [
-    { time: '8:00 AM', subject: 'Physics - 4A' },
-    { time: '9:00 AM', subject: 'Physics - 3B' },
-    { time: '10:00 AM', subject: 'Physics - 2B' },
-    { time: '11:00 AM', subject: 'Free' },
-    { time: '1:00 PM', subject: 'Chemistry - 3C' },
-    { time: '2:00 PM', subject: 'Physics - 2A' },
+    { time: '8:00 AM', class: 'CSE', subject: 'Physics' },
+    { time: '9:00 AM', class: 'ECE', subject: 'Physics' },
+    { time: '10:00 AM', class: 'EEE', subject: 'Physics' },
+    { time: '11:00 AM', class: 'CSE', subject: 'Chemistry' },
+    { time: '1:00 PM', class: 'MECH', subject: 'Chemistry' },
+    { time: '2:00 PM', class: 'EEE', subject: 'Physics' },
   ],
   [
-    { time: '8:00 AM', subject: 'Free' },
-    { time: '9:00 AM', subject: 'Free' },
-    { time: '10:00 AM', subject: 'Free' },
-    { time: '11:00 AM', subject: 'Free' },
-    { time: '1:00 PM', subject: 'Free' },
-    { time: '2:00 PM', subject: 'Free' },
+    { time: '8:00 AM', rest: true },
+    { time: '9:00 AM', rest: true },
+    { time: '10:00 AM', rest: true },
+    { time: '11:00 AM', rest: true },
+    { time: '1:00 PM', rest: true },
+    { time: '2:00 PM', rest: true },
   ],
 ];
 
-// Time slots for the timetable
 const timeSlots = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM'];
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -226,6 +225,11 @@ const FacultyDashboard = () => {
   const handleNavClick = (section: string) => {
     setActiveSection(section);
     const ref = sectionRefs[section];
+    if (section === 'dashboard') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setIsSidebarOpen(false);
+      return;
+    }
     if (ref && ref.current) {
       ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setIsSidebarOpen(false);
@@ -238,15 +242,17 @@ const FacultyDashboard = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       const sections = [
-        { section: 'home', ref: homeRef },
+        { section: 'my-profile', ref: myProfileRef },
+        { section: 'dashboard', ref: dashboardRef },
+        { section: 'timetable', ref: timetableRef },
+        { section: 'attendance', ref: attendanceRef },
         { section: 'exams', ref: examsRef },
         { section: 'results', ref: resultsRef },
-        { section: 'attendance', ref: attendanceRef },
         { section: 'announcements', ref: announcementsRef },
       ];
       const scrollPosition = window.scrollY + 120; // Offset for nav
 
-      let current = 'home';
+      let current = 'my-profile';
       for (const s of sections) {
         if (s.ref.current) {
           const offsetTop = s.ref.current.offsetTop;
@@ -472,16 +478,31 @@ const FacultyDashboard = () => {
                   <thead>
                     <tr>
                       <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">Time</th>
-                      <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">Monday</th>
-                      <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">Tuesday</th>
-                      <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">Wednesday</th>
-                      <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">Thursday</th>
-                      <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">Friday</th>
-                      <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">Saturday</th>
+                      {days.map(day => (
+                        <th key={day} className="p-2 md:p-3 font-semibold text-center bg-gray-50">{day}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {/* ...map your schedule data here... */}
+                    {timeSlots.map((slot, rowIdx) => (
+                      <tr key={slot}>
+                        <td className="p-2 md:p-3 font-semibold text-center bg-gray-50">{slot}</td>
+                        {facultyTimetable.map((dayArr, colIdx) => {
+                          const cell = dayArr[rowIdx];
+                          if (!cell) return <td key={colIdx} className="p-2 md:p-3 text-center"></td>;
+                          if (cell.rest) {
+                            return <td key={colIdx} className="p-2 md:p-3 text-center"><span className="inline-block bg-gray-100 text-gray-400 rounded-lg px-2 py-1 text-xs font-medium">Rest</span></td>;
+                          }
+                          return (
+                            <td key={colIdx} className="p-2 md:p-3 text-center">
+                              <span className="inline-block bg-blue-50 text-blue-700 rounded-lg px-2 py-1 text-xs font-medium">
+                                {cell.class} - {cell.subject}
+                              </span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

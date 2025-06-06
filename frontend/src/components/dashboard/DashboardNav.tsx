@@ -36,10 +36,16 @@ const navConfig = {
   ],
 };
 
-const DashboardNav = ({ activeSection, onNavClick, dashboardType }) => {
+interface DashboardNavProps {
+  activeSection: string;
+  onNavClick: (section: string) => void;
+  dashboardType: string;
+}
+
+const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, dashboardType }) => {
   const navItems = navConfig[dashboardType] || navConfig.student;
   // Scroll to top if Home is clicked
-  const handleNav = (section) => {
+  const handleNav = (section: string) => {
     if (section === 'dashboard' || section === 'Dashboard' || section === 'Timetable') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
