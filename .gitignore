@@ -27,3 +27,9 @@ assets/
 *.njsproj
 *.sln
 *.sw?
+
+
+
+backend/node_modules
+backend/.env
+backend/build
