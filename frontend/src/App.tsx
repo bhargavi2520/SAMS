@@ -1,19 +1,19 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/common/components/ui/toaster";
+import { Toaster as Sonner } from "@/common/components/ui/sonner";
+import { TooltipProvider } from "@/common/components/ui/tooltip";
 import { QueryClient, QueryClientProvider, } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { useAuthStore } from "@/store/authStore";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import AuthPage from "@/pages/AuthPage";
-import DashboardPage from "@/pages/DashboardPage";
-import UnauthorizedPage from "@/pages/UnauthorizedPage";
-import NotFound from "./pages/NotFound";
+import { useAuthStore } from "@/modules/user-management1/store/authStore";
+import ProtectedRoute from "@/modules/user-management1/components/ProtectedRoute";
+import DashboardLayout from "@/common/components/dashboard/DashboardLayout";
+import AuthPage from "@/modules/user-management1/pages/AuthPage";
+import DashboardPage from "@/modules/user-management1/pages/DashboardPage";
+import UnauthorizedPage from "@/common/pages/UnauthorizedPage";
+import NotFound from "./common/pages/NotFound";
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet } from "react-router-dom"; // Import Outlet
-import TimetableDashboard from "@/pages/TimetableDashboard"; // Your TimetableDashboard page
-import AdminDashboard from "@/components/dashboard/AdminDashboard"; // Import the actual AdminDashboard
+import TimetableDashboard from "@/modules/timetable2/pages/TimetableDashboard"; // Your TimetableDashboard page
+import AdminDashboard from "@/modules/user-management1/components/dashboard/AdminDashboard"; // Import the actual AdminDashboard
 
 const queryClient = new QueryClient();
 
