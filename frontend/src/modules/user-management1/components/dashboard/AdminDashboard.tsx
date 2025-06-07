@@ -142,7 +142,7 @@ const AdminDashboard = () => {
                   <div className="font-medium text-gray-900">
                     {profile.firstName} {profile.lastName}
                   </div>
-                  <div className="text-gray-500">{profile.officialEmail}</div>
+                  <div className="text-gray-500">{profile.email}</div>
                 </div>
               </div>
             </div>
