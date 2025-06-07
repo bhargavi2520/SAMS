@@ -499,6 +499,70 @@ const StudentDashboard = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
+	// Add scroll listener to update activeSection
+	useEffect(() => {
+		const handleScroll = () => {
+			const sections = [
+				{ section: 'my-profile', ref: myProfileRef },
+				{ section: 'dashboard', ref: dashboardRef },
+				{ section: 'timetable', ref: timetableRef },
+				{ section: 'subjects-faculty', ref: subjectsFacultyRef },
+				{ section: 'exams', ref: examsRef },
+				{ section: 'performance', ref: performanceRef },
+				{ section: 'attendance', ref: attendanceRef },
+				{ section: 'notifications', ref: notificationsRef },
+				{ section: 'feedback', ref: feedbackRef },
+			];
+			const scrollPosition = window.scrollY + 120; // Offset for nav
+
+			let current = 'my-profile';
+			for (const s of sections) {
+				if (s.ref.current) {
+					const offsetTop = s.ref.current.offsetTop;
+					if (scrollPosition >= offsetTop) {
+						current = s.section;
+					}
+				}
+			}
+			setActiveSection(current);
+		};
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		return () => window.removeEventListener('scroll', handleScroll);
+	}, []);
+
+	// Feedback form state (moved above conditional)
+	const [feedbackRecipient, setFeedbackRecipient] = useState<string>('College');
+	const [feedbackText, setFeedbackText] = useState<string>('');
+	const [feedbackSubmitting, setFeedbackSubmitting] = useState<boolean>(false);
+	const [feedbackSuccess, setFeedbackSuccess] = useState<boolean>(false);
+	const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+	// Build recipient options: College + all teachers from subjectsFaculty
+	const feedbackRecipients = [
+		{ label: 'College', value: 'College' },
+		...subjectsFaculty.map((s) => ({ label: s.teacher, value: s.teacher }))
+	];
+
+	const handleFeedbackSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		setFeedbackSubmitting(true);
+		setFeedbackSuccess(false);
+		setFeedbackError(null);
+		// Simulate async submit
+		setTimeout(() => {
+			if (feedbackText.trim().length === 0) {
+				setFeedbackError('Feedback cannot be empty.');
+				setFeedbackSubmitting(false);
+				return;
+			}
+			// Here you would send feedbackRecipient and feedbackText to backend
+			setFeedbackSuccess(true);
+			setFeedbackText('');
+			setFeedbackRecipient('College');
+			setFeedbackSubmitting(false);
+		}, 1000);
+	};
+
 	// The `if (!studentProfile)` check is no longer strictly necessary since studentProfile is now mocked
 	// but keeping it as a safeguard or if the mock logic changes in the future.
 	if (!studentProfile) {
@@ -864,6 +928,48 @@ const StudentDashboard = () => {
 							</CardContent>
 						</Card>
 					</div>
+
+					{/* Feedback Section */}
+					<div ref={feedbackRef} className="pt-4 md:pt-8 pb-8">
+                        <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <CardHeader>
+                                <CardTitle className="text-base md:text-lg">Feedback</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-gray-600 text-sm mb-4">We value your feedback! Please let us know your thoughts or suggestions below.</p>
+                                <form onSubmit={handleFeedbackSubmit}>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Recipient</label>
+                                    <select
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={feedbackRecipient}
+                                        onChange={e => setFeedbackRecipient(e.target.value)}
+                                        disabled={feedbackSubmitting}
+                                    >
+                                        {feedbackRecipients.map((r) => (
+                                            <option key={r.value} value={r.value}>{r.label}</option>
+                                        ))}
+                                    </select>
+                                    <textarea
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        rows={4}
+                                        placeholder="Type your feedback here..."
+                                        value={feedbackText}
+                                        onChange={e => setFeedbackText(e.target.value)}
+                                        disabled={feedbackSubmitting}
+                                    />
+                                    {feedbackError && <div className="text-red-600 text-xs mb-2">{feedbackError}</div>}
+                                    {feedbackSuccess && <div className="text-green-600 text-xs mb-2">Thank you for your feedback!</div>}
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-60"
+                                        disabled={feedbackSubmitting}
+                                    >
+                                        {feedbackSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                                    </button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
 				</div>
 			</main>
 		</div>
