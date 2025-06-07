@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/common/components/ui/card';
 import { Badge } from '@/common/components/ui/badge';
 import { useAuthStore } from '@/modules/user-management1/store/authStore';
@@ -55,6 +55,32 @@ const AdminDashboard = () => {
     'System Reports': systemReportsRef,
     'Security Settings': securitySettingsRef,
   };
+
+  // Add scroll listener to update activeSection
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = [
+        { section: 'Dashboard', ref: dashboardRef },
+        { section: 'Manage Users', ref: manageUsersRef },
+        { section: 'Timetable', ref: timetableRef },
+        { section: 'System Reports', ref: systemReportsRef },
+        { section: 'Security Settings', ref: securitySettingsRef },
+      ];
+      const scrollPosition = window.scrollY + 120; // Offset for nav
+      let current = 'Dashboard';
+      for (const s of sections) {
+        if (s.ref.current) {
+          const offsetTop = s.ref.current.offsetTop;
+          if (scrollPosition >= offsetTop) {
+            current = s.section;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleNavClick = (label: string) => {
     setActiveSection(label);

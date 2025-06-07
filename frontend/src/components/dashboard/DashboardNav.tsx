@@ -12,7 +12,6 @@ const navConfig = {
     { label: 'Exams', icon: <FileText className="w-6 h-6" />, section: 'exams' },
     { label: 'Performance', icon: <BarChart2 className="w-6 h-6" />, section: 'performance' },
     { label: 'Attendance', icon: <CheckSquare className="w-6 h-6" />, section: 'attendance' },
-    { label: 'Calendar', icon: <Calendar className="w-6 h-6" />, section: 'calendar' },
     { label: 'Notifications', icon: <Bell className="w-6 h-6" />, section: 'notifications' },
     { label: 'Feedback', icon: <MessageCircle className="w-6 h-6" />, section: 'feedback' },
   ],
@@ -36,10 +35,16 @@ const navConfig = {
   ],
 };
 
-const DashboardNav = ({ activeSection, onNavClick, dashboardType }) => {
+interface DashboardNavProps {
+  activeSection: string;
+  onNavClick: (section: string) => void;
+  dashboardType: string;
+}
+
+const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, dashboardType }) => {
   const navItems = navConfig[dashboardType] || navConfig.student;
   // Scroll to top if Home is clicked
-  const handleNav = (section) => {
+  const handleNav = (section: string) => {
     if (section === 'dashboard' || section === 'Dashboard' || section === 'Timetable') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -48,18 +53,29 @@ const DashboardNav = ({ activeSection, onNavClick, dashboardType }) => {
   return (
     <>
       {/* Desktop Sidebar Navigation */}
-      <nav className="hidden md:flex flex-col items-center w-20 py-6 bg-white border-r border-gray-200 h-full fixed left-0 top-0 z-40">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() => handleNav(item.section)}
-            className={`group flex flex-col items-center mb-6 focus:outline-none ${activeSection === item.section ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
-          >
-            {item.icon}
-            <span className="absolute left-20 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+      <nav className="hidden md:flex flex-col items-start w-40 py-6 bg-transparent h-full fixed left-0 top-0 z-40 justify-center group">
+        {navItems.map((item, idx) => (
+          <div key={item.label} className="relative w-full flex flex-col items-start mb-6">
+            <button
+              onClick={() => handleNav(item.section)}
+              className={`flex flex-col items-start focus:outline-none w-full ${activeSection === item.section ? 'text-blue-700' : 'text-blue-400 hover:text-blue-700'} bg-transparent transition-colors`}
+              aria-label={item.label}
+              style={{ marginLeft: '12px' }}
+            >
+              {item.icon}
+            </button>
+            <span
+              onClick={() => handleNav(item.section)}
+              className={`absolute left-20 top-1/2 -translate-y-1/2 text-xs rounded px-3 py-1 shadow-lg pointer-events-auto cursor-pointer whitespace-nowrap z-50 min-w-max font-semibold tracking-wide transition-colors
+                ${activeSection === item.section
+                  ? 'bg-blue-600 text-white opacity-100 visible'
+                  : 'bg-transparent text-blue-700 opacity-0 invisible group-hover:bg-blue-100 group-hover:text-blue-700 group-hover:opacity-100 group-hover:visible'}`}
+              tabIndex={0}
+              role="button"
+            >
               {item.label}
             </span>
-          </button>
+          </div>
         ))}
       </nav>
 

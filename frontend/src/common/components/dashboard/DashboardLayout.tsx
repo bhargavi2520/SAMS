@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Button } from '@/common/components/ui/button';
@@ -14,6 +13,13 @@ import {
   DropdownMenuTrigger 
 } from '@/common/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/common/components/ui/avatar';
+
+// Define a minimal Profile type for type safety
+interface UserProfileMinimal {
+  firstName?: string;
+  lastName?: string;
+  profilePictureUrl?: string;
+}
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
@@ -39,7 +45,7 @@ const DashboardLayout = () => {
   const getDisplayName = () => {
     if (!user?.profile) return user?.email.split('@')[0] || 'User';
     
-    const profile = user.profile as any;
+    const profile = user.profile as UserProfileMinimal;
     if (profile.firstName) {
       return `${profile.firstName} ${profile.lastName || ''}`.trim();
     }
@@ -53,14 +59,14 @@ const DashboardLayout = () => {
 
   const getProfilePictureUrl = () => {
     if (!user?.profile) return undefined;
-    const profile = user.profile as any;
+    const profile = user.profile as UserProfileMinimal;
     return profile.profilePictureUrl;
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b fixed top-0 left-0 w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo and Title */}
@@ -131,7 +137,7 @@ const DashboardLayout = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-20">
         <Outlet />
       </main>
     </div>
