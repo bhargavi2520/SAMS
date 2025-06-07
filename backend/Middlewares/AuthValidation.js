@@ -1,7 +1,7 @@
 const joi = require('joi');
 
 const baseSchema = {
-    name: joi.string().trim().min(2).max(100).required(),
+    name: joi.string().required(),
     email: joi.string().email().lowercase().required(),
     password: joi.string().required(),
     phoneNumber: joi.string().pattern(/^[0-9]{10}$/).required(),
@@ -11,7 +11,7 @@ const baseSchema = {
 
 const studentSchema = joi.object({
     ...baseSchema,
-    aparId: joi.string().trim().required(),
+    aparId: joi.string().required(),
     admissionDate: joi.date().max('now').required(),
     currentYear: joi.number().required(),
     semester: joi.number().required(),
@@ -19,7 +19,7 @@ const studentSchema = joi.object({
     transport: joi.string().required(),
     parentPhone: joi.string().pattern(/^[0-9]{10}$/).required(),
     address: joi.string().required()
-});
+}).unknown(true);
 
 const facultySchema = joi.object({
     ...baseSchema,
@@ -83,6 +83,25 @@ const registerValidation = (req, res, next) => {
 };
 
 
+const loginValidation = (req, res, next) => {
+    const schema = joi.object({
+        email: joi.string().email().lowercase().required(),
+        password: joi.string().required()
+    });
+    const { error } = schema.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid data',
+            error: error.details[0].message
+        });
+    }
+    next();
+}
+
+
+
 module.exports = {
-    registerValidation
+    registerValidation,
+    loginValidation
 };

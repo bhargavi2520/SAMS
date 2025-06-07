@@ -30,6 +30,11 @@ const baseUserSchema = new mongoose.Schema({
 const User = mongoose.model('User', baseUserSchema);
 
 const studentSchema = new mongoose.Schema({
+    studentId: {
+        type: String,
+        required: true,
+        unique: true
+    },
     aparId: {
         type: String,
         required: true
