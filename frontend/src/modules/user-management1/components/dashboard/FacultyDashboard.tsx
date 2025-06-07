@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { Button } from '@/common/components/ui/button';
 import { format } from 'date-fns'; // Add this import at the top if you have date-fns installed
 import { ChartOptions } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2';
 import DashboardNav from '../../../../components/dashboard/DashboardNav'
 
 // Mock Attendance Data
@@ -56,20 +56,24 @@ const AttendanceGraph = () => {
   );
 };
 
-// Placeholder chart components
-const DonutChart = () => (
-  <div className="flex items-center justify-center h-24 sm:h-32">
-    {/* Replace with actual chart */}
-    <span className="text-gray-400">[Donut Chart]</span>
-  </div>
-);
-
-const LineChart = () => (
-  <div className="flex items-center justify-center h-24 sm:h-32">
-    {/* Replace with actual chart */}
-    <span className="text-gray-400">[Line Chart]</span>
-  </div>
-);
+// Pie chart for students (gender distribution example)
+const StudentPieChart = () => {
+  const data = {
+    labels: ['Boys', 'Girls'],
+    datasets: [
+      {
+        data: [45414, 40270],
+        backgroundColor: ['#3b82f6', '#f472b6'],
+        borderWidth: 1,
+      },
+    ],
+  };
+  return (
+    <div className="h-40 flex items-center justify-center">
+      <Pie data={data} options={{ plugins: { legend: { display: true, position: 'bottom' } } }} />
+    </div>
+  );
+};
 
 // Helper to generate roll numbers in format "23815A0405"
 const getRollNo = (id: number) => {
@@ -212,6 +216,40 @@ const FacultyDashboard = () => {
     setAttendance(classStudents[selectedClass].map((s) => ({ ...s, present: false })));
   }, [selectedClass]);
 
+  // Exams section state
+  const [selectedExamClass, setSelectedExamClass] = useState('A');
+  const [selectedExamStudent, setSelectedExamStudent] = useState(1);
+  const [examMarks, setExamMarks] = useState(0);
+  const [bitPaperMarks, setBitPaperMarks] = useState(0);
+  const [assignmentMarks, setAssignmentMarks] = useState(0);
+  const [midTermScores, setMidTermScores] = useState<{[key:string]: number[]}>({}); // { 'A-1': [score1, score2] }
+
+  const studentsForExam = classStudents[selectedExamClass];
+  const selectedStudent = studentsForExam.find(s => s.id === selectedExamStudent);
+
+  const calcMidTermScore = (exam: number, bit: number, assign: number) => {
+    return Math.floor(exam/2) + Math.floor(bit/2) + assign;
+  };
+
+  const handleSaveMarks = () => {
+    const key = `${selectedExamClass}-${selectedExamStudent}`;
+    const score = calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks);
+    setMidTermScores(prev => {
+      const arr = prev[key] ? [...prev[key], score] : [score];
+      return { ...prev, [key]: arr.slice(-2) }; // keep max 2 mid-terms
+    });
+  };
+
+  const getWeightedFinal = (scores: number[]) => {
+    if (scores.length === 2) {
+      const [a, b] = scores;
+      const higher = Math.max(a, b);
+      const lower = Math.min(a, b);
+      return Math.round(higher * 0.8 + lower * 0.2);
+    }
+    return scores[0] || 0;
+  };
+
   const sectionRefs = {
     'my-profile': myProfileRef,
     'dashboard': dashboardRef,
@@ -297,6 +335,57 @@ const FacultyDashboard = () => {
     </div>
   );
 
+  // Attendance Graph for past 30 days
+const Attendance30DaysGraph = () => {
+  // Generate mock data for 30 days
+  const today = new Date();
+  const daysArr = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (29 - i));
+    return d;
+  });
+  const labels = daysArr.map(d => format(d, 'MMM d'));
+  // Mock attendance % (random for demo)
+  const dataArr = daysArr.map(() => Math.floor(80 + Math.random() * 20));
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: 'Attendance %',
+        data: dataArr,
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+        borderColor: '#3b82f6',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 2,
+      },
+    ],
+  };
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: true },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: { callback: (v) => `${v}%` },
+      },
+      x: {
+        ticks: { maxTicksLimit: 8 },
+      },
+    },
+  };
+  return (
+    <div className="h-56 w-full">
+      <Bar data={data} options={options} />
+    </div>
+  );
+};
+
   // Home section JSX
   const homeSection = (
     <div ref={homeRef} id="home" className="scroll-mt-24 space-y-6">
@@ -308,6 +397,10 @@ const FacultyDashboard = () => {
         </CardHeader>
         <CardContent>
           <AttendanceGraph />
+          <div className="mt-4">
+            <h4 className="font-semibold text-sm mb-2">Past 30 Days Attendance</h4>
+            <Attendance30DaysGraph />
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -323,6 +416,98 @@ const FacultyDashboard = () => {
         </CardHeader>
         <CardContent>
           <span className="text-gray-400">[Exams content here]</span>
+          {/* Mid Exam Marks Entry Section */}
+          <div className="mt-6">
+            <h3 className="font-semibold text-base mb-2">Mid Exam Marks Entry</h3>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <label htmlFor="exam-class-select" className="sr-only">Select Class</label>
+              <select
+                id="exam-class-select"
+                className="border rounded px-2 py-1 text-sm"
+                value={selectedExamClass}
+                onChange={e => {
+                  setSelectedExamClass(e.target.value);
+                  setSelectedExamStudent(1);
+                }}
+                aria-label="Select class for marks entry"
+              >
+                {classOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <label htmlFor="exam-student-select" className="sr-only">Select Student</label>
+              <select
+                id="exam-student-select"
+                className="border rounded px-2 py-1 text-sm"
+                value={selectedExamStudent}
+                onChange={e => setSelectedExamStudent(Number(e.target.value))}
+                aria-label="Select student for marks entry"
+              >
+                {studentsForExam.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({getRollNo(s.id)})</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <label htmlFor="exam-marks" className="text-xs font-medium">Exam (out of 30):</label>
+              <input
+                id="exam-marks"
+                type="number"
+                min={0}
+                max={30}
+                className="border rounded px-2 py-1 text-sm w-20"
+                value={examMarks}
+                onChange={e => setExamMarks(Number(e.target.value))}
+                aria-label="Exam marks out of 30"
+                placeholder="0"
+              />
+              <label htmlFor="bit-marks" className="text-xs font-medium">Bit Paper (out of 20):</label>
+              <input
+                id="bit-marks"
+                type="number"
+                min={0}
+                max={20}
+                className="border rounded px-2 py-1 text-sm w-20"
+                value={bitPaperMarks}
+                onChange={e => setBitPaperMarks(Number(e.target.value))}
+                aria-label="Bit Paper marks out of 20"
+                placeholder="0"
+              />
+              <label htmlFor="assignment-marks" className="text-xs font-medium">Assignment (out of 5):</label>
+              <input
+                id="assignment-marks"
+                type="number"
+                min={0}
+                max={5}
+                className="border rounded px-2 py-1 text-sm w-20"
+                value={assignmentMarks}
+                onChange={e => setAssignmentMarks(Number(e.target.value))}
+                aria-label="Assignment marks out of 5"
+                placeholder="0"
+              />
+              <button
+                type="button"
+                className="px-3 py-1 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+                onClick={handleSaveMarks}
+                aria-label="Save marks"
+              >
+                Save
+              </button>
+            </div>
+            <div className="mt-2 text-xs text-gray-700">
+              <div>Mid-term Score: <span className="font-semibold">{calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)}</span></div>
+              <div>
+                Weighted Final Score:{' '}
+                <span className="font-semibold">
+                  {getWeightedFinal(midTermScores[`${selectedExamClass}-${selectedExamStudent}`] || [calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)])}
+                </span>
+                {midTermScores[`${selectedExamClass}-${selectedExamStudent}`]?.length === 2 && (
+                  <span className="ml-2 text-gray-500">(80% higher + 20% lower mid-term)</span>
+                )}
+              </div>
+              <div className="mt-1 text-gray-500">(Scores are auto-calculated and saved per student. Only last 2 mid-terms are considered.)</div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -613,7 +798,7 @@ const FacultyDashboard = () => {
                 <CardTitle className="text-base sm:text-lg">Students</CardTitle>
               </CardHeader>
               <CardContent>
-                <DonutChart />
+                <StudentPieChart />
                 <div className="flex justify-between mt-1 sm:mt-2 text-xs">
                   <span>Boys: 45,414</span>
                   <span>Girls: 40,270</span>
@@ -621,14 +806,10 @@ const FacultyDashboard = () => {
               </CardContent>
             </Card>
             <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-base sm:text-lg">Attendance Overview</CardTitle>
-                <CardDescription>Total Present vs Absent</CardDescription>
-              </CardHeader>
               <CardContent>
-                <BarChart />
-                <div className="flex justify-between mt-1 text-xs text-gray-500">
-                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
+                <div className="mt-4">
+                  <h4 className="font-semibold text-sm mb-2">Past 30 Days Attendance</h4>
+                  <Attendance30DaysGraph />
                 </div>
               </CardContent>
             </Card>
@@ -645,6 +826,98 @@ const FacultyDashboard = () => {
             </CardHeader>
             <CardContent>
               <span className="text-gray-400">[Exams content here]</span>
+              {/* Mid Exam Marks Entry Section */}
+              <div className="mt-6">
+                <h3 className="font-semibold text-base mb-2">Mid Exam Marks Entry</h3>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <label htmlFor="exam-class-select" className="sr-only">Select Class</label>
+                  <select
+                    id="exam-class-select"
+                    className="border rounded px-2 py-1 text-sm"
+                    value={selectedExamClass}
+                    onChange={e => {
+                      setSelectedExamClass(e.target.value);
+                      setSelectedExamStudent(1);
+                    }}
+                    aria-label="Select class for marks entry"
+                  >
+                    {classOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <label htmlFor="exam-student-select" className="sr-only">Select Student</label>
+                  <select
+                    id="exam-student-select"
+                    className="border rounded px-2 py-1 text-sm"
+                    value={selectedExamStudent}
+                    onChange={e => setSelectedExamStudent(Number(e.target.value))}
+                    aria-label="Select student for marks entry"
+                  >
+                    {studentsForExam.map(s => (
+                      <option key={s.id} value={s.id}>{s.name} ({getRollNo(s.id)})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <label htmlFor="exam-marks" className="text-xs font-medium">Exam (out of 30):</label>
+                  <input
+                    id="exam-marks"
+                    type="number"
+                    min={0}
+                    max={30}
+                    className="border rounded px-2 py-1 text-sm w-20"
+                    value={examMarks}
+                    onChange={e => setExamMarks(Number(e.target.value))}
+                    aria-label="Exam marks out of 30"
+                    placeholder="0"
+                  />
+                  <label htmlFor="bit-marks" className="text-xs font-medium">Bit Paper (out of 20):</label>
+                  <input
+                    id="bit-marks"
+                    type="number"
+                    min={0}
+                    max={20}
+                    className="border rounded px-2 py-1 text-sm w-20"
+                    value={bitPaperMarks}
+                    onChange={e => setBitPaperMarks(Number(e.target.value))}
+                    aria-label="Bit Paper marks out of 20"
+                    placeholder="0"
+                  />
+                  <label htmlFor="assignment-marks" className="text-xs font-medium">Assignment (out of 5):</label>
+                  <input
+                    id="assignment-marks"
+                    type="number"
+                    min={0}
+                    max={5}
+                    className="border rounded px-2 py-1 text-sm w-20"
+                    value={assignmentMarks}
+                    onChange={e => setAssignmentMarks(Number(e.target.value))}
+                    aria-label="Assignment marks out of 5"
+                    placeholder="0"
+                  />
+                  <button
+                    type="button"
+                    className="px-3 py-1 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+                    onClick={handleSaveMarks}
+                    aria-label="Save marks"
+                  >
+                    Save
+                  </button>
+                </div>
+                <div className="mt-2 text-xs text-gray-700">
+                  <div>Mid-term Score: <span className="font-semibold">{calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)}</span></div>
+                  <div>
+                    Weighted Final Score:{' '}
+                    <span className="font-semibold">
+                      {getWeightedFinal(midTermScores[`${selectedExamClass}-${selectedExamStudent}`] || [calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)])}
+                    </span>
+                    {midTermScores[`${selectedExamClass}-${selectedExamStudent}`]?.length === 2 && (
+                      <span className="ml-2 text-gray-500">(80% higher + 20% lower mid-term)</span>
+                    )}
+                  </div>
+                  <div className="mt-1 text-gray-500">(Scores are auto-calculated and saved per student. Only last 2 mid-terms are considered.)</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
