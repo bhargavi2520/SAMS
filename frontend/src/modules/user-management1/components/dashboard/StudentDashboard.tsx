@@ -27,7 +27,7 @@ import {
 	Award, // For Achievements and Awards
     Menu // Added Menu icon for mobile navigation
 } from 'lucide-react';
-// import { StudentProfile } from '@/types/auth.types'; // Original import commented out
+import { StudentProfile } from '../../types/auth.types'; 
 import dayjs from 'dayjs';
 import { Line, Doughnut, Bar } from 'react-chartjs-2'; // Added Bar for attendance graph
 import {
@@ -47,17 +47,6 @@ import DashboardNav from '../../../../components/dashboard/DashboardNav';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend, ArcElement, BarElement);
-
-// Define StudentProfile interface locally as the external import was commented out
-interface StudentProfile {
-    firstName: string;
-    lastName: string;
-    email: string;
-    cpf: string;
-    birthDate: string;
-    phone: string;
-    // Add any other relevant student profile fields here if needed
-}
 
 const sidebarItems = [
     { label: 'My Profile', path: '#my-profile', icon: <User className="w-5 h-5" /> },
@@ -446,16 +435,33 @@ const CircularProgress = ({ percent }: { percent: number }) => {
 };
 
 const StudentDashboard = () => {
-	// const { user } = useAuthStore(); // Removed problematic import
+	 //const { user } = useAuthStore(); 
 	// Mock studentProfile as useAuthStore is not available in this context
 	const studentProfile: StudentProfile = {
+		id: "1",
+		userId: "user-1",
 		firstName: "Marcela",
 		lastName: "Santos",
 		email: "marcela.santos@gmail.com",
-		cpf: "043.288.451-09", // Keeping CPF as it is a specific ID, can be changed to "National ID" or similar
-		birthDate: "1999-02-18", //InvariantCulture-MM-DD format
-		phone: "(44) 99704-8887",
-		// Add any other relevant student profile fields here
+		phoneNumber: "7894232145",
+		profilePictureUrl: undefined,
+		rollNumber: "2024PHY001",
+		dateOfBirth: "2004-05-19",
+		gender: "FEMALE",
+		personalEmail: undefined,
+		parentName: "Carlos Santos",
+		parentPhone: "9876543210",
+		currentSemester: 4,
+		branch: "Physics",
+		courseProgram: "BSc Physics",
+		section: undefined,
+		studentStatus: "ACTIVE",
+		feeStatus: "PAID",
+		enrollmentYear: 2022,
+		current_academic_year: "2024-2025",
+		currentAddress: "123 Main Street, City, Country",
+		permanentAddress: "456 Secondary Street, City, Country",
+		aparId: undefined,
 	};
 
 
@@ -600,13 +606,10 @@ const StudentDashboard = () => {
 									<p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">{studentProfile?.email || "marcela.santos@gmail.com"}</p>
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
 										<div>
-											<span className="font-medium">National ID:</span> {studentProfile?.cpf || "043.288.451-09"}
+											<span className="font-medium">Date of birth:</span> {dayjs(studentProfile?.dateOfBirth).format('DD/MM/YYYY') || "18/02/1999"}
 										</div>
 										<div>
-											<span className="font-medium">Date of birth:</span> {dayjs(studentProfile?.birthDate).format('DD/MM/YYYY') || "18/02/1999"}
-										</div>
-										<div>
-											<span className="font-medium">Phone:</span> {studentProfile?.phone || "(44) 99704-8887"}
+											<span className="font-medium">Phone:</span> {studentProfile?.phoneNumber || "(44) 99704-8887"}
 										</div>
 									</div>
 									<div className="mt-4 md:mt-6">
@@ -977,3 +980,7 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
+
+function useAuthStore(): { user: any; } {
+	throw new Error('Function not implemented.');
+}

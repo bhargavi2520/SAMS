@@ -10,81 +10,77 @@ export interface User {
   is2faEnabled: boolean;
   lastLogin?: string;
   createdAt: string;
-  profile?: StudentProfile | FacultyProfile | AdminProfile | HODProfile;
+  profile?: StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile;
 }
 
-export interface StudentProfile {    
+export interface BaseUserProfile {
   id: string;
   userId: string;
-  rollNumber: string;
   firstName: string;
   middleName?: string;
   lastName: string;
+  email?: string;
+  phoneNumber?: string;
+  profilePictureUrl?: string;
+}
+
+export interface StudentProfile extends BaseUserProfile {
+  rollNumber: string;
   dateOfBirth: string;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
-  profilePictureUrl?: string;
   personalEmail?: string;
-  phoneNumber?: string;
-  parentGuardianName?: string;
+  parentName?: string;
   parentPhone?: string;
   currentSemester: number;
   branch: string;
   courseProgram: string;
   section?: string;
-  currentCGPA?: number;
   studentStatus: 'ACTIVE' | 'INACTIVE' | 'DROPOUT' | 'GRADUATED';
   feeStatus?: 'PAID' | 'PENDING' | 'OVERDUE' | 'EXEMPTED';
-  admission_academic_year?: string;
+  enrollmentYear?: number;
   current_academic_year?: string;
   currentAddress?: string;
   permanentAddress?: string;
-  aparId?:string;
+  aparId?: string;
 }
 
-export interface FacultyProfile {
-  id: string;
-  userId: string;
+export interface FacultyProfile extends BaseUserProfile {
   employeeId: string;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
   designation: string;
   department: string;
   dateOfJoining: string;
   employmentType: 'PERMANENT' | 'CONTRACT' | 'VISITING';
   officialEmail: string;
-  personalEmail?: string;
-  phoneNumber?: string;
-  profilePictureUrl?: string;
   highestQualification?: string;
   specialization?: string;
   yearsOfExperience: number;
 }
 
-export interface AdminProfile {
-  id: string;
-  userId: string;
+export interface AdminProfile extends BaseUserProfile {
   adminId: string;
   employeeId?: string;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
   designation?: string;
   department?: string;
-  officialEmail: string;
-  phoneNumber?: string;
-  profilePictureUrl?: string;
 }
 
-export interface HODProfile {
-  id: string;
-  userId: string;
+export interface HODProfile extends BaseUserProfile {
   facultyId: string;
   department: string;
   appointmentDate: string;
   tenureEndDate?: string;
   faculty: FacultyProfile;
-  phoneNumber?: string;
+}
+
+export interface ClassTeacherProfile extends BaseUserProfile {
+  facultyId: string;
+  classAssigned: string; 
+  appointmentDate: string;
+  tenureEndDate?: string;
+  faculty: FacultyProfile;
+}
+
+export interface GuestProfile extends BaseUserProfile {
+  affiliation?: string; 
 }
 
 export interface LoginCredentials {
@@ -98,7 +94,7 @@ export interface RegisterData {
   password: string;
   confirmPassword: string;
   role: UserRole;
-  profileData: Partial<StudentProfile | FacultyProfile | AdminProfile>;
+  profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>;
 }
 
 export interface AuthState {
