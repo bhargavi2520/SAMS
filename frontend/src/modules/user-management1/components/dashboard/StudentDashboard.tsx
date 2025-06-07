@@ -271,81 +271,6 @@ const issuedCertificates = [
     { name: 'Advanced React Certificate', date: '2024-05-20' },
 ];
 
-// New Calendar Component
-const CalendarComponent = () => {
-    const [currentMonth, setCurrentMonth] = useState(dayjs());
-    const [markedDates, setMarkedDates] = useState<string[]>([]); // Store dates as 'YYYY-MM-DD'
-
-    const daysInMonth = currentMonth.daysInMonth();
-    const firstDayOfMonth = currentMonth.startOf('month').day(); // 0 for Sunday, 1 for Monday
-
-    const calendarDays = [];
-    // Add leading empty cells for days before the 1st of the month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-        calendarDays.push(null);
-    }
-    // Add days of the month
-    for (let i = 1; i <= daysInMonth; i++) {
-        calendarDays.push(i);
-    }
-
-    const handleDayClick = (day: number | null) => {
-        if (day === null) return;
-        const dateString = currentMonth.date(day).format('YYYY-MM-DD');
-        setMarkedDates(prevMarkedDates =>
-            prevMarkedDates.includes(dateString)
-                ? prevMarkedDates.filter(d => d !== dateString)
-                : [...prevMarkedDates, dateString]
-        );
-    };
-
-    const isMarked = (day: number | null) => {
-        if (day === null) return false;
-        const dateString = currentMonth.date(day).format('YYYY-MM-DD');
-        return markedDates.includes(dateString);
-    };
-
-    return (
-        <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-                <Button onClick={() => setCurrentMonth(currentMonth.subtract(1, 'month'))} variant="outline" className="px-3 py-1 text-sm">Previous</Button>
-                <h3 className="text-lg font-semibold">{currentMonth.format('MMMMEEEE')}</h3>
-                <Button onClick={() => setCurrentMonth(currentMonth.add(1, 'month'))} variant="outline" className="px-3 py-1 text-sm">Next</Button>
-            </div>
-            <div className="grid grid-cols-7 gap-2 text-center">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                    <div key={day} className="font-medium text-gray-700 text-sm">{day}</div>
-                ))}
-                {calendarDays.map((day, index) => (
-                    <div
-                        key={index}
-                        className={`p-2 rounded-md cursor-pointer text-sm ${
-                            day === null ? 'bg-gray-100' :
-                            isMarked(day) ? 'bg-blue-600 text-white font-bold' :
-                            'bg-gray-50 hover:bg-gray-200'
-                        }`}
-                        onClick={() => handleDayClick(day)}
-                    >
-                        {day}
-                    </div>
-                ))}
-            </div>
-            <div className="mt-4 text-sm text-gray-600">
-                <p className="font-medium">Marked Dates:</p>
-                {markedDates.length > 0 ? (
-                    <ul className="list-disc list-inside">
-                        {markedDates.sort().map(date => (
-                            <li key={date}>{dayjs(date).format('DD MMMM Букмекерлар')}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No important dates marked yet.</p>
-                )}
-            </div>
-        </div>
-    );
-};
-
 const GPA_Calculator = () => {
 	const [grades, setGrades] = useState(mockGrades);
 	const [gpa, setGpa] = useState<string | null>(null);
@@ -545,7 +470,6 @@ const StudentDashboard = () => {
 	const examsRef = useRef<HTMLDivElement>(null);
 	const performanceRef = useRef<HTMLDivElement>(null);
 	const attendanceRef = useRef<HTMLDivElement>(null);
-	const calendarRef = useRef<HTMLDivElement>(null);
 	const notificationsRef = useRef<HTMLDivElement>(null);
 	const feedbackRef = useRef<HTMLDivElement>(null);
 
@@ -558,7 +482,6 @@ const StudentDashboard = () => {
 		exams: examsRef,
 		performance: performanceRef,
 		attendance: attendanceRef,
-		calendar: calendarRef,
 		notifications: notificationsRef,
 		feedback: feedbackRef,
 	};
@@ -911,18 +834,6 @@ const StudentDashboard = () => {
         </CardContent>
     </Card>
 </div>
-
-					{/* Calendar Section */}
-					<div ref={calendarRef} className="pt-4 md:pt-8">
-						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-							<CardHeader>
-								<CardTitle className="text-base md:text-lg">Calendar</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<CalendarComponent /> {/* Integrated the new CalendarComponent */}
-							</CardContent>
-						</Card>
-					</div>
 
 					{/* Notifications Section */}
 					<div ref={notificationsRef} className="pt-4 md:pt-8">
