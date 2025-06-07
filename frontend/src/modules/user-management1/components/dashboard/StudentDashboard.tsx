@@ -929,6 +929,38 @@ const StudentDashboard = () => {
 							</CardHeader>
 							<CardContent>
 								<p className="text-gray-600 text-sm">Upcoming exams and results.</p>
+								{/* Mid Exams Marks Section */}
+								<div className="mt-6">
+									<h4 className="text-md md:text-lg font-semibold mb-2">Mid Exams Marks (Current Semester)</h4>
+									<div className="overflow-x-auto">
+										<table className="min-w-full text-xs md:text-sm border border-gray-200 rounded-lg">
+											<thead>
+												<tr className="bg-gray-50">
+													<th className="py-2 px-3 text-left font-semibold text-gray-700">Subject</th>
+													<th className="py-2 px-3 text-center font-semibold text-gray-700">Mid 1 (out of 30)</th>
+													<th className="py-2 px-3 text-center font-semibold text-gray-700">Mid 2 (out of 30)</th>
+												</tr>
+											</thead>
+											<tbody>
+												{/* Example: Replace with real data from backend if available */}
+												{[
+													{ subject: 'Physics', mid1: 24, mid2: 27 },
+													{ subject: 'Chemistry', mid1: 22, mid2: 25 },
+													{ subject: 'Mathematics', mid1: 28, mid2: 29 },
+													{ subject: 'Biology', mid1: 20, mid2: 23 },
+													{ subject: 'English', mid1: 26, mid2: 28 },
+												].map((row, idx) => (
+													<tr key={row.subject} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+														<td className="py-2 px-3 text-gray-800 font-medium">{row.subject}</td>
+														<td className="py-2 px-3 text-center text-blue-700 font-semibold">{row.mid1}</td>
+														<td className="py-2 px-3 text-center text-blue-700 font-semibold">{row.mid2}</td>
+													</tr>
+												))}
+											</tbody>
+										</table>
+									</div>
+								</div>
+								{/* ...existing announcement cards... */}
 								<div className="mt-3 md:mt-4 space-y-3 md:space-y-4">
 									{announcements.map((announcement, index) => (
 										<div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -948,12 +980,17 @@ const StudentDashboard = () => {
 					<div ref={performanceRef} className="pt-4 md:pt-8">
 						<Card className="bg-white rounded-xl shadow-sm border border-gray-200">
 							<CardHeader>
-								<CardTitle className="text-base md:text-lg">Performance</CardTitle> {/* Corrected closing tag from </Title> to </CardTitle> */}
+								<CardTitle className="text-base md:text-lg">Performance</CardTitle>
 							</CardHeader>
 							<CardContent>
 								<p className="text-gray-600 text-sm">Your academic performance overview.</p>
 								<div className="h-48 md:h-64 mt-4">
 									<Line data={performanceData} options={performanceOptions} />
+								</div>
+								{/* Mid Performance Bar Graph */}
+								<div className="h-64 mt-8">
+									<h4 className="text-md md:text-lg font-semibold mb-2">Mid Exams Performance</h4>
+									<Bar data={midPerformanceChartData} options={midPerformanceChartOptions} />
 								</div>
 							</CardContent>
 						</Card>
@@ -1106,6 +1143,49 @@ const StudentDashboard = () => {
 
 export default StudentDashboard;
 
-function useAuthStore(): { user: any; } {
+function useAuthStore(): { user: unknown } {
 	throw new Error('Function not implemented.');
 }
+
+// Mid marks data for current semester (should be fetched from backend in real app)
+const midMarksData = [
+  { subject: 'Physics', mid1: 24, mid2: 27 },
+  { subject: 'Chemistry', mid1: 22, mid2: 25 },
+  { subject: 'Mathematics', mid1: 28, mid2: 29 },
+  { subject: 'Biology', mid1: 20, mid2: 23 },
+  { subject: 'English', mid1: 26, mid2: 28 },
+];
+
+const midPerformanceChartData = {
+  labels: midMarksData.map((row) => row.subject),
+  datasets: [
+    {
+      label: 'Mid 1',
+      data: midMarksData.map((row) => row.mid1),
+      backgroundColor: '#3b82f6',
+    },
+    {
+      label: 'Mid 2',
+      data: midMarksData.map((row) => row.mid2),
+      backgroundColor: '#f59e42',
+    },
+  ],
+};
+
+const midPerformanceChartOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'top' },
+    title: { display: false },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      max: 30,
+      ticks: { stepSize: 5 },
+      grid: { color: '#f1f5f9' },
+    },
+    x: { grid: { display: false } },
+  },
+};
