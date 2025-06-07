@@ -232,13 +232,6 @@ const coursesData = [
 	{ id: 5, name: 'Fundamentals of Economics', category: 'Finance', progress: 50, status: 'In Progress', lastAccess: '10/05/2024 14:00:00' },
 ];
 
-// Mock data for GPA
-const mockGrades = [
-    { subject: 'Physics', grade: 3.5, credits: 4 },
-    { subject: 'Chemistry', grade: 4.0, credits: 3 },
-    { subject: 'Mathematics', grade: 3.8, credits: 4 },
-    { subject: 'English', grade: 3.2, credits: 3 },
-];
 
 // Mock data for Fee Due Details
 const feeDetails = [
@@ -260,80 +253,212 @@ const issuedCertificates = [
     { name: 'Advanced React Certificate', date: '2024-05-20' },
 ];
 
-const GPA_Calculator = () => {
-	const [grades, setGrades] = useState(mockGrades);
-	const [gpa, setGpa] = useState<string | null>(null);
-
-	const calculateGpa = useCallback(() => {
-		let totalGradePoints = 0;
-		let totalCredits = 0;
-		grades.forEach(item => {
-			totalGradePoints += item.grade * item.credits;
-			totalCredits += item.credits;
-		});
-		if (totalCredits === 0) {
-			setGpa('N/A');
-		} else {
-			setGpa((totalGradePoints / totalCredits).toFixed(2));
-		}
-	}, [grades]);
-
-	useEffect(() => {
-		calculateGpa(); // Calculate GPA on initial load
-	}, [grades, calculateGpa]);
-
-    const handleGradeChange = (index: number, field: string, value: string) => {
-        const newGrades = [...grades];
-        newGrades[index] = { ...newGrades[index], [field]: parseFloat(value) || 0 };
-        setGrades(newGrades);
-    };
-
-    const addSubject = () => {
-        setGrades([...grades, { subject: '', grade: 0, credits: 0 }]);
-    };
-
-    return (
-        <div className="p-4">
-            <h4 className="text-lg font-semibold mb-4">GPA Calculator</h4>
-            <div className="space-y-3">
-				{grades.map((item, index) => (
-					<div key={index} className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
-						<input
-							type="text"
-							placeholder="Subject"
-							value={item.subject}
-							onChange={(e) => handleGradeChange(index, 'subject', e.target.value)}
-							className="w-full sm:flex-1 border border-gray-300 rounded-md px-2 py-1 text-sm"
-						/>
-						<input
-							type="number"
-							step="0.1"
-							min="0"
-							max="4"
-							placeholder="Grade (0-4)"
-							value={item.grade}
-							onChange={(e) => handleGradeChange(index, 'grade', e.target.value)}
-							className="w-full sm:w-24 border border-gray-300 rounded-md px-2 py-1 text-sm"
-						/>
-						<input
-							type="number"
-							step="1"
-							min="0"
-							placeholder="Credits"
-							value={item.credits}
-							onChange={(e) => handleGradeChange(index, 'credits', e.target.value)}
-							className="w-full sm:w-20 border border-gray-300 rounded-md px-2 py-1 text-sm"
-						/>
-					</div>
-				))}
-            </div>
-            <Button onClick={addSubject} variant="outline" className="mt-4 text-sm w-full sm:w-auto">Add Subject</Button>
-            <div className="mt-4 text-lg font-bold text-gray-800">
-                Calculated GPA: {gpa}
-            </div>
-        </div>
-    );
+// GPA Calculator component
+const gradeMap: { [key: string]: number } = {
+  "A+": 10,
+  "A": 9,
+  "B": 8,
+  "C": 7,
+  "D": 6,
+  "E": 5,
+  "F": 0,
+  "Ab": 0
 };
+
+type Subject = {
+  subject: string;
+  letterGrade: string;
+  credits: number;
+};
+
+type Semester = {
+  name: string;
+  subjects: Subject[];
+};
+
+const GPA_Calculator = () => {
+  const [semesters, setSemesters] = useState<Semester[]>([
+    { name: "Semester 1", subjects: [] }
+  ]);
+
+  // Calculates SGPA for a given semester
+  const calculateSGPA = (semester: Semester): number => {
+    let totalPoints = 0;
+    let totalCredits = 0;
+
+    semester.subjects.forEach(({ letterGrade, credits }) => {
+      const gradePoint = gradeMap[letterGrade] ?? 0;
+      totalPoints += gradePoint * credits;
+      totalCredits += credits;
+    });
+
+    return totalCredits === 0 ? 0 : parseFloat((totalPoints / totalCredits).toFixed(2));
+  };
+
+  // Corrected CGPA calculation across all subjects in all semesters
+  const calculateCGPA = (): number => {
+    let totalPoints = 0;
+    let totalCredits = 0;
+
+    semesters.forEach((semester) => {
+      semester.subjects.forEach(({ letterGrade, credits }) => {
+        const gradePoint = gradeMap[letterGrade] ?? 0;
+        totalPoints += gradePoint * credits;
+        totalCredits += credits;
+      });
+    });
+
+    return totalCredits === 0 ? 0 : parseFloat((totalPoints / totalCredits).toFixed(2));
+  };
+
+  // Convert CGPA to percentage
+  const cgpaToPercentage = (cgpa: number): number =>
+    parseFloat(((cgpa - 0.75) * 10).toFixed(2));
+
+  // Classify based on CGPA
+  const classifyStudent = (cgpa: number): string => {
+    if (cgpa >= 7.5) return "First Class with Distinction";
+    if (cgpa >= 6.5) return "First Class";
+    if (cgpa >= 5.5) return "Second Class";
+    if (cgpa >= 5.0) return "Pass Class";
+    return "Fail";
+  };
+
+  // Handle updates for a subject field
+  const handleSubjectChange = (
+    semIndex: number,
+    subIndex: number,
+    field: keyof Subject,
+    value: string | number
+  ) => {
+    setSemesters(prevSemesters =>
+      prevSemesters.map((semester, sIdx) => {
+        if (sIdx === semIndex) {
+          const updatedSubjects = semester.subjects.map((subject, subIdx) => {
+            if (subIdx === subIndex) {
+              return {
+                ...subject,
+                [field]: field === "credits" ? Math.max(1, Number(value)) : value
+              };
+            }
+            return subject;
+          });
+          return { ...semester, subjects: updatedSubjects };
+        }
+        return semester;
+      })
+    );
+  };
+
+  // Add a new subject to a semester
+  const addSubject = (semIndex: number) => {
+    setSemesters(prevSemesters =>
+      prevSemesters.map((semester, sIdx) => {
+        if (sIdx === semIndex) {
+          return {
+            ...semester,
+            subjects: [
+              ...semester.subjects,
+              { subject: "", letterGrade: "A+", credits: 3 }
+            ]
+          };
+        }
+        return semester;
+      })
+    );
+  };
+
+  // Add a new semester
+  const addSemester = () => {
+    if (semesters.length < 8) {
+      setSemesters(prevSemesters => [
+        ...prevSemesters,
+        { name: `Semester ${prevSemesters.length + 1}`, subjects: [] }
+      ]);
+    }
+  };
+
+  const cgpa = calculateCGPA();
+  const percentage = cgpaToPercentage(cgpa);
+  const classification = classifyStudent(cgpa);
+
+  return (
+    <div className="p-4">
+      <h4 className="text-lg font-semibold mb-4">GPA & CGPA Calculator</h4>
+
+      {semesters.map((semester, semIndex) => (
+        <div key={semIndex} className="mb-6 border p-4 rounded">
+          <h5 className="font-medium text-md mb-2">{semester.name}</h5>
+          {semester.subjects.map((subject, subIndex) => (
+            <div
+              key={subIndex}
+              className="flex flex-col sm:flex-row items-center gap-2 mb-2"
+            >
+              <input
+                type="text"
+                placeholder="Subject"
+                value={subject.subject}
+                onChange={(e) =>
+                  handleSubjectChange(semIndex, subIndex, "subject", e.target.value)
+                }
+                className="w-full sm:flex-1 border rounded px-2 py-1 text-sm"
+              />
+              <select
+                value={subject.letterGrade}
+                onChange={(e) =>
+                  handleSubjectChange(semIndex, subIndex, "letterGrade", e.target.value)
+                }
+                className="w-full sm:w-32 border rounded px-2 py-1 text-sm"
+              >
+                {Object.keys(gradeMap).map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                min={1}
+                placeholder="Credits"
+                value={subject.credits}
+                onChange={(e) =>
+                  handleSubjectChange(semIndex, subIndex, "credits", e.target.value)
+                }
+                className="w-full sm:w-20 border rounded px-2 py-1 text-sm"
+              />
+            </div>
+          ))}
+          <Button
+            onClick={() => addSubject(semIndex)}
+            variant="outline"
+            className="text-sm w-full sm:w-auto"
+          >
+            + Add Subject
+          </Button>
+          <p className="mt-2 text-sm font-medium">
+            SGPA: {calculateSGPA(semester)}
+          </p>
+        </div>
+      ))}
+
+	<Button
+	  onClick={addSemester}
+	  className="bg-blue-600 hover:bg-blue-700 text-white text-sm mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+	  disabled={semesters.length >= 8}
+	>
+	  + Add Semester
+	</Button>
+
+      <div className="mt-6 border-t pt-4 text-sm">
+        <p><strong>CGPA:</strong> {cgpa}</p>
+        <p><strong>Percentage:</strong> {percentage}%</p>
+        <p><strong>Classification:</strong> {classification}</p>
+      </div>
+    </div>
+  );
+};
+
+
 
 const AttendanceGraph = () => {
     const chartData = {
