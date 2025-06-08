@@ -5,13 +5,13 @@ const baseSchema = {
     email: joi.string().email().lowercase().required(),
     password: joi.string().required(),
     phoneNumber: joi.string().pattern(/^[0-9]{10}$/).required(),
-    role: joi.string().valid('Student', 'Admin', 'Faculty', 'HOD', 'ClassCoordinator').required(),
-    Id: joi.string().required()
+    role: joi.string().valid('Student', 'Admin', 'Faculty', 'HOD', 'ClassCoordinator').required()
 };
 
 
 const studentSchema = joi.object({
     ...baseSchema,
+    Id: joi.string().required(),
     aparId: joi.string().required(),
     admissionDate: joi.date().max('now').required(),
     currentYear: joi.number().required(),
