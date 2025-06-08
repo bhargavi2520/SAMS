@@ -33,6 +33,21 @@ const navConfig = {
     { label: 'Timetable', icon: <Calendar className="w-6 h-6" />, section: 'Timetable' },
     // Add more if needed for Timetable dashboard
   ],
+  class_teacher: [
+    { label: 'Student Details', icon: <User className="w-6 h-6" />, section: 'student-details' },
+    { label: 'Fee Management', icon: <BarChart2 className="w-6 h-6" />, section: 'fee-management' },
+  ],
+  hod: [
+    { label: 'Dashboard', icon: <Home className="w-6 h-6" />, section: 'dashboard' },
+    { label: 'Timetable', icon: <Calendar className="w-6 h-6" />, section: 'timetable' },
+    { label: 'Attendance', icon: <CheckSquare className="w-6 h-6" />, section: 'attendance' },
+    { label: 'Exams', icon: <FileText className="w-6 h-6" />, section: 'exams' },
+    { label: 'Results', icon: <BarChart2 className="w-6 h-6" />, section: 'results' },
+    { label: 'Announcements', icon: <Bell className="w-6 h-6" />, section: 'announcements' },
+  ],
+  guest: [
+    { label: 'Guest Access', icon: <User className="w-6 h-6" />, section: 'guest-access' },
+  ],
 };
 
 interface DashboardNavProps {
