@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Home, User, Calendar, BookOpen, FileText, BarChart2, CheckSquare, Bell, Menu, MessageCircle, Settings, HelpCircle, Users, Database, Shield, CalendarDays
+  Home, User, Calendar, BookOpen, FileText, BarChart2, CheckSquare, Bell, Menu, MessageCircle, Settings, HelpCircle, Users, Database, Shield, CalendarDays, UserCog, FileBarChart2
 } from 'lucide-react';
 
 // Nav configs for each dashboard type
@@ -34,21 +34,17 @@ const navConfig = {
     // Add more if needed for Timetable dashboard
   ],
   class_teacher: [
-    { label: 'Quick Stats', icon: <BarChart2 className="w-6 h-6" />, section: 'quick-stats' },
-    { label: 'Quick Actions', icon: <CheckSquare className="w-6 h-6" />, section: 'quick-actions' },
-    { label: 'Recent Activities', icon: <Bell className="w-6 h-6" />, section: 'recent-activities' },
-    { label: 'Assignment Details', icon: <User className="w-6 h-6" />, section: 'assignment-details' },
-    { label: 'Student List', icon: <Users className="w-6 h-6" />, section: 'student-list' },
-    { label: 'Weekly Timetable', icon: <Calendar className="w-6 h-6" />, section: 'weekly-timetable' },
-    { label: 'Monitors & Representatives', icon: <User className="w-6 h-6" />, section: 'monitors-representatives' },
-    { label: 'Communication', icon: <MessageCircle className="w-6 h-6" />, section: 'communication' },
+    { label: 'Student Details', icon: <User className="w-6 h-6" />, section: 'student-details' },
+    { label: 'Fee Management', icon: <BarChart2 className="w-6 h-6" />, section: 'fee-management' },
   ],
   hod: [
     { label: 'Dashboard', icon: <Home className="w-6 h-6" />, section: 'dashboard' },
+    { label: 'Faculty Management', icon: <UserCog className="w-6 h-6" />, section: 'faculty-management' },
+    { label: 'Student Management', icon: <Users className="w-6 h-6" />, section: 'student-management' },
+    { label: 'Subject Management', icon: <BookOpen className="w-6 h-6" />, section: 'subject-management' },
+    { label: 'Reports', icon: <FileBarChart2 className="w-6 h-6" />, section: 'reports' },
     { label: 'Timetable', icon: <Calendar className="w-6 h-6" />, section: 'timetable' },
-    { label: 'Attendance', icon: <CheckSquare className="w-6 h-6" />, section: 'attendance' },
     { label: 'Exams', icon: <FileText className="w-6 h-6" />, section: 'exams' },
-    { label: 'Results', icon: <BarChart2 className="w-6 h-6" />, section: 'results' },
     { label: 'Announcements', icon: <Bell className="w-6 h-6" />, section: 'announcements' },
   ],
   guest: [
@@ -64,11 +60,10 @@ interface DashboardNavProps {
 
 const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, dashboardType }) => {
   const navItems = navConfig[dashboardType] || navConfig.student;
-  // Scroll to section by id
+  // Scroll to top if Home is clicked
   const handleNav = (section: string) => {
-    const el = document.getElementById(section);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (section === 'dashboard' || section === 'Dashboard' || section === 'Timetable') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     onNavClick(section);
   };
@@ -80,9 +75,8 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
           <div key={item.label} className="relative w-full flex flex-col items-start mb-6">
             <button
               onClick={() => handleNav(item.section)}
-              className={`flex flex-col items-start focus:outline-none w-full ${activeSection === item.section ? 'text-blue-700' : 'text-blue-400 hover:text-blue-700'} bg-transparent transition-colors`}
+              className={`flex flex-col items-start focus:outline-none w-full ${activeSection === item.section ? 'text-blue-700' : 'text-blue-400 hover:text-blue-700'} bg-transparent transition-colors ml-3`}
               aria-label={item.label}
-              style={{ marginLeft: '12px' }}
             >
               {item.icon}
             </button>
