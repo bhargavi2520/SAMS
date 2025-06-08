@@ -96,12 +96,13 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between px-2 py-1 z-50">
+      <nav className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between px-2 py-2 z-50 h-16 items-center">
         {navItems.map((item) => (
           <button
             key={item.label}
             onClick={() => handleNav(item.section)}
-            className={`flex flex-col items-center flex-1 py-2 ${activeSection === item.section ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+            className={`flex flex-col items-center flex-1 ${activeSection === item.section ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+            style={{ minWidth: 0 }}
           >
             {item.icon}
             {/* Remove section name/label for mobile nav */}

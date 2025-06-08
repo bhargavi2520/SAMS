@@ -88,23 +88,23 @@ const sectionContent = {
   dashboard: (
     <>
       {/* Overview content (summary cards, activities, approvals) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 mb-6">
         {summaryCards.map((card) => (
-          <Card key={card.label} className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800`}>
-            <CardContent className="flex flex-col gap-1 p-4 w-full">
-              <div className="flex items-center gap-2 text-sm mb-1">
-                {card.icon}
-                {card.label}
+          <Card key={card.label} className={`flex flex-col items-center justify-center gap-2 rounded-xl shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800 p-4 md:p-6`}>
+            <CardContent className="flex flex-col items-center gap-2 w-full">
+              <div className="flex flex-col items-center gap-1">
+                <span className="mb-1">{card.icon}</span>
+                <span className="text-sm text-gray-500 font-medium">{card.label}</span>
               </div>
-              <div className="text-2xl font-bold">{card.value}</div>
-              <div className="text-xs opacity-70">{card.sub}</div>
+              <div className="text-xl font-bold">{card.value}</div>
+              <div className="text-xs text-gray-400">{card.sub}</div>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Recent Activities */}
-        <Card className="bg-white dark:bg-neutral-800">
+        <Card className="bg-white dark:bg-neutral-800 rounded-xl shadow hover:shadow-lg p-4 md:p-6">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <ClipboardList className="w-5 h-5" /> Recent Activities
@@ -130,7 +130,7 @@ const sectionContent = {
           </CardContent>
         </Card>
         {/* Pending Approvals */}
-        <Card className="bg-white dark:bg-neutral-800">
+        <Card className="bg-white dark:bg-neutral-800 rounded-xl shadow hover:shadow-lg p-4 md:p-6">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5" /> Pending Approvals
@@ -424,54 +424,48 @@ const HODDashboard = ({ isHOD = true }) => {
   const approvalsWithAction = approvals.map(item => ({ ...item, action: item.action ?? undefined }));
 
   return (
-    <div className="max-w-7xl mx-auto pt-2 px-1 md:px-4 dark:bg-neutral-900 min-h-screen transition-colors flex">
+    <div className="max-w-md w-full mx-auto pt-4 px-2 md:px-4 dark:bg-neutral-900 min-h-screen transition-colors flex text-[15px] md:text-lg">
       <DashboardNav
         activeSection={activeSection}
         onNavClick={handleNavClick}
         dashboardType="hod"
       />
       <div className="flex-1 ml-0 md:ml-40">
-        {/* Remove DashboardLayout if it adds extra space */}
-        {/* <DashboardLayout /> */}
-        <div className="p-1 md:p-2 space-y-8">
+        <div className="p-0 md:p-4 space-y-8 md:space-y-10">
           {/* Profile Section at the top (not in nav, always visible) */}
-          <section className="scroll-mt-24 space-y-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><User className="w-6 h-6" /> Profile</h2>
-            <div className="flex flex-col gap-6 md:grid md:grid-cols-2">
-              <Card className="bg-white dark:bg-neutral-800 w-full">
-                <CardContent className="p-4 sm:p-6 flex flex-col gap-4">
-                  <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                    <User className="w-5 h-5" /> Primary Information
-                  </h3>
+          <section className="scroll-mt-24 space-y-6 md:space-y-8 mb-6">
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2"><User className="w-6 h-6" /> Profile</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <Card className="bg-white dark:bg-neutral-800 w-full rounded-xl shadow p-4 md:p-6">
+                <CardContent className="flex flex-col gap-4">
+                  <h3 className="text-lg font-bold flex items-center gap-2 mb-2"><User className="w-5 h-5" /> Primary Information</h3>
                   <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200 text-sm">
                       <Badge variant="secondary" className="bg-gray-200 dark:bg-neutral-700 text-xs"><Building2 className="w-4 h-4 mr-1 inline" /> {hodProfile.department}</Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200 text-sm">
                       <span className="font-medium">Employee ID:</span> {hodProfile.employeeId}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200 text-sm">
                       <span className="font-medium">Name:</span> {hodProfile.name}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              <Card className="bg-white dark:bg-neutral-800 w-full">
-                <CardContent className="p-4 sm:p-6 flex flex-col gap-4">
-                  <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                    <Mail className="w-5 h-5" /> Contact Information
-                  </h3>
+              <Card className="bg-white dark:bg-neutral-800 w-full rounded-xl shadow p-4 md:p-6">
+                <CardContent className="flex flex-col gap-4">
+                  <h3 className="text-lg font-bold flex items-center gap-2 mb-2"><Mail className="w-5 h-5" /> Contact Information</h3>
                   <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200 text-sm">
                       <Mail className="w-4 h-4" /> <span className="font-medium">Official Email:</span> {hodProfile.officialEmail}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200 text-sm">
                       <Mail className="w-4 h-4" /> <span className="font-medium">Personal Email:</span> {hodProfile.personalEmail}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200 text-sm">
                       <Phone className="w-4 h-4" /> <span className="font-medium">Phone:</span> {hodProfile.phone}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200 text-sm">
                       <MapPin className="w-4 h-4" /> <span className="font-medium">Address:</span> {hodProfile.address}
                     </div>
                   </div>
@@ -481,27 +475,27 @@ const HODDashboard = ({ isHOD = true }) => {
           </section>
 
           {/* Dashboard Section */}
-          <section ref={dashboardRef} id="dashboard" className="scroll-mt-24 space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <section ref={dashboardRef} id="dashboard" className="scroll-mt-24 space-y-6 md:space-y-8 mb-6">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 mb-6">
               {summaryCards.map((card) => (
-                <Card key={card.label} className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800`}>
-                  <CardContent className="flex flex-col gap-1 p-4 w-full">
-                    <div className="flex items-center gap-2 text-sm mb-1">
-                      {card.icon}
-                      {card.label}
+                <Card key={card.label} className={`flex flex-col items-center justify-center gap-2 rounded-xl shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800 p-4 md:p-6`}>
+                  <CardContent className="flex flex-col items-center gap-2 w-full">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="mb-1">{card.icon}</span>
+                      <span className="text-sm text-gray-500 font-medium">{card.label}</span>
                     </div>
-                    <div className="text-2xl font-bold">{card.value}</div>
-                    <div className="text-xs opacity-70">{card.sub}</div>
+                    <div className="text-xl font-bold">{card.value}</div>
+                    <div className="text-xs text-gray-400">{card.sub}</div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-white dark:bg-neutral-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <Card className="bg-white dark:bg-neutral-800 rounded-xl shadow hover:shadow-lg p-4 md:p-6">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                     <ClipboardList className="w-5 h-5" /> Recent Activities
-                  </h3>
+                  </h2>
                   <div className="space-y-4">
                     {activities.map((act, idx) => (
                       <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex items-center justify-between transition-colors">
@@ -524,11 +518,11 @@ const HODDashboard = ({ isHOD = true }) => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="bg-white dark:bg-neutral-800">
+              <Card className="bg-white dark:bg-neutral-800 rounded-xl shadow hover:shadow-lg p-4 md:p-6">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                     <Clock className="w-5 h-5" /> Pending Approvals
-                  </h3>
+                  </h2>
                   <div className="space-y-4">
                     {approvalsWithAction.map((item, idx) => (
                       <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors">
@@ -567,8 +561,8 @@ const HODDashboard = ({ isHOD = true }) => {
           </section>
 
           {/* Faculty Management Section */}
-          <section ref={facultyManagementRef} id="faculty-management" className="scroll-mt-24 space-y-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><UserCog className="w-6 h-6" /> Faculty Management</h2>
+          <section ref={facultyManagementRef} id="faculty-management" className="scroll-mt-24 space-y-4 md:space-y-6">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 flex items-center gap-2"><UserCog className="w-6 h-6" /> Faculty Management</h2>
             <Card className="bg-white dark:bg-neutral-800">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -627,8 +621,8 @@ const HODDashboard = ({ isHOD = true }) => {
           </section>
 
           {/* Student Management Section */}
-          <section ref={studentManagementRef} id="student-management" className="scroll-mt-24 space-y-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> Student Management</h2>
+          <section ref={studentManagementRef} id="student-management" className="scroll-mt-24 space-y-4 md:space-y-6">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> Student Management</h2>
             <Card className="bg-white dark:bg-neutral-800">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -681,8 +675,8 @@ const HODDashboard = ({ isHOD = true }) => {
           </section>
 
           {/* Subject Management Section */}
-          <section ref={subjectManagementRef} id="subject-management" className="scroll-mt-24 space-y-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><BookOpen className="w-6 h-6" /> Subject Management</h2>
+          <section ref={subjectManagementRef} id="subject-management" className="scroll-mt-24 space-y-4 md:space-y-6">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 flex items-center gap-2"><BookOpen className="w-6 h-6" /> Subject Management</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {subjectOptions.map((opt, idx) => (
                 <Card
@@ -706,8 +700,8 @@ const HODDashboard = ({ isHOD = true }) => {
           </section>
 
           {/* Reports Section */}
-          <section ref={reportsRef} id="reports" className="scroll-mt-24 space-y-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><FileBarChart2 className="w-6 h-6" /> Reports</h2>
+          <section ref={reportsRef} id="reports" className="scroll-mt-24 space-y-4 md:space-y-6">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 flex items-center gap-2"><FileBarChart2 className="w-6 h-6" /> Reports</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {reportOptions.map((opt, idx) => (
                 <Card key={idx} className="flex flex-col items-center justify-center gap-3 p-6 bg-white dark:bg-neutral-800 hover:shadow-lg transition-shadow cursor-pointer">

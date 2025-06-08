@@ -133,6 +133,39 @@ const communicationOptions = [
   },
 ];
 
+const reportOptions = [
+  {
+    icon: '📊',
+    title: 'Class Performance',
+    description: 'Analyze overall class performance, grade distribution, and trends.',
+  },
+  {
+    icon: '👤',
+    title: 'Individual Progress',
+    description: 'Track individual student progress, strengths, and areas for improvement.',
+  },
+  {
+    icon: '📅',
+    title: 'Attendance Analysis',
+    description: 'Detailed attendance breakdown and patterns for the class.',
+  },
+  {
+    icon: '📞',
+    title: 'Parent Communication Log',
+    description: 'View and export logs of all parent communications.',
+  },
+  {
+    icon: '🗂️',
+    title: 'Counseling Records',
+    description: 'Access and generate reports on student counseling sessions.',
+  },
+  {
+    icon: '⚠️',
+    title: 'Disciplinary Reports',
+    description: 'Generate and review disciplinary action reports.',
+  },
+];
+
 const sectionIds = [
   'quick-stats',
   'quick-actions',
@@ -142,6 +175,7 @@ const sectionIds = [
   'weekly-timetable',
   'monitors-representatives',
   'communication',
+  'reports', // Added Reports section id
 ];
 
 const ClassTeacherDashboard: React.FC = () => {
@@ -361,6 +395,22 @@ const ClassTeacherDashboard: React.FC = () => {
                     </button>
                   ))}
                 </div>
+              </div>
+            ))}
+          </div>
+        </section>
+        {/* Reports */}
+        <section id="reports">
+          <h2 className="text-xl font-bold mb-4">Reports</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reportOptions.map((report) => (
+              <div key={report.title} className="bg-white rounded-lg shadow-sm p-6 flex flex-col items-start gap-4 border border-gray-100">
+                <span className="text-3xl">{report.icon}</span>
+                <div className="font-semibold text-lg text-gray-900">{report.title}</div>
+                <div className="text-sm text-gray-700 flex-1">{report.description}</div>
+                <button className="mt-2 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium shadow transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  Generate Report
+                </button>
               </div>
             ))}
           </div>
