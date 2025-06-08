@@ -34,8 +34,14 @@ const navConfig = {
     // Add more if needed for Timetable dashboard
   ],
   class_teacher: [
-    { label: 'Student Details', icon: <User className="w-6 h-6" />, section: 'student-details' },
-    { label: 'Fee Management', icon: <BarChart2 className="w-6 h-6" />, section: 'fee-management' },
+    { label: 'Quick Stats', icon: <BarChart2 className="w-6 h-6" />, section: 'quick-stats' },
+    { label: 'Quick Actions', icon: <CheckSquare className="w-6 h-6" />, section: 'quick-actions' },
+    { label: 'Recent Activities', icon: <Bell className="w-6 h-6" />, section: 'recent-activities' },
+    { label: 'Assignment Details', icon: <User className="w-6 h-6" />, section: 'assignment-details' },
+    { label: 'Student List', icon: <Users className="w-6 h-6" />, section: 'student-list' },
+    { label: 'Weekly Timetable', icon: <Calendar className="w-6 h-6" />, section: 'weekly-timetable' },
+    { label: 'Monitors & Representatives', icon: <User className="w-6 h-6" />, section: 'monitors-representatives' },
+    { label: 'Communication', icon: <MessageCircle className="w-6 h-6" />, section: 'communication' },
   ],
   hod: [
     { label: 'Dashboard', icon: <Home className="w-6 h-6" />, section: 'dashboard' },
@@ -58,10 +64,11 @@ interface DashboardNavProps {
 
 const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, dashboardType }) => {
   const navItems = navConfig[dashboardType] || navConfig.student;
-  // Scroll to top if Home is clicked
+  // Scroll to section by id
   const handleNav = (section: string) => {
-    if (section === 'dashboard' || section === 'Dashboard' || section === 'Timetable') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    const el = document.getElementById(section);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     onNavClick(section);
   };
