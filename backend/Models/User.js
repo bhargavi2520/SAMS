@@ -24,17 +24,17 @@ const baseUserSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['Student', 'Admin', 'Faculty', 'HOD', 'ClassCordinator']
+    },
+    Id: {
+        type: String,
+        required: true,
+        unique: true
     }
 }, options);
 
 const User = mongoose.model('User', baseUserSchema);
 
 const studentSchema = new mongoose.Schema({
-    studentId: {
-        type: String,
-        required: true,
-        unique: true
-    },
     aparId: {
         type: String,
         required: true
@@ -75,15 +75,15 @@ const Student = User.discriminator('Student', studentSchema);
 const adminSchema = new mongoose.Schema({
     department: {
         type: String,
-        required: true
-    }
+        required: true,
+    },
 });
 
 const Admin = User.discriminator('Admin', adminSchema);
 
 
 const facultySchema = new mongoose.Schema({
-    department: {
+    designation: {
         type: String,
         required: true
     },
@@ -95,7 +95,7 @@ const Faculty = User.discriminator('Faculty', facultySchema);
 const hodSchema = new mongoose.Schema({
     department: {
         type: String,
-        required: true
+        required: true,
     }
 });
 
@@ -105,10 +105,10 @@ const HOD = User.discriminator('HOD', hodSchema);
 const classCoordinatorSchema = new mongoose.Schema({
     department: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     }
 });
-
 const ClassCoordinator = User.discriminator('ClassCordinator', classCoordinatorSchema);
 
 

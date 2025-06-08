@@ -5,12 +5,19 @@ const { registerValidation, loginValidation } = require('../Middlewares/AuthVali
 const { registerUser, loginUser } = require('../Controllers/AuthController.js');
 const ensureAuthenticated = require('../Middlewares/Authentication.js');
 
+const roleFields = {
+    Student: ['name', 'email', 'phoneNumber', 'role', 'studentId', 'department'],
+    Faculty: ['name', 'email', 'phoneNumber', 'role', 'designation'],
+    Admin: ['name', 'email', 'role'],
+    HOD: ['name', 'email', 'phoneNumber', 'role', 'department']
+};
+
+
 AuthRouter.get('/', (req, res) => {
     res.send('It is the Auth Router !');
 });
 
 AuthRouter.post('/login', loginValidation, loginUser);
-
 AuthRouter.post('/register', registerValidation, registerUser);
 
 AuthRouter.get('/userData', ensureAuthenticated([]), async (req, res) => {
@@ -31,15 +38,15 @@ AuthRouter.get('/userData', ensureAuthenticated([]), async (req, res) => {
         });
     }
 
+    const fields = roleFields[user.role] || roleFields.default;
+    const userData = {};
+    fields.forEach(field => {
+        userData[field] = user[field];
+    });
 
     res.status(200).json({
         message: 'User Data Fetched Successfully',
-        user: {
-            name: user.name,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            role: user.role
-        },
+        user: userData,
         success: true
     });
 });

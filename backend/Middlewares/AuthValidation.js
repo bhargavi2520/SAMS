@@ -5,7 +5,8 @@ const baseSchema = {
     email: joi.string().email().lowercase().required(),
     password: joi.string().required(),
     phoneNumber: joi.string().pattern(/^[0-9]{10}$/).required(),
-    role: joi.string().valid('Student', 'Admin', 'Faculty', 'HOD', 'ClassCoordinator').required()
+    role: joi.string().valid('Student', 'Admin', 'Faculty', 'HOD', 'ClassCoordinator').required(),
+    Id: joi.string().required()
 };
 
 
@@ -23,7 +24,7 @@ const studentSchema = joi.object({
 
 const facultySchema = joi.object({
     ...baseSchema,
-    department: joi.string().required(),
+    designation: joi.string().required(),
 });
 
 const hodSchema = joi.object({
@@ -33,7 +34,7 @@ const hodSchema = joi.object({
 
 const classCoordinatorSchema = joi.object({
     ...baseSchema,
-    name: joi.string().required()
+    department: joi.string().required()
 });
 
 const adminSchema = joi.object({
