@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, phoneNumber, role, Id, ...roleSpecificData } = req.body;
+        const { name, email, password, phoneNumber, role, ...roleSpecificData } = req.body;
 
         const roleModels = {
             'Student': Student,
@@ -22,7 +22,7 @@ const registerUser = async (req, res) => {
 
 
 
-        const existingUser = await User.findOne({ $or: [{ email }, { Id }] });
+        const existingUser = await User.findOne({ $or: [{ email }] });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists', success: false });
         }
@@ -35,7 +35,6 @@ const registerUser = async (req, res) => {
             password: hashedPassword,
             phoneNumber,
             role,
-            Id,
             ...roleSpecificData
         };
 
@@ -49,6 +48,11 @@ const registerUser = async (req, res) => {
 
     } catch (error) {
         console.error(error);
+        if (error.code === 11000) {
+            const duplicateField = Object.keys(error.keyPattern)[0];
+            let message = `User with this ${duplicateField} already exists`;
+            return res.status(400).json({ message, success: false });
+        }
         res.status(500).json({ message: 'Internal server error', success: false });
     }
 }

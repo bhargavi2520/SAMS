@@ -11,7 +11,7 @@ const baseSchema = {
 
 const studentSchema = joi.object({
     ...baseSchema,
-    Id: joi.string().required(),
+    studentId: joi.string().required(),
     aparId: joi.string().required(),
     admissionDate: joi.date().max('now').required(),
     currentYear: joi.number().required(),

@@ -24,17 +24,17 @@ const baseUserSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['Student', 'Admin', 'Faculty', 'HOD', 'ClassCordinator']
-    },
-    Id: {
-        type: String,
-        required: true,
-        unique: true
     }
 }, options);
 
 const User = mongoose.model('User', baseUserSchema);
 
 const studentSchema = new mongoose.Schema({
+    studentId: {
+        type: String,
+        required: true,
+        unique: true
+    },
     aparId: {
         type: String,
         required: true
