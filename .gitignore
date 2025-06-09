@@ -28,8 +28,12 @@ assets/
 *.sln
 *.sw?
 
-
+frontend/.env
 
 backend/node_modules
 backend/.env
 backend/build
+
+# Ignore all env files everywhere
+*.env
+*.env.*

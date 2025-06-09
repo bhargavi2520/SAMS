@@ -19,25 +19,29 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    if (!origin) {
+      // Allow requests without origin (e.g. curl or mobile apps)
+      callback(null, true);
+      return;
     }
-    return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy blocks this origin'), false);
+    }
   },
-  credentials: true, // Allows cookies to be sent
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  credentials: true,
+  optionsSuccessStatus: 200,
 };
+
 
 app.use(cors(corsOptions));
 // --- END of new CORS configuration ---
 
 // --- START of new GET routes ---
 app.get("/", (req, res) => {
-  res.send("🚀 Backend is LIVE! Welcome to SAMS");
+  res.send(" Backend is LIVE! Welcome to SAMS");
 });
 
 app.get("/api/health", (req, res) => {
