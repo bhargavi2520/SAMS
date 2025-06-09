@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/common/components/ui/button';
@@ -72,7 +73,6 @@ const RegisterForm = () => {
   const roleOptions = [
     { value: 'STUDENT', label: 'Student'},
     { value: 'FACULTY', label: 'Faculty'},
-    { value: 'ADMIN', label: 'Administrator' },
     { value: 'HOD', label: 'Head of Department'},
     { value: 'CLASS_TEACHER', label: 'Class Teacher'},
     { value: 'GUEST', label: 'Guest'}
@@ -267,6 +267,26 @@ const RegisterForm = () => {
                   </SelectContent>
                 </Select>
 
+                {/* New Section select */}
+                <Label htmlFor="section">Section</Label>
+                <Select
+                  value={(formData.profileData as any).section || ''}
+                  onValueChange={value =>
+                    handleProfileDataChange({
+                      target: { name: 'section', value }
+                    } as React.ChangeEvent<HTMLInputElement>)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Section-1">Section-1</SelectItem>
+                    <SelectItem value="Section-2">Section-2</SelectItem>
+                    <SelectItem value="Section-3">Section-3</SelectItem>
+                  </SelectContent>
+                </Select>
+
                 <Label htmlFor="transport">Transport</Label>
                 <Select
                   value={(formData.profileData as any).transport || ''}
@@ -342,44 +362,34 @@ const RegisterForm = () => {
 
             {formData.role === 'FACULTY' && (
               <div className="space-y-2">
-                <Label htmlFor="subjectAssigned">Subject Assigned</Label>
+                <Label htmlFor="FirstName">First Name</Label>
                 <Input
-                  id="subjectAssigned"
-                  name="subjectAssigned"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Enter subject assigned"
-                  value={formData.profileData && 'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
+                  placeholder="Enter first name"
+                  value={formData.profileData.firstName || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
-                <Label htmlFor="department">Department</Label>
-                <Select
-                  value={(formData.profileData as any).department || ''}
-                  onValueChange={value =>
-                    handleProfileDataChange({
-                      target: { name: 'department', value }
-                    } as React.ChangeEvent<HTMLInputElement>)
-                  }
-                >
-                  <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CSE">CSE</SelectItem>
-                    <SelectItem value="CSD">CSD</SelectItem>
-                    <SelectItem value="CSM">CSM</SelectItem>
-                    <SelectItem value="ECE">ECE</SelectItem>
-                    <SelectItem value="EEE">EEE</SelectItem>
-                    <SelectItem value="Mechanical">Mechanical</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Label htmlFor="classes">Classes</Label>
+
+                <Label htmlFor="lastName">Last Name</Label>
                 <Input
-                  id="classes"
-                  name="classes"
+                  id="lastName"
+                  name="lastName"
                   type="text"
-                  placeholder="Enter classes (comma separated)"
-                  value={('classes' in formData.profileData ? (formData.profileData as any).classes : '') || ''}
+                  placeholder="Enter last name"
+                  value={formData.profileData.lastName || ''}
+                  onChange={handleProfileDataChange}
+                  required
+                />
+                <Label htmlFor="phoneNumber">Phone number</Label>
+                <Input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  placeholder="Phone number"
+                  value={formData.profileData.phoneNumber || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -421,87 +431,6 @@ const RegisterForm = () => {
                   required
                 />
 
-                <Label htmlFor="subjectAssigned">Subject Assignment</Label>
-                <Input
-                  id="subjectAssigned"
-                  name="subjectAssigned"
-                  type="text"
-                  placeholder="Subject Assignment"
-                  value={'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-
-                <Label htmlFor="department">Department</Label>
-                <Select
-                  value={(formData.profileData as any)?.department || ''}
-                  onValueChange={value =>
-                    handleProfileDataChange({
-                      target: { name: 'department', value }
-                    } as React.ChangeEvent<HTMLInputElement>)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CSE">CSE</SelectItem>
-                    <SelectItem value="CSD">CSD</SelectItem>
-                    <SelectItem value="CSM">CSM</SelectItem>
-                    <SelectItem value="ECE">ECE</SelectItem>
-                    <SelectItem value="EEE">EEE</SelectItem>
-                    <SelectItem value="Mechanical">Mechanical</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Label htmlFor="semester">Semester</Label>
-                <Select
-                  value={(formData.profileData as any)?.semester || ''}
-                  onValueChange={value =>
-                    handleProfileDataChange({
-                      target: { name: 'semester', value }
-                    } as React.ChangeEvent<HTMLInputElement>)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select semester" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="4">4</SelectItem>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="6">6</SelectItem>
-                    <SelectItem value="7">7</SelectItem>
-                    <SelectItem value="8">8</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {formData.role === 'ADMIN' && (
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
               </div>
             )}
 
@@ -554,16 +483,7 @@ const RegisterForm = () => {
                   required
                 />
 
-                <Label htmlFor="subjectAssigned">Subject Assignment</Label>
-                <Input
-                  id="subjectAssigned"
-                  name="subjectAssigned"
-                  type="text"
-                  placeholder="Subject Assignment"
-                  value={'subjectAssigned' in formData.profileData ? (formData.profileData as any).subjectAssigned || '' : ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
+               
               </div>
             )}
             
@@ -638,7 +558,7 @@ const RegisterForm = () => {
                 </li>
                 <li className={
                 formData.password
-                  ? /[!@#$%^&*(),.?":{}|<>_\-\[\];'/`~+=]/.test(formData.password)
+                  ? /[!@#$%^&*(),.?":{}|<>_\-[\];'/`~+=]/.test(formData.password)
                   ? "text-green-600 font-medium"
                   : "text-red-600 font-medium"
                   : "text-gray-600 dark:text-gray-400"

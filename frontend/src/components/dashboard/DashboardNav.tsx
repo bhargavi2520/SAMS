@@ -78,19 +78,19 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
               className={`flex flex-col items-start focus:outline-none w-full ${activeSection === item.section ? 'text-blue-700' : 'text-blue-400 hover:text-blue-700'} bg-transparent transition-colors ml-3`}
               aria-label={item.label}
             >
-              {item.icon}
+              {item.icon }
             </button>
             <span
-              onClick={() => handleNav(item.section)}
-              className={`absolute left-20 top-1/2 -translate-y-1/2 text-xs rounded px-3 py-1 shadow-lg pointer-events-auto cursor-pointer whitespace-nowrap z-50 min-w-max font-semibold tracking-wide transition-colors
-                ${activeSection === item.section
-                  ? 'bg-blue-600 text-white opacity-100 visible'
-                  : 'bg-transparent text-blue-700 opacity-0 invisible group-hover:bg-blue-100 group-hover:text-blue-700 group-hover:opacity-100 group-hover:visible'}`}
-              tabIndex={0}
-              role="button"
-            >
-              {item.label}
-            </span>
+  onClick={() => handleNav(item.section)}
+  className={`absolute left-12 top-1/2 -translate-y-1/2 text-xs rounded px-3 py-1 shadow-lg pointer-events-auto cursor-pointer z-50 font-semibold tracking-wide transition-colors text-center w-28
+    ${activeSection === item.section
+      ? 'bg-blue-600 text-white opacity-100 visible'
+      : 'bg-transparent text-blue-700 opacity-0 invisible group-hover:bg-blue-100 group-hover:text-blue-700 group-hover:opacity-100 group-hover:visible'}`}
+  tabIndex={0}
+  role="button"
+>
+  {item.label}
+</span>
           </div>
         ))}
       </nav>
