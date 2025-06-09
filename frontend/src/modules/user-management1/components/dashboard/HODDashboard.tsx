@@ -95,38 +95,38 @@ const HODDashboard = ({ isHOD = true }) => {
   const sectionContent = {
     dashboard: (
       <>
-        {/* Overview content (summary cards, activities, approvals) - Adjusted for narrow width */}
-      <div className="grid grid-cols-1 gap-4 mb-6">
+        {/* Overview content (summary cards, activities, approvals) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {summaryCards.map((card) => (
           <Card key={card.label} className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800`}>
-            <CardContent className="flex flex-col gap-1 p-3 w-full"> {/* Reduced padding */}
-              <div className="flex items-center gap-2 text-xs mb-1"> {/* Smaller text */}
+            <CardContent className="flex flex-col gap-1 p-4 w-full">
+              <div className="flex items-center gap-2 text-xs sm:text-sm mb-1">
                 {card.icon}
                 {card.label}
               </div>
-              <div className="text-lg font-bold">{card.value}</div> {/* Smaller text */}
-              <div className="text-xs opacity-70">{card.sub}</div> {/* Smaller text */}
+              <div className="text-xl sm:text-2xl font-bold">{card.value}</div>
+              <div className="text-xs sm:text-sm opacity-70">{card.sub}</div>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-4"> {/* Adjusted for narrow width, reduced gap */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recent Activities */}
         <Card className="bg-white dark:bg-neutral-800">
-          <CardContent className="p-3"> {/* Reduced padding */}
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+          <CardContent className="p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
               <ClipboardList className="w-5 h-5" /> Recent Activities
             </h2>
             <div className="space-y-4">
               {recentActivities.map((act, idx) => (
-                <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-2 flex items-center justify-between transition-colors"> {/* Reduced padding */}
+                <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex items-center justify-between transition-colors">
                   <div>
-                    <div className="font-medium text-xs text-gray-900 dark:text-white">{act.title}</div> {/* Smaller text */}
-                    <div className="text-xs text-gray-500 dark:text-gray-300">{act.desc}</div>
+                    <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">{act.title}</div>
+                    <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">{act.desc}</div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(act.status)}`}>{act.status}</span> {/* Adjusted padding */}
-                    <span className="text-xs text-gray-400 mt-1">{act.time}</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor(act.status)}`}>{act.status}</span>
+                    <span className="text-xs sm:text-sm text-gray-400 mt-1">{act.time}</span>
                     {/* Only HOD can update status */}
                     {isHOD && (
                       <Button size="sm" className="mt-2" variant="outline">Update Status</Button>
@@ -139,23 +139,23 @@ const HODDashboard = ({ isHOD = true }) => {
         </Card>
         {/* Pending Approvals */}
         <Card className="bg-white dark:bg-neutral-800">
-          <CardContent className="p-3"> {/* Reduced padding */}
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+          <CardContent className="p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5" /> Pending Approvals
             </h2>
             <div className="space-y-4">
               {pendingApprovals.map((item, idx) => (
-                <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-2 flex flex-col gap-2 transition-colors"> {/* Always flex-col, reduced padding */}
+                <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors">
                   <div>
-                    <span className="inline-block bg-gray-200 dark:bg-neutral-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">{item.type}</span> {/* Smaller text */}
-                    <div className="font-medium text-xs text-gray-900 dark:text-white">{item.name}</div> {/* Smaller text */}
-                    <div className="text-xs text-gray-500 dark:text-gray-300">{item.detail}</div>
+                    <span className="inline-block bg-gray-200 dark:bg-neutral-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">{item.type}</span>
+                    <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">{item.name}</div>
+                    <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">{item.detail}</div>
                   </div>
-                  <div className="w-full flex flex-col items-start gap-1 mt-1 sm:flex-row sm:justify-between sm:items-center"> {/* Adjusted for narrow layout */}
-                    <span className="text-xs text-gray-400">{item.date}</span>
+                  <div className="w-full flex flex-row justify-between items-center mt-2 md:mt-0 md:w-auto md:flex-col md:items-end md:gap-2">
+                    <span className="text-xs sm:text-sm text-gray-400">{item.date}</span>
                     {/* Only HOD can approve/reject */}
                     {isHOD && (
-                      <div className="flex gap-1"> {/* Reduced gap */}
+                      <div className="flex gap-2">
                         <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">Approve</Button>
                         <Button size="sm" variant="outline" className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 hover:bg-red-100 dark:hover:bg-red-900">Reject</Button>
                       </div>
@@ -171,10 +171,10 @@ const HODDashboard = ({ isHOD = true }) => {
   ),
   timetable: (
     <div className="p-6">
-      <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+      <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
         <CalendarDays className="w-5 h-5" /> Timetable
       </h2>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm"> {/* Adjusted border */}
+      <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
         <table className="min-w-full text-xs sm:text-sm text-center">
           <thead className="bg-gray-50 dark:bg-neutral-800">
             <tr>
@@ -259,20 +259,20 @@ const HODDashboard = ({ isHOD = true }) => {
     ),
     attendance: (
       <div className="p-6">
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5" /> Attendance
         </h2>
-        <div className="text-xs text-gray-500 dark:text-gray-300">Attendance management and analytics go here.</div> {/* Smaller text */}
+        <div className="text-sm text-gray-500 dark:text-gray-300">Attendance management and analytics go here.</div>
       </div>
     ),
     exams: (
       <div className="p-6">
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
           <FileText className="w-5 h-5" /> Exams
         </h2>
-        <div className="text-xs text-gray-500 dark:text-gray-300">Exam schedules, results, and management go here.</div> {/* Smaller text */}
+        <div className="text-sm text-gray-500 dark:text-gray-300">Exam schedules, results, and management go here.</div>
         <div className="mt-6">
-          <h3 className="text-sm font-semibold mb-2 text-primary">Exam Dates</h3> {/* Smaller text */}
+          <h3 className="text-base sm:text-lg font-semibold mb-2 text-primary">Exam Dates</h3>
           <table className="min-w-[300px] text-xs sm:text-sm border rounded-lg overflow-hidden">
             <thead className="bg-gray-100 dark:bg-neutral-800">
               <tr>
@@ -300,7 +300,7 @@ const HODDashboard = ({ isHOD = true }) => {
     ),
     results: (
       <div className="p-6">
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
           <BarChart2 className="w-5 h-5" /> Results
         </h2>
         <div className="text-gray-500 dark:text-gray-300">Results analytics and reports go here.</div>
@@ -308,12 +308,12 @@ const HODDashboard = ({ isHOD = true }) => {
     ),
     announcements: (
       <div className="p-6">
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
           <Bell className="w-5 h-5" /> Announcements
           <div className="flex-1" />
           <Button className="ml-auto bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium">Make Announcement</Button>
         </h2>
-        <div className="text-xs text-gray-500 dark:text-gray-300">Department announcements and notifications go here.</div> {/* Smaller text */}
+        <div className="text-sm text-gray-500 dark:text-gray-300">Department announcements and notifications go here.</div>
       </div>
     ),
   };
@@ -405,54 +405,54 @@ const HODDashboard = ({ isHOD = true }) => {
   const approvalsWithAction = approvals.map(item => ({ ...item, action: item.action ?? undefined }));
 
   return (
-    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900 min-h-screen transition-colors flex">
+    <div className="w-4/4 mx-auto sm:w-full sm:max-w-7xl py-6 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900 min-h-screen transition-colors flex">
       <DashboardNav
         activeSection={activeSection}
         onNavClick={handleNavClick}
         dashboardType="hod"
       />
-      <div className="flex-1 ml-0 md:ml-40">
+      <div className="flex-1 w-full ml-0 md:ml-40"> {/* Ensure inner div takes full width of its parent */}
         {/* Remove DashboardLayout if it adds extra space */}
         {/* <DashboardLayout /> */}
-        <div className="max-w-sm mx-auto p-3 space-y-6"> {/* Applied max-w-sm, reduced padding and space-y */}
+        <div className="p-4 sm:p-6 space-y-8 md:space-y-10">
           {/* Profile Section at the top (not in nav, always visible) */}
           <section className="scroll-mt-24 space-y-6">
-            <h2 className="text-lg font-bold mb-3 flex items-center gap-2"><User className="w-5 h-5" /> Profile</h2> {/* Smaller text & icon */}
-            <div className="grid grid-cols-1 gap-4"> {/* Always 1 column, reduced gap */}
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2"><User className="w-6 h-6" /> Profile</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-white dark:bg-neutral-800 w-full">
-                <CardContent className="p-3 flex flex-col gap-3"> {/* Reduced padding & gap */}
-                  <h3 className="text-base font-semibold mb-2 flex items-center gap-2"> {/* Smaller text */}
+                <CardContent className="p-4 md:p-6 flex flex-col gap-4">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 flex items-center gap-2">
                     <User className="w-5 h-5" /> Primary Information
                   </h3>
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
-                      <Badge variant="secondary" className="bg-gray-200 dark:bg-neutral-700 text-xs"><Building2 className="w-3 h-3 mr-1 inline" /> {hodProfile.department}</Badge> {/* Smaller text & icon */}
+                      <Badge variant="secondary" className="bg-gray-200 dark:bg-neutral-700 text-sm"><Building2 className="w-4 h-4 mr-1 inline" /> {hodProfile.department}</Badge>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
-                      <span className="font-medium text-xs">Employee ID:</span> <span className="text-xs">{hodProfile.employeeId}</span> {/* Smaller text */}
+                      <span className="font-medium text-xs sm:text-sm">Employee ID:</span> <span className="text-xs sm:text-sm">{hodProfile.employeeId}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
-                      <span className="font-medium text-xs">Name:</span> <span className="text-xs">{hodProfile.name}</span> {/* Smaller text */}
+                      <span className="font-medium text-xs sm:text-sm">Name:</span> <span className="text-xs sm:text-sm">{hodProfile.name}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               <Card className="bg-white dark:bg-neutral-800 w-full">
-                <CardContent className="p-3 flex flex-col gap-3"> {/* Reduced padding & gap */}
-                  <h3 className="text-base font-semibold mb-2 flex items-center gap-2"> {/* Smaller text */}
+                <CardContent className="p-4 md:p-6 flex flex-col gap-4">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 flex items-center gap-2">
                     <Mail className="w-5 h-5" /> Contact Information
                   </h3>
                   <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-700 dark:text-gray-200"> {/* Smaller text */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
                       <Mail className="w-4 h-4" /> <span className="font-medium">Official Email:</span> {hodProfile.officialEmail}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-700 dark:text-gray-200"> {/* Smaller text */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
                       <Mail className="w-4 h-4" /> <span className="font-medium">Personal Email:</span> {hodProfile.personalEmail}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-700 dark:text-gray-200"> {/* Smaller text */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
                       <Phone className="w-4 h-4" /> <span className="font-medium">Phone:</span> {hodProfile.phone}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-700 dark:text-gray-200"> {/* Smaller text */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
                       <MapPin className="w-4 h-4" /> <span className="font-medium">Address:</span> {hodProfile.address}
                     </div>
                   </div>
@@ -460,38 +460,39 @@ const HODDashboard = ({ isHOD = true }) => {
               </Card>
             </div>
           </section>
+
           {/* Dashboard Section */}
           <section ref={dashboardRef} id="dashboard" className="scroll-mt-24 space-y-6">
-            <div className="grid grid-cols-1 gap-4 mb-6"> {/* Always 1 column for summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {summaryCards.map((card) => (
                 <Card key={card.label} className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800`}>
-                  <CardContent className="flex flex-col gap-1 p-3 w-full"> {/* Reduced padding */}
-                    <div className="flex items-center gap-2 text-xs mb-1"> {/* Smaller text */}
+                  <CardContent className="flex flex-col gap-1 p-4 w-full">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm mb-1">
                       {card.icon}
                       {card.label}
                     </div>
-                    <div className="text-lg font-bold ">{card.value}</div> {/* Smaller text */}
-                    <div className="text-xs opacity-70">{card.sub}</div> {/* Smaller text */}
+                    <div className="text-xl sm:text-2xl font-bold ">{card.value}</div>
+                    <div className="text-xs sm:text-sm opacity-70">{card.sub}</div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-            <div className="grid grid-cols-1 gap-4"> {/* Always 1 column, reduced gap */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-white dark:bg-neutral-800">
-                <CardContent className="p-3"> {/* Reduced padding */}
-                  <h3 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+                <CardContent className="p-4 md:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                     <ClipboardList className="w-5 h-5" /> Recent Activities
                   </h3>
                   <div className="space-y-4">
                     {activities.map((act, idx) => (
-                      <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-2 flex items-center justify-between transition-colors"> {/* Reduced padding */}
+                      <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex items-center justify-between transition-colors">
                         <div>
-                          <div className="font-medium text-xs text-gray-900 dark:text-white">{act.title}</div> {/* Smaller text */}
-                          <div className="text-xs text-gray-500 dark:text-gray-300">{act.desc}</div>
+                          <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">{act.title}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">{act.desc}</div>
                         </div>
                         <div className="flex flex-col items-end">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(act.status)}`}>{act.status}</span> {/* Adjusted padding */}
-                          <span className="text-xs text-gray-400 mt-1">{act.time}</span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor(act.status)}`}>{act.status}</span>
+                          <span className="text-xs sm:text-sm text-gray-400 mt-1">{act.time}</span>
                           {/* Only HOD can update status */}
                           {isHOD && (
                             <Button size="sm" className="mt-2" variant="outline" onClick={() => handleUpdateStatus(idx)}>
@@ -505,23 +506,23 @@ const HODDashboard = ({ isHOD = true }) => {
                 </CardContent>
               </Card>
               <Card className="bg-white dark:bg-neutral-800">
-                <CardContent className="p-3"> {/* Reduced padding */}
-                  <h3 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+                <CardContent className="p-4 md:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                     <Clock className="w-5 h-5" /> Pending Approvals
                   </h3>
                   <div className="space-y-4">
                     {approvalsWithAction.map((item, idx) => (
-                      <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-2 flex flex-col gap-2 transition-colors"> {/* Always flex-col, reduced padding */}
+                      <div key={idx} className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors">
                         <div>
-                          <span className="inline-block bg-gray-200 dark:bg-neutral-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">{item.type}</span> {/* Smaller text */}
-                          <div className="font-medium text-xs text-gray-900 dark:text-white">{item.name}</div> {/* Smaller text */}
-                          <div className="text-xs text-gray-500 dark:text-gray-300">{item.detail}</div>
+                          <span className="inline-block bg-gray-200 dark:bg-neutral-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">{item.type}</span>
+                          <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">{item.name}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">{item.detail}</div>
                         </div>
-                        <div className="w-full flex flex-col items-start gap-1 mt-1 sm:flex-row sm:justify-between sm:items-center"> {/* Adjusted for narrow layout */}
-                          <span className="text-xs text-gray-400">{item.date}</span>
+                        <div className="w-full flex flex-row justify-between items-center mt-2 md:mt-0 md:w-auto md:flex-col md:items-end md:gap-2">
+                          <span className="text-xs sm:text-sm text-gray-400">{item.date}</span>
                           {/* Only HOD can approve/reject */}
                           {isHOD && !item.action && (
-                            <div className="flex gap-1"> {/* Reduced gap */}
+                            <div className="flex gap-2">
                               <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleApprovalAction(idx, 'approved')}>Approve</Button>
                               <Button size="sm" variant="outline" className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 hover:bg-red-100 dark:hover:bg-red-900" onClick={() => handleApprovalAction(idx, 'rejected')}>Reject</Button>
                             </div>
@@ -548,10 +549,10 @@ const HODDashboard = ({ isHOD = true }) => {
 
           {/* Faculty Management Section */}
           <section ref={facultyManagementRef} id="faculty-management" className="scroll-mt-24 space-y-6">
-            <h2 className="text-lg font-bold mb-3 flex items-center gap-2"><UserCog className="w-5 h-5" /> Faculty Management</h2> {/* Smaller text & icon */}
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2"><UserCog className="w-6 h-6" /> Faculty Management</h2>
             <Card className="bg-white dark:bg-neutral-800">
-              <CardContent className="p-3"> {/* Reduced padding */}
-                <h3 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+              <CardContent className="p-4 md:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                   <User className="w-5 h-5" /> Faculty Performance
                 </h3>
                 {/* Unified Table for all screen sizes, scrollable on small screens */}
@@ -559,12 +560,12 @@ const HODDashboard = ({ isHOD = true }) => {
                   <Table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-100 dark:bg-neutral-800">
                       <tr>
-                        <th scope="col" className="px-2 py-1 w-1/6 text-left font-bold text-primary text-xs">Name</th> {/* Smaller text, padding */}
-                        <th scope="col" className="px-2 py-1 w-1/6 text-left font-bold text-primary text-xs">Rating</th>
-                        <th scope="col" className="px-2 py-1 w-1/6 text-left font-bold text-primary text-xs">Performance</th>
-                        <th scope="col" className="px-2 py-1 w-1/6 text-left font-bold text-primary text-xs">Subjects</th>
-                        <th scope="col" className="px-2 py-1 w-1/6 text-left font-bold text-primary text-xs">Students</th>
-                        <th scope="col" className="px-2 py-1 w-1/6 text-center font-bold text-primary text-xs">Action</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/6 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Name</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/6 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Rating</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/6 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Performance</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/6 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Subjects</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/6 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Students</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/6 text-center font-bold text-primary text-xs sm:text-sm md:text-base">Action</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200">
@@ -589,17 +590,17 @@ const HODDashboard = ({ isHOD = true }) => {
 
           {/* Student Management Section */}
           <section ref={studentManagementRef} id="student-management" className="scroll-mt-24 space-y-6">
-            <h2 className="text-lg font-bold mb-3 flex items-center gap-2"><Users className="w-5 h-5" /> Student Management</h2> {/* Smaller text & icon */}
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> Student Management</h2>
             <Card className="bg-white dark:bg-neutral-800">
-              <CardContent className="p-3"> {/* Reduced padding */}
-                <h3 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+              <CardContent className="p-4 md:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                   <BarChart2 className="w-5 h-5" /> Academic Performance
                   <div className="flex-1" />
                   <div className="flex items-center gap-2">
-                    <label htmlFor="year-select" className="text-xs font-medium text-gray-700 dark:text-gray-200">Year:</label> {/* Smaller text */}
+                    <label htmlFor="year-select" className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">Year:</label>
                     <select
                       id="year-select"
-                      className="ml-2 border border-gray-300 dark:border-neutral-600 rounded px-2 py-1 text-xs bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary" /* Smaller text */
+                      className="ml-2 border border-gray-300 dark:border-neutral-600 rounded px-2 py-1 text-xs sm:text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                       value={selectedYear}
                       onChange={e => setSelectedYear(Number(e.target.value))}
                     >
@@ -614,10 +615,10 @@ const HODDashboard = ({ isHOD = true }) => {
                   <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700 ">
                     <thead className="bg-gray-100 dark:bg-neutral-800">
                       <tr>
-                        <th scope="col" className="px-2 py-1 w-1/4 text-left font-bold text-primary text-xs">Semester</th> {/* Smaller text, padding */}
-                        <th scope="col" className="px-2 py-1 w-1/4 text-left font-bold text-primary text-xs">Pass Rate</th>
-                        <th scope="col" className="px-2 py-1 w-1/4 text-left font-bold text-primary text-xs">Fail Rate</th>
-                        <th scope="col" className="px-2 py-1 w-1/4 text-center font-bold text-primary text-xs">Actions</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/4 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Semester</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/4 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Pass Rate</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/4 text-left font-bold text-primary text-xs sm:text-sm md:text-base">Fail Rate</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 w-1/4 text-center font-bold text-primary text-xs sm:text-sm md:text-base">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
@@ -645,11 +646,11 @@ const HODDashboard = ({ isHOD = true }) => {
           {/* Timetable Section */}
           <section ref={timetableRef} id="timetable" className="scroll-mt-24">
             <Card className="bg-white dark:bg-neutral-800 mb-6">
-              <CardContent className="p-3"> {/* Reduced padding */}
-                <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+              <CardContent className="p-4 md:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                   <CalendarDays className="w-5 h-5" /> Timetable
                 </h2>
-                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm"> {/* Adjusted border */}
+                <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
                   <table className="min-w-full text-xs sm:text-sm text-center">
                     <thead className="bg-gray-50 dark:bg-neutral-800">
                       <tr>
@@ -737,13 +738,13 @@ const HODDashboard = ({ isHOD = true }) => {
           {/* Exams Section */}
           <section ref={examsRef} id="exams" className="scroll-mt-24">
             <Card className="bg-white dark:bg-neutral-800 mb-6">
-              <CardContent className="p-3"> {/* Reduced padding */}
-                <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+              <CardContent className="p-4 md:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5" /> Exams
                 </h2>
-                <div className="text-xs text-gray-500 dark:text-gray-300">Exam schedules, results, and management go here.</div> {/* Smaller text */}
+                <div className="text-sm text-gray-500 dark:text-gray-300">Exam schedules, results, and management go here.</div>
                 <div className="mt-6">
-                  <h3 className="text-sm font-semibold mb-2 text-primary">Exam Dates</h3> {/* Smaller text */}
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 text-primary">Exam Dates</h3>
                   <table className="min-w-[300px] text-xs sm:text-sm border rounded-lg overflow-hidden">
                     <thead className="bg-gray-100 dark:bg-neutral-800">
                       <tr>
@@ -770,15 +771,16 @@ const HODDashboard = ({ isHOD = true }) => {
               </CardContent>
             </Card>
           </section>
+
           {/* Announcements Section */}
           <section ref={announcementsRef} id="announcements" className="scroll-mt-24">
             <Card className="bg-white dark:bg-neutral-800 mb-6">
-              <CardContent className="p-3"> {/* Reduced padding */}
-                <h2 className="text-base font-semibold mb-3 flex items-center gap-2"> {/* Smaller text & margin */}
+              <CardContent className="p-4 md:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                   <Bell className="w-5 h-5" /> Announcements
                   <div className="flex-1" />
                   <Button
-                    className="ml-auto bg-primary text-white px-3 py-1 rounded shadow hover:bg-primary/90 transition-colors text-xs font-medium" /* Adjusted padding & text */
+                    className="ml-auto bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
                     onClick={() => setShowAnnouncementTab(true)}
                   >
                     Make Announcement
@@ -787,7 +789,7 @@ const HODDashboard = ({ isHOD = true }) => {
                 {showAnnouncementTab ? (
                   <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-4 flex flex-col gap-3 border border-primary/30">
                     <textarea
-                      className="w-full min-h-[60px] rounded border border-gray-300 dark:border-neutral-600 p-2 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary" /* Smaller text, min-height */
+                      className="w-full min-h-[80px] rounded border border-gray-300 dark:border-neutral-600 p-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary"
                       placeholder="Write your announcement here..."
                       value={announcementText}
                       onChange={e => setAnnouncementText(e.target.value)}
@@ -795,7 +797,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     />
                     <div className="flex gap-2 justify-end">
                       <Button
-                        className="bg-primary text-white px-3 py-1 rounded shadow hover:bg-primary/90 transition-colors text-xs font-medium" /* Adjusted padding & text */
+                        className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
                         onClick={handleAnnouncementSubmit}
                         disabled={!announcementText.trim()}
                       >
@@ -803,7 +805,7 @@ const HODDashboard = ({ isHOD = true }) => {
                       </Button>
                       <Button
                         variant="outline"
-                        className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 px-3 py-1 text-xs" /* Adjusted padding & text */
+                        className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
                         onClick={() => { setShowAnnouncementTab(false); setAnnouncementText(''); }}
                       >
                         Cancel
@@ -811,7 +813,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     </div>
                   </div>
                 ) : null}
-                <div className="text-xs text-gray-500 dark:text-gray-300">Department announcements and notifications go here.</div> {/* Smaller text */}
+                <div className="text-sm text-gray-500 dark:text-gray-300">Department announcements and notifications go here.</div>
               </CardContent>
             </Card>
           </section>
