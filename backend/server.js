@@ -35,6 +35,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 // --- END of new CORS configuration ---
 
+// --- START of new GET routes ---
+app.get("/", (req, res) => {
+  res.send("🚀 Backend is LIVE! Welcome to SAMS");
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({ status: "UP", message: "All good, No worries!" });
+});
+// --- END of new GET routes ---
+
 app.use(express.urlencoded({ extended: true }))
 app.use(bodyParse.json())
 app.use('/auth', AuthRouter)
