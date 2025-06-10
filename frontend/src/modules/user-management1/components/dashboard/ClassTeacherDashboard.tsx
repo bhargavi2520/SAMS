@@ -1,4 +1,23 @@
 import React, { useState } from 'react';
+
+// Attendance Switch Component
+const AttendanceSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
+  <button
+    type="button"
+    onClick={onChange}
+    className={`relative w-10 h-6 rounded-full transition-colors duration-200 outline-none border-2 flex items-center ${
+      checked ? 'bg-green-400 border-green-400' : 'bg-gray-200 border-gray-300'
+    }`}
+    aria-pressed={checked}
+    aria-label={checked ? 'Present' : 'Absent'}
+  >
+    <span
+      className={`absolute left-0 top-0 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+        checked ? 'translate-x-4' : 'translate-x-1'
+      }`}
+    />
+  </button>
+);
 import DashboardNav from '../../../../components/dashboard/DashboardNav';
 
 const overviewStats = [
@@ -8,62 +27,7 @@ const overviewStats = [
   { label: 'Pass Rate', value: '96%', icon: '✅', color: 'bg-purple-100 text-purple-800' },
 ];
 
-const recentActivities = [
-  { type: 'attendance', text: 'Attendance marked for 48 students', time: 'Today, 9:00 AM' },
-  { type: 'counseling', text: 'Scheduled counseling for Student 12', time: 'Yesterday, 3:30 PM' },
-  { type: 'parent', text: 'Parent meeting held for Student 7', time: '2 days ago' },
-  { type: 'report', text: 'Generated progress report for Section A', time: '2 days ago' },
-];
-
-const quickActions = [
-  { label: 'Mark Attendance', color: 'bg-blue-600 hover:bg-blue-700', icon: '📝' },
-  { label: 'Send Parent Notification', color: 'bg-green-600 hover:bg-green-700', icon: '📢' },
-  { label: 'Schedule Counseling', color: 'bg-yellow-500 hover:bg-yellow-600', icon: '💬' },
-  { label: 'Generate Report', color: 'bg-purple-600 hover:bg-purple-700', icon: '📄' },
-];
-
-const assignmentDetails = {
-  facultyId: 'FAC12345',
-  facultyName: 'Dr. Priya Sharma',
-  department: 'Physics',
-  academicYear: '2024-2025',
-  semester: 'IV',
-  section: 'A',
-  classStrength: 48,
-};
-
-const responsibilities = [
-  {
-    icon: '📝',
-    title: 'Attendance Management',
-    description: 'Mark and review daily attendance for all students in your class.'
-  },
-  {
-    icon: '📢',
-    title: 'Parent Communication',
-    description: 'Send notifications and updates to parents regarding student progress.'
-  },
-  {
-    icon: '💬',
-    title: 'Counseling',
-    description: 'Schedule and conduct counseling sessions for students in need.'
-  },
-  {
-    icon: '📄',
-    title: 'Report Generation',
-    description: 'Generate academic and attendance reports for your class.'
-  },
-  {
-    icon: '🗂️',
-    title: 'Student Records',
-    description: 'Access and update student personal and academic records.'
-  },
-  {
-    icon: '📚',
-    title: 'Academic Planning',
-    description: 'Plan and coordinate academic activities and schedules.'
-  },
-];
+// Removed recentActivities, quickActions, assignmentDetails, responsibilities
 
 const studentList = [
   { rollNo: '2024PHY001', name: 'Aarav Kumar', attendance: 94, grade: 'A', status: 'Regular' },
@@ -168,48 +132,81 @@ const reportOptions = [
 
 const sectionIds = [
   'quick-stats',
-  'quick-actions',
-  'recent-activities',
-  'assignment-details',
+  'attendance-section',
   'student-list',
   'weekly-timetable',
   'monitors-representatives',
   'communication',
-  'reports', // Added Reports section id
+  'reports',
 ];
 
 const ClassTeacherDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState(sectionIds[0]);
 
-  // Intersection Observer to update activeSection on scroll
+  const handleNavClick = (section: string) => {
+    setActiveSection(section);
+    if (section === 'quick-stats') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    const el = document.getElementById(section);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Attendance state for students
+  const [attendance, setAttendance] = useState<{ rollNo: string; name: string; present: boolean }[]>(
+    studentList.map((s) => ({ ...s, present: false }))
+  );
+
+  // Attendance date state
+  const [attendanceDate, setAttendanceDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
+  });
+
+  // Optimized scroll detection using Intersection Observer
   React.useEffect(() => {
-    const handleScroll = () => {
-      let found = sectionIds[0];
-      for (const id of sectionIds) {
-        const el = document.getElementById(id);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 120) {
-            found = id;
-          }
-        }
-      }
-      setActiveSection(found);
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px',
+      threshold: 0
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe all sections
+    sectionIds.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   return (
     <div>
       <DashboardNav
         activeSection={activeSection}
-        onNavClick={setActiveSection}
+        onNavClick={handleNavClick}
         dashboardType="class_teacher"
       />
       <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Quick Stats */}
-        <section id="quick-stats">
+        <section id="quick-stats" className="scroll-mt-24">
           <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {overviewStats.map(stat => (
@@ -221,72 +218,101 @@ const ClassTeacherDashboard: React.FC = () => {
             ))}
           </div>
         </section>
-        {/* Quick Actions */}
-        <section id="quick-actions">
-          <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-          <div className="flex flex-wrap gap-3">
-            {quickActions.map(action => (
+
+        {/* Attendance Section */}
+        <section id="attendance-section" className="scroll-mt-24">
+          <h2 className="text-xl font-bold mb-4">Attendance</h2>
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <input
+                type="date"
+                className="border rounded px-2 py-1 text-sm"
+                value={attendanceDate}
+                onChange={e => setAttendanceDate(e.target.value)}
+                style={{ minWidth: 120, maxWidth: 120 }}
+              />
               <button
-                key={action.label}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-white font-medium shadow-sm transition-colors ${action.color}`}
+                type="button"
+                className="px-3 py-1 rounded bg-green-500 text-white text-xs font-semibold hover:bg-green-600 transition-colors"
+                onClick={() => {
+                  alert(`Attendance submitted for ${attendanceDate}!`);
+                }}
               >
-                <span>{action.icon}</span>
-                {action.label}
+                Submit
               </button>
-            ))}
-          </div>
-        </section>
-        {/* Recent Activities */}
-        <section id="recent-activities">
-          <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
-          <ul className="divide-y divide-gray-200 bg-white rounded-lg shadow-sm">
-            {recentActivities.map((activity, idx) => (
-              <li key={idx} className="flex items-center gap-3 px-4 py-3">
-                <span className="text-xl">
-                  {activity.type === 'attendance' && '📝'}
-                  {activity.type === 'counseling' && '💬'}
-                  {activity.type === 'parent' && '📢'}
-                  {activity.type === 'report' && '📄'}
-                </span>
-                <div className="flex-1">
-                  <div className="text-sm text-gray-800">{activity.text}</div>
-                  <div className="text-xs text-gray-500">{activity.time}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-        {/* Assignment Details & Responsibilities */}
-        <section id="assignment-details">
-          <h2 className="text-xl font-bold mb-4">Assignment Details</h2>
-          <div className="bg-white rounded-lg shadow-sm p-6 flex flex-col gap-2 mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div><span className="font-medium text-gray-700">Faculty ID:</span> {assignmentDetails.facultyId}</div>
-              <div><span className="font-medium text-gray-700">Faculty Name:</span> {assignmentDetails.facultyName}</div>
-              <div><span className="font-medium text-gray-700">Department:</span> {assignmentDetails.department}</div>
-              <div><span className="font-medium text-gray-700">Academic Year:</span> {assignmentDetails.academicYear}</div>
-              <div><span className="font-medium text-gray-700">Semester:</span> {assignmentDetails.semester}</div>
-              <div><span className="font-medium text-gray-700">Section:</span> {assignmentDetails.section}</div>
-              <div><span className="font-medium text-gray-700">Class Strength:</span> {assignmentDetails.classStrength}</div>
             </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Responsibilities & Access</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {responsibilities.map((resp, idx) => (
-                <div key={idx} className="bg-blue-50 rounded-lg p-4 flex items-start gap-3 shadow-sm">
-                  <span className="text-2xl mt-1">{resp.icon}</span>
-                  <div>
-                    <div className="font-semibold text-blue-900 mb-1">{resp.title}</div>
-                    <div className="text-sm text-gray-700">{resp.description}</div>
+            <div className="overflow-x-auto">
+              <div className="w-full">
+                {/* Table header: Name, Roll No, Attendance (2x for desktop) */}
+                <div className="hidden md:grid md:grid-cols-2 bg-blue-50 rounded-t-md py-2 px-2 font-semibold text-blue-700 text-xs mb-2">
+                  <div className="flex w-full text-center">
+                    <div className="w-1/3">Name</div>
+                    <div className="w-1/3">Roll No</div>
+                    <div className="w-1/3">Attendance</div>
+                  </div>
+                  <div className="flex w-full text-center">
+                    <div className="w-1/3">Name</div>
+                    <div className="w-1/3">Roll No</div>
+                    <div className="w-1/3">Attendance</div>
                   </div>
                 </div>
-              ))}
+                <div className="md:hidden grid grid-cols-3 bg-blue-50 rounded-t-md py-2 px-2 font-semibold text-blue-700 text-xs mb-2">
+                  <div>Name</div>
+                  <div>Roll No</div>
+                  <div>Attendance</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {attendance.map((item, idx) => {
+                    return (
+                      <div
+                        key={item.rollNo}
+                        className="flex flex-col md:flex-row bg-white border rounded-md px-2 py-2 mb-2 shadow-sm"
+                      >
+                        {/* Desktop: 3 fields in a row, Mobile: stacked */}
+                        <div className="flex w-full">
+                          <div className="w-1/3 min-w-0 flex items-center">
+                            <span className="font-medium text-sm truncate">{item.name}</span>
+                          </div>
+                          <div className="w-1/3 flex items-center justify-center">
+                            <span className="bg-blue-50 text-blue-600 font-semibold text-xs px-2 py-1 rounded">
+                              {item.rollNo}
+                            </span>
+                          </div>
+                          <div className="w-1/3 flex items-center justify-end space-x-2">
+                            <AttendanceSwitch
+                              checked={item.present}
+                              onChange={() =>
+                                setAttendance((prev) =>
+                                  prev.map((s, i) =>
+                                    i === idx ? { ...s, present: !s.present } : s
+                                  )
+                                )
+                              }
+                            />
+                            {item.present ? (
+                              <span className="flex items-center px-2 py-1 rounded-full bg-green-50 text-green-600 text-xs font-semibold border border-green-200">
+                                <svg className="w-3 h-3 mr-1 text-green-500" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                Present
+                              </span>
+                            ) : (
+                              <span className="flex items-center px-2 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold border border-red-200">
+                                <svg className="w-3 h-3 mr-1 text-red-500" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                Absent
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </section>
+
         {/* Student List */}
-        <section id="student-list">
+        <section id="student-list" className="scroll-mt-24">
           <h2 className="text-xl font-bold mb-4">Student List</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
@@ -324,8 +350,9 @@ const ClassTeacherDashboard: React.FC = () => {
             </table>
           </div>
         </section>
+
         {/* Weekly Timetable */}
-        <section id="weekly-timetable">
+        <section id="weekly-timetable" className="scroll-mt-24">
           <h2 className="text-xl font-bold mb-4">Weekly Timetable</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
@@ -350,8 +377,9 @@ const ClassTeacherDashboard: React.FC = () => {
             </table>
           </div>
         </section>
+
         {/* Monitors & Representatives */}
-        <section id="monitors-representatives">
+        <section id="monitors-representatives" className="scroll-mt-24">
           <h2 className="text-xl font-bold mb-4">Class Monitors & Representatives</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {monitors.map((m, idx) => (
@@ -374,8 +402,9 @@ const ClassTeacherDashboard: React.FC = () => {
             ))}
           </div>
         </section>
+
         {/* Communication */}
-        <section id="communication">
+        <section id="communication" className="scroll-mt-24">
           <h2 className="text-xl font-bold mb-4">Communication</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {communicationOptions.map((section) => (
@@ -399,8 +428,9 @@ const ClassTeacherDashboard: React.FC = () => {
             ))}
           </div>
         </section>
+
         {/* Reports */}
-        <section id="reports">
+        <section id="reports" className="scroll-mt-24">
           <h2 className="text-xl font-bold mb-4">Reports</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {reportOptions.map((report) => (
