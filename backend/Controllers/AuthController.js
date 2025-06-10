@@ -10,6 +10,7 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
 const registerUser = async (req, res) => {
   try {
     const { email, password, role, profileData } = req.body;
@@ -49,10 +50,8 @@ const registerUser = async (req, res) => {
     const newUser = new UserModel(userData);
     await newUser.save();
 
-    res.status(201).json({
-      message: "User registered successfully",
-      success: true,
-    });
+    return generateTokenAndLogin(newUser, false, req, res);
+
   } catch (error) {
     console.error(error);
     if (error.code === 11000) {
@@ -65,21 +64,29 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
+
+  const { email, password, rememberMe } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: "User not found", success: false });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res
+      .status(400)
+      .json({ message: "Invalid Password", success: false });
+  }
+
+  return generateTokenAndLogin(user, rememberMe, req, res);
+};
+
+
+//login Helper function
+const generateTokenAndLogin = async (user, rememberMe, req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res
-        .status(400)
-        .json({ message: "User not found", success: false });
-    }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: "Invalid Password", success: false });
-    }
-    const expiresIn = req.body.rememberMe ? "7d" : "24h";
+    const expiresIn = rememberMe ? "7d" : "24h";
     const token = jwt.sign(
       {
         id: user._id,
@@ -90,8 +97,7 @@ const loginUser = async (req, res) => {
         expiresIn,
       }
     );
-
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       success: true,
       user: {
@@ -100,13 +106,12 @@ const loginUser = async (req, res) => {
         email: user.email,
         phoneNumber: user.phoneNumber,
         role: user.role,
-        Id: user._id,
       },
       token,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

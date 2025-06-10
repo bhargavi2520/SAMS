@@ -122,7 +122,7 @@ const loginValidation = (req, res, next) => {
   const schema = joi.object({
     email: joi.string().email().lowercase().required(),
     password: joi.string().required(),
-    rememberMe: joi.boolean().required(),
+    rememberMe: joi.boolean(),
   });
   const { error } = schema.validate(req.body);
   if (error) {
