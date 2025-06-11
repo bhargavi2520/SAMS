@@ -17,6 +17,10 @@ const baseUserSchema = new mongoose.Schema(
       required: true,
       enum: ["STUDENT", "ADMIN", "FACULTY", "HOD", "CLASS_TEACHER", "GUEST"],
     },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   options
 );

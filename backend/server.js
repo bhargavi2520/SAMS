@@ -8,6 +8,7 @@ const app = express();
 const AuthRouter = require("./Routes/authRouter");
 const DataRouter = require("./Routes/dataRouter");
 const cors = require("cors");
+const SubjectRouter = require("./Routes/subjectRouter");
 
 const PORT = process.env.PORT || 5000;
 
@@ -43,6 +44,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(limiter);
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParse.json());
 
 app.get("/", (req, res) => {
   res.send(" Backend is LIVE! Welcome to SAMS");
@@ -52,10 +56,9 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "UP", message: "All good, No worries!" });
 });
 
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParse.json());
 app.use("/auth", AuthRouter);
-app.use("/getData", DataRouter);
+app.use("/userData", DataRouter);
+app.use("/academicData", SubjectRouter);
 
 app.listen(PORT, () => {
   console.log(`server started at ${PORT}`);
