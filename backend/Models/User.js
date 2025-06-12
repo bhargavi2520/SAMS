@@ -139,7 +139,6 @@ const adminSchema = new mongoose.Schema({
     required: true,
   },
 });
-const ClassCoordinator = User.discriminator('CLASS_TEACHER', classCoordinatorSchema);
 
 const Admin = User.discriminator("ADMIN", adminSchema);
 

@@ -1,10 +1,8 @@
 const joi = require("joi");
 
 const baseSchema = {
-    name: joi.string().required(),
     email: joi.string().email().lowercase().required(),
     password: joi.string().required(),
-    phoneNumber: joi.string().pattern(/^[0-9]{10}$/).required(),
     role: joi.string().valid(
         'STUDENT', 
         'ADMIN', 
@@ -95,44 +93,25 @@ const schemasByRole = {
 
 const registerValidation = (req, res, next) => {
     try {
-        const { role } = req.body;
-        let schema;
-        switch(role) {
-            case 'STUDENT':
-                schema = studentSchema;
-                break;
-            case 'FACULTY':
-                schema = facultySchema;
-                break;
-            case 'HOD':
-                schema = hodSchema;
-                break;
-            case 'CLASS_TEACHER':
-                schema = classCoordinatorSchema;
-                break;
-            case 'GUEST':
-                schema = guestSchema;
-                break;
-            default:
-                return res.status(400).json({
-                    success: false,
-                    message: 'Role is not Valid'
-                });
-        }
+    const { role } = req.body;
+    const schema = schemasByRole[role];
+    if (!schema) {
+      // Throw an error for consistency, or return a response directly
+      // throw new Error("Role is not valid"); 
+      return res.status(400).json({
+        success: false,
+        message: 'Role is not valid or schema not found for role'
+      });
+    }
+
         const { error } = schema.validate(req.body);
-        if (error) {
-            return res.status(400).json({
-                success: false,
-                message: error.details[0].message
-            });
-        }
+    if (error) throw new Error(error.details[0].message);
+
         next();
-    } catch (err) {
-        console.error('Validation error:', err);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error during validation'
-        });
+  } catch (err) {
+    // Log the error for debugging, but send a generic or specific error message to the client
+    console.error('Validation error:', err.message); // Log the actual Joi validation error or custom message
+    res.status(400).json({ success: false, message: err.message });
     }
 };
 

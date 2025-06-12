@@ -30,14 +30,18 @@ const RegisterForm = () => {
     e.preventDefault();
     clearError();
     
+    // Do not send confirmPassword to the backend
+    const { confirmPassword, ...submissionData } = formData;
+
     try {
-        console.log('Form data being submitted:', formData);
-        await register(formData);
+        console.log('Form data being submitted:', submissionData);
+        await register(submissionData);
         console.log('Registration successful');
         navigate('/dashboard');
     } catch (err: any) {
+        // The error state is already managed by the useAuthStore,
+        // so no need to manually set it here.
         console.error('Registration error:', err);
-        setError(err.message || 'Registration failed');
     }
   };
 
@@ -653,7 +657,3 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
-function setError(arg0: any) {
-  throw new Error('Function not implemented.');
-}
-

@@ -1,6 +1,6 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
-const bodyParse = require("body-parser");
+const bodyParser = require("body-parser"); // Corrected variable name, though can be replaced
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -60,11 +60,8 @@ app.get("/api/test", (req, res) => {
 });
 // --- END of new GET routes ---
 
-app.use(express.urlencoded({ extended: true }))
-app.use(bodyParse.json())
-app.use('/auth', AuthRouter)
-app.use('/getData', DataRouter)
-
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // Or use express.json()
 app.use("/auth", AuthRouter);
 app.use("/userData", DataRouter);
 app.use("/academicData", SubjectRouter);

@@ -92,7 +92,7 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
-  confirmPassword: string;
+  confirmPassword?: string;
   role: UserRole;
   profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>;
 }

@@ -18,8 +18,8 @@ const registerUser = async (req, res) => {
         const roleModels = {
     'STUDENT': Student,
     'FACULTY': Faculty,
-    'HOD': HOD,
-    'CLASS_TEACHER': ClassCoordinator,
+    'HOD': HOD, 
+    'CLASS_TEACHER': ClassTeacher, 
     'GUEST': Guest 
 };
 
