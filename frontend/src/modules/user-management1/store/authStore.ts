@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, User, LoginCredentials, RegisterData } from '@/modules/user-management1/types/auth.types';
+import { AuthState, User, LoginCredentials, RegisterData, StudentProfile, FacultyProfile, AdminProfile, HODProfile, ClassTeacherProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
 import { authService } from '@/modules/user-management1/services/auth.service';
 
 interface AuthStore extends AuthState {
@@ -9,7 +9,7 @@ interface AuthStore extends AuthState {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   clearError: () => void;
-  updateProfile: (profileData: any) => Promise<void>;
+  updateProfile: (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>) => Promise<void>;
   setLoading: (loading: boolean) => void;
 }
 
@@ -25,9 +25,8 @@ export const useAuthStore = create<AuthStore>()(
       login: async (credentials: LoginCredentials) => {
         try {
           set({ isLoading: true, error: null });
-          
-          // Simulate API call - replace with actual API
-          const mockResponse = await authService.login(credentials);
+          // Call the actual service method
+          const mockResponse = await authService.login(credentials); // mockResponse name can be changed to apiResponse or similar
           
           set({
             user: mockResponse.user,
@@ -46,9 +45,8 @@ export const useAuthStore = create<AuthStore>()(
       register: async (data: RegisterData) => {
         try {
           set({ isLoading: true, error: null });
-          
-          // Simulate API call - replace with actual API
-          const mockResponse = await authService.register(data);
+          // Call the actual service method
+          const mockResponse = await authService.register(data); // mockResponse name can be changed to apiResponse or similar
           
           set({
             user: mockResponse.user,
@@ -65,6 +63,7 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       logout: () => {
+        authService.logout(); // Call service logout to clear token from localStorage
         set({
           user: null,
           token: null,
@@ -77,7 +76,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ error: null });
       },
 
-      updateProfile: async (profileData: any) => {
+      updateProfile: async (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>) => {
         try {
           set({ isLoading: true, error: null });
           

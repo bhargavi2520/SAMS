@@ -15,14 +15,13 @@ const registerUser = async (req, res) => {
   try {
     const { email, password, role, profileData } = req.body;
 
-    const roleModels = {
-      STUDENT: Student,
-      ADMIN: Admin,
-      FACULTY: Faculty,
-      HOD: HOD,
-      CLASS_TEACHER: ClassTeacher,
-      GUEST: Guest,
-    };
+        const roleModels = {
+    'STUDENT': Student,
+    'FACULTY': Faculty,
+    'HOD': HOD,
+    'CLASS_TEACHER': ClassCoordinator,
+    'GUEST': Guest 
+};
 
     const UserModel = roleModels[role];
     if (!UserModel) {

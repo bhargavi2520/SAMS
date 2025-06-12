@@ -55,6 +55,15 @@ app.get("/", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.json({ status: "UP", message: "All good, No worries!" });
 });
+app.get("/api/test", (req, res) => {
+    res.json({ status: "UP", message: "Backend connection successful" });
+});
+// --- END of new GET routes ---
+
+app.use(express.urlencoded({ extended: true }))
+app.use(bodyParse.json())
+app.use('/auth', AuthRouter)
+app.use('/getData', DataRouter)
 
 app.use("/auth", AuthRouter);
 app.use("/userData", DataRouter);
@@ -64,8 +73,8 @@ app.listen(PORT, () => {
   console.log(`server started at ${PORT}`);
 });
 
-const mongoUri = process.env.mongoUri;
-mongoose
-  .connect(mongoUri)
-  .then(() => console.log("Database connected"))
-  .catch((err) => console.log(err));
+
+const mongoUri = process.env.mongoUri
+mongoose.connect(mongoUri)
+.then(() => console.log("MongoDB connected successfully"))
+.catch((err) => console.error("MongoDB connection error:", err));

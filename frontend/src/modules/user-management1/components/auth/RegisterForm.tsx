@@ -30,16 +30,14 @@ const RegisterForm = () => {
     e.preventDefault();
     clearError();
     
-    if (formData.password !== formData.confirmPassword) {
-      // Handle password mismatch
-      return;
-    }
-    
     try {
-      await register(formData);
-      navigate('/dashboard');
-    } catch (err) {
-      // Error is handled by the store
+        console.log('Form data being submitted:', formData);
+        await register(formData);
+        console.log('Registration successful');
+        navigate('/dashboard');
+    } catch (err: any) {
+        console.error('Registration error:', err);
+        setError(err.message || 'Registration failed');
     }
   };
 
@@ -655,3 +653,7 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
+function setError(arg0: any) {
+  throw new Error('Function not implemented.');
+}
+

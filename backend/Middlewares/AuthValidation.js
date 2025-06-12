@@ -1,13 +1,18 @@
 const joi = require("joi");
 
 const baseSchema = {
-  email: joi.string().email().lowercase().required(),
-  password: joi.string().required(),
-  role: joi
-    .string()
-    .valid("STUDENT", "ADMIN", "FACULTY", "HOD", "CLASS_TEACHER", "GUEST")
-    .required(),
-  profileData: joi.object().required(),
+    name: joi.string().required(),
+    email: joi.string().email().lowercase().required(),
+    password: joi.string().required(),
+    phoneNumber: joi.string().pattern(/^[0-9]{10}$/).required(),
+    role: joi.string().valid(
+        'STUDENT', 
+        'ADMIN', 
+        'FACULTY', 
+        'HOD', 
+        'CLASS_TEACHER',
+        'GUEST'
+    ).required()
 };
 
 const studentProfileSchema = joi.object({
@@ -89,33 +94,46 @@ const schemasByRole = {
 };
 
 const registerValidation = (req, res, next) => {
-  try {
-    const { role } = req.body;
-    const schema = schemasByRole[role];
-    if (!schema) {
-      return res.status(400).json({
-        success: false,
-        message: "Role is not Valid",
-      });
+    try {
+        const { role } = req.body;
+        let schema;
+        switch(role) {
+            case 'STUDENT':
+                schema = studentSchema;
+                break;
+            case 'FACULTY':
+                schema = facultySchema;
+                break;
+            case 'HOD':
+                schema = hodSchema;
+                break;
+            case 'CLASS_TEACHER':
+                schema = classCoordinatorSchema;
+                break;
+            case 'GUEST':
+                schema = guestSchema;
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: 'Role is not Valid'
+                });
+        }
+        const { error } = schema.validate(req.body);
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message
+            });
+        }
+        next();
+    } catch (err) {
+        console.error('Validation error:', err);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error during validation'
+        });
     }
-
-    const { error } = schema.validate(req.body);
-
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid data",
-        error: error.details[0].message,
-      });
-    }
-    next();
-  } catch (err) {
-    console.error("Validation error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error during validation",
-    });
-  }
 };
 
 const loginValidation = (req, res, next) => {

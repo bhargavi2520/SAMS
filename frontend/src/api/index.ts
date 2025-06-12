@@ -1,12 +1,11 @@
 // frontend/src/api/index.ts
 
 import axios from 'axios';
-
-// Get the backend URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import { apiConfig } from '../config/api.config'; // Adjusted path
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: apiConfig.baseURL,
+  headers: apiConfig.headers // Apply default headers
 });
 
 // You can also add interceptors here for handling tokens automatically
