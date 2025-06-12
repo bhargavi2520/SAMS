@@ -30,16 +30,18 @@ const RegisterForm = () => {
     e.preventDefault();
     clearError();
     
-    if (formData.password !== formData.confirmPassword) {
-      // Handle password mismatch
-      return;
-    }
-    
+    // Do not send confirmPassword to the backend
+    const { confirmPassword, ...submissionData } = formData;
+
     try {
-      await register(formData);
-      navigate('/dashboard');
-    } catch (err) {
-      // Error is handled by the store
+        console.log('Form data being submitted:', submissionData);
+        await register(submissionData);
+        console.log('Registration successful');
+        navigate('/dashboard');
+    } catch (err: any) {
+        // The error state is already managed by the useAuthStore,
+        // so no need to manually set it here.
+        console.error('Registration error:', err);
     }
   };
 
@@ -130,37 +132,39 @@ const RegisterForm = () => {
               </Select>
             </div>
             
+            {/* Common fields for all roles */}
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                name="firstName"
+                type="text"
+                placeholder="Enter first name"
+                value={formData.profileData.firstName || ''}
+                onChange={handleProfileDataChange}
+                required
+              />
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                name="lastName"
+                type="text"
+                placeholder="Enter last name"
+                value={formData.profileData.lastName || ''}
+                onChange={handleProfileDataChange}
+                required
+              />
+            </div>
             {/* Role-specific fields */}
             {formData.role === 'STUDENT' && (
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="rollNumber">Roll Number</Label>
                 <Input
-                  id="firstName"
-                  name="firstName"
+                  id="rollNumber"
+                  name="rollNumber"
                   type="text"
-                  placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-                <Label htmlFor="idNumber">Id Number</Label>
-                <Input
-                  id="idNumber"
-                  name="idNumber"
-                  type="number"
-                  placeholder="Enter your id number"
-                  value={(formData.profileData as any).idNumber || ''}
+                  placeholder="Enter your roll number"
+                  value={formData.profileData.rollNumber || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -372,27 +376,6 @@ const RegisterForm = () => {
 
             {formData.role === 'FACULTY' && (
               <div className="space-y-2">
-                <Label htmlFor="FirstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
                 <Label htmlFor="phoneNumber">Phone number</Label>
                 <Input
                   id="phoneNumber"
@@ -408,28 +391,6 @@ const RegisterForm = () => {
 
             {formData.role === 'CLASS_TEACHER' && (
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-
                 <Label htmlFor="phoneNumber">Phone number</Label>
                 <Input
                   id="phoneNumber"
@@ -440,60 +401,18 @@ const RegisterForm = () => {
                   onChange={handleProfileDataChange}
                   required
                 />
-
               </div>
             )}
 
             {formData.role === 'GUEST' && (
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
+                {/* No additional fields for GUEST */}
               </div>
             )}
 
             {formData.role === 'HOD' && (
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="Enter first name"
-                  value={formData.profileData.firstName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  value={formData.profileData.lastName || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-
-               
+                {/* No additional fields for HOD */}
               </div>
             )}
             
