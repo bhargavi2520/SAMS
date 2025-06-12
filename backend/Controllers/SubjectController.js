@@ -34,6 +34,13 @@ const getSubjectsbyCriteria = async (req, res) => {
 const addSubject = async (req, res) => {
   const { name, code, department, year, semester } = req.body;
   try {
+    const existingSubject = await Subject.findOne({ code });
+    if (existingSubject) {
+      return res.status(400).json({
+        message: "Subject with the same code already exists",
+        success: false,
+      });
+    }
     const newSubject = new Subject({
       name,
       code,

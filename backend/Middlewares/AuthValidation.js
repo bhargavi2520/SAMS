@@ -1,16 +1,12 @@
 const joi = require("joi");
 
 const baseSchema = {
-    email: joi.string().email().lowercase().required(),
-    password: joi.string().required(),
-    role: joi.string().valid(
-        'STUDENT', 
-        'ADMIN', 
-        'FACULTY', 
-        'HOD', 
-        'CLASS_TEACHER',
-        'GUEST'
-    ).required()
+  email: joi.string().email().lowercase().required(),
+  password: joi.string().required(),
+  role: joi
+    .string()
+    .valid("STUDENT", "ADMIN", "FACULTY", "HOD", "CLASS_TEACHER", "GUEST")
+    .required(),
 };
 
 const studentProfileSchema = joi.object({
@@ -92,27 +88,29 @@ const schemasByRole = {
 };
 
 const registerValidation = (req, res, next) => {
-    try {
+  try {
     const { role } = req.body;
     const schema = schemasByRole[role];
     if (!schema) {
-      // Throw an error for consistency, or return a response directly
-      // throw new Error("Role is not valid"); 
       return res.status(400).json({
         success: false,
-        message: 'Role is not valid or schema not found for role'
+        message: "Role is not valid or schema not found for role",
       });
     }
 
-        const { error } = schema.validate(req.body);
-    if (error) throw new Error(error.details[0].message);
-
-        next();
-  } catch (err) {
-    // Log the error for debugging, but send a generic or specific error message to the client
-    console.error('Validation error:', err.message); // Log the actual Joi validation error or custom message
-    res.status(400).json({ success: false, message: err.message });
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid data",
+        error: error.details[0].message,
+      });
     }
+    next();
+  } catch (err) {
+    console.error("Validation error:", err.message);
+    res.status(400).json({ success: false, message: err.message });
+  }
 };
 
 const loginValidation = (req, res, next) => {

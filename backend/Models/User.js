@@ -43,7 +43,7 @@ const studentSchema = new mongoose.Schema({
     required: true,
   },
   year: {
-    type: String,
+    type: Number,
     required: true,
   },
   dateOfBirth: {
@@ -51,7 +51,7 @@ const studentSchema = new mongoose.Schema({
     required: true,
   },
   semester: {
-    type: String,
+    type: Number,
     required: true,
   },
   department: {

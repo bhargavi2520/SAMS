@@ -4,6 +4,7 @@ const ensureAuthenticated = require("../Middlewares/Authentication.js");
 const {
   getStudentDatabyCriteria,
   getFaculties,
+  getFacultyDashboard
 } = require("../Controllers/DataController.js");
 
 DataRouter.get(
@@ -16,5 +17,9 @@ DataRouter.get(
   ensureAuthenticated(["Admin", "HOD"]),
   getFaculties
 );
+
+
+
+DataRouter.get('/facultyDash', ensureAuthenticated(["FACULTY"]), getFacultyDashboard)
 
 module.exports = DataRouter;

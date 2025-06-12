@@ -10,18 +10,17 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-
 const registerUser = async (req, res) => {
   try {
     const { email, password, role, profileData } = req.body;
 
-        const roleModels = {
-    'STUDENT': Student,
-    'FACULTY': Faculty,
-    'HOD': HOD, 
-    'CLASS_TEACHER': ClassTeacher, 
-    'GUEST': Guest 
-};
+    const roleModels = {
+      STUDENT: Student,
+      FACULTY: Faculty,
+      HOD: HOD,
+      CLASS_TEACHER: ClassTeacher,
+      GUEST: Guest,
+    };
 
     const UserModel = roleModels[role];
     if (!UserModel) {
@@ -50,7 +49,6 @@ const registerUser = async (req, res) => {
     await newUser.save();
 
     return generateTokenAndLogin(newUser, false, req, res);
-
   } catch (error) {
     console.error(error);
     if (error.code === 11000) {
@@ -63,7 +61,6 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-
   const { email, password, rememberMe } = req.body;
 
   const user = await User.findOne({ email });
@@ -80,7 +77,6 @@ const loginUser = async (req, res) => {
 
   return generateTokenAndLogin(user, rememberMe, req, res);
 };
-
 
 //login Helper function
 const generateTokenAndLogin = async (user, rememberMe, req, res) => {

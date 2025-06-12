@@ -58,13 +58,15 @@ app.get("/api/health", (req, res) => {
 app.get("/api/test", (req, res) => {
     res.json({ status: "UP", message: "Backend connection successful" });
 });
-// --- END of new GET routes ---
+
 
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json()); // Or use express.json()
+app.use(bodyParser.json()); 
+
 app.use("/auth", AuthRouter);
 app.use("/userData", DataRouter);
 app.use("/academicData", SubjectRouter);
+
 
 app.listen(PORT, () => {
   console.log(`server started at ${PORT}`);
