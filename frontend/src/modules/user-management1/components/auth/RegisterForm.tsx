@@ -30,18 +30,16 @@ const RegisterForm = () => {
     e.preventDefault();
     clearError();
     
-    // Do not send confirmPassword to the backend
-    const { confirmPassword, ...submissionData } = formData;
-
+    if (formData.password !== formData.confirmPassword) {
+      // Handle password mismatch
+      return;
+    }
+    
     try {
-        console.log('Form data being submitted:', submissionData);
-        await register(submissionData);
-        console.log('Registration successful');
-        navigate('/dashboard');
-    } catch (err: any) {
-        // The error state is already managed by the useAuthStore,
-        // so no need to manually set it here.
-        console.error('Registration error:', err);
+      await register(formData);
+      navigate('/dashboard');
+    } catch (err) {
+      // Error is handled by the store
     }
   };
 
@@ -153,6 +151,16 @@ const RegisterForm = () => {
                   type="text"
                   placeholder="Enter last name"
                   value={formData.profileData.lastName || ''}
+                  onChange={handleProfileDataChange}
+                  required
+                />
+                <Label htmlFor="idNumber">Id Number</Label>
+                <Input
+                  id="idNumber"
+                  name="idNumber"
+                  type="number"
+                  placeholder="Enter your id number"
+                  value={(formData.profileData as any).idNumber || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
