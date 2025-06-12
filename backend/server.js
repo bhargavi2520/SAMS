@@ -1,6 +1,6 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
-const bodyParser = require("body-parser"); // Corrected variable name, though can be replaced
+const bodyParser = require("body-parser"); 
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -46,7 +46,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(limiter);
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParse.json());
+app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
   res.send(" Backend is LIVE! Welcome to SAMS");
