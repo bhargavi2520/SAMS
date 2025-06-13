@@ -1,6 +1,6 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
-const bodyParser = require("body-parser"); 
+const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -9,6 +9,7 @@ const AuthRouter = require("./Routes/authRouter");
 const DataRouter = require("./Routes/dataRouter");
 const cors = require("cors");
 const SubjectRouter = require("./Routes/subjectRouter");
+const AttendanceRouter = require("./Routes/attendanceRouter");
 
 const PORT = process.env.PORT || 5000;
 
@@ -47,33 +48,29 @@ app.use(cors(corsOptions));
 app.use(limiter);
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
   res.send(" Backend is LIVE! Welcome to SAMS");
 });
-
 app.get("/api/health", (req, res) => {
   res.json({ status: "UP", message: "All good, No worries!" });
 });
 app.get("/api/test", (req, res) => {
-    res.json({ status: "UP", message: "Backend connection successful" });
+  res.json({ status: "UP", message: "Backend connection successful" });
 });
-
-
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json()); 
-
 app.use("/auth", AuthRouter);
 app.use("/userData", DataRouter);
-app.use("/academicData", SubjectRouter);
-
+app.use("/subjectData", SubjectRouter);
+app.use("/attendance", AttendanceRouter);
 
 app.listen(PORT, () => {
   console.log(`server started at ${PORT}`);
 });
 
-
-const mongoUri = process.env.mongoUri
-mongoose.connect(mongoUri)
-.then(() => console.log("MongoDB connected successfully"))
-.catch((err) => console.error("MongoDB connection error:", err));
+const mongoUri = process.env.mongoUri;
+mongoose
+  .connect(mongoUri)
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch((err) => console.error("MongoDB connection error:", err));
