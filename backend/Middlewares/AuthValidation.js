@@ -1,7 +1,7 @@
 const joi = require("joi");
 
 const baseSchema = {
-  email: joi.string().email().lowercase().required(),
+  email: joi.string().email().required(),
   password: joi.string().required(),
   role: joi
     .string()

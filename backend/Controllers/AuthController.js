@@ -9,6 +9,7 @@ const {
 } = require("../Models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Class = require("../Models/Class");
 
 const registerUser = async (req, res) => {
   try {
@@ -47,7 +48,18 @@ const registerUser = async (req, res) => {
 
     const newUser = new UserModel(userData);
     await newUser.save();
-
+    if (role === "STUDENT") {
+      const { department, year, section } = profileData;
+      const classDocument = await Class.findOne({
+        department,
+        year,
+        section,
+      });
+      if (classDocument) {
+        classDocument.students.push({ student: newUser._id });
+        await classDocument.save();
+      }
+    }
     return generateTokenAndLogin(newUser, false, req, res);
   } catch (error) {
     console.error(error);

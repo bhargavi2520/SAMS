@@ -1,6 +1,7 @@
 const Subject = require("../Models/Subject.js");
 const { User } = require("../Models/User.js");
 const AssignedSubject = require("../Models/AssignedSubjects.js");
+const Class = require("../Models/Class.js");
 
 const getSubjectsbyCriteria = async (req, res) => {
   const { department, year, semester } = req.query;
@@ -49,6 +50,13 @@ const addSubject = async (req, res) => {
       semester,
     });
     await newSubject.save();
+    await Class.updateMany(
+      { department, year },
+      {
+        $push: { subjects: { subject: newSubject._id } },
+      }
+    );
+
     res.status(201).json({
       message: "Subject added successfully",
       subject: newSubject,

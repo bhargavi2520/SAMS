@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -7,9 +8,9 @@ dotenv.config();
 const app = express();
 const AuthRouter = require("./Routes/authRouter");
 const DataRouter = require("./Routes/dataRouter");
-const cors = require("cors");
 const SubjectRouter = require("./Routes/subjectRouter");
 const AttendanceRouter = require("./Routes/attendanceRouter");
+const ClassRouter = require("./Routes/classRouter");
 
 const PORT = process.env.PORT || 5000;
 
@@ -64,6 +65,7 @@ app.use("/auth", AuthRouter);
 app.use("/userData", DataRouter);
 app.use("/subjectData", SubjectRouter);
 app.use("/attendance", AttendanceRouter);
+app.use("/class", ClassRouter);
 
 app.listen(PORT, () => {
   console.log(`server started at ${PORT}`);
