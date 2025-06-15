@@ -4,7 +4,8 @@ const ensureAuthenticated = require("../Middlewares/Authentication.js");
 const {
   getStudentDatabyCriteria,
   getFaculties,
-  getFacultyDashboard
+  getFacultyDashboard,
+  getSubjectFacultyInfo,
 } = require("../Controllers/DataController.js");
 
 DataRouter.get(
@@ -18,8 +19,17 @@ DataRouter.get(
   getFaculties
 );
 
+DataRouter.get(
+  "/facultyDash",
+  ensureAuthenticated(["FACULTY"]),
+  getFacultyDashboard
+);
 
-
-DataRouter.get('/facultyDash', ensureAuthenticated(["FACULTY"]), getFacultyDashboard)
+// for student dashboard
+DataRouter.get(
+  "/subjectFaculties",
+  ensureAuthenticated([]),
+  getSubjectFacultyInfo
+);
 
 module.exports = DataRouter;

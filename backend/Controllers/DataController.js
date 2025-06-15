@@ -120,7 +120,7 @@ const getFacultyDashboard = async (req, res) => {
             `Error processing assigned subject ${assigned._id}:`,
             error
           );
-          return null; 
+          return null;
         }
       })
     );
@@ -148,8 +148,70 @@ const getFacultyDashboard = async (req, res) => {
   }
 };
 
+//student dashboard - subject faculty info
+
+const getSubjectFacultyInfo = async (req, res) => {
+  const studentId = req.user.id;
+  try {
+    const student = await User.findById(studentId).select("-password -__v");
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+        success: false,
+      });
+    }
+    const { year, semester, department, section } = student;
+    const subjects = await Subject.find({
+      year: year,
+      department: department,
+      semester: semester,
+    });
+    if (!subjects || subjects.length == 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No Subjects found",
+      });
+    }
+    const subjectFacultyinfo = await Promise.all(
+      subjects.map(async (subject) => {
+        const faculty = await AssignedSubject.findOne({
+          subject: subject._id,
+          section: 1,
+        }).populate("faculty");
+        return {
+          subject: {
+            subjectName: subject.name,
+            subjectCode: subject.code,
+          },
+          faculty:
+            faculty && faculty.faculty
+              ? {
+                  facultyName:
+                    faculty.faculty.firstName + " " + faculty.faculty.lastName,
+                  email: faculty.faculty.email,
+                }
+              : null,
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: subjectFacultyinfo,
+      message: "subject Faculty Info fetched successfully",
+    });
+  } catch (err) {
+    console.error("Error in getSubjectFacultyInfo:", err);
+    res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
+
 module.exports = {
   getStudentDatabyCriteria,
   getFaculties,
   getFacultyDashboard,
+  getSubjectFacultyInfo,
 };
