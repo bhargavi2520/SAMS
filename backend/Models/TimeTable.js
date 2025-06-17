@@ -14,7 +14,8 @@ const timeSlotSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  assignedSubject: {//at frontend show subject only in dropdown
+  assignedSubject: {
+    //at frontend show only subject name in dropdown
     type: mongoose.Schema.Types.ObjectId,
     ref: "AssignedSubject",
     required: true,
@@ -28,10 +29,19 @@ const timeTableSchema = new mongoose.Schema(
       ref: "Class",
       required: true,
     },
-    slots: [timeSlotSchema],
+    timeSlots: [
+      {
+        slot: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "TimeSlot",
+          required: true,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
 
+const TimeSlot = mongoose.model("TimeSlot", timeSlotSchema);
 const TimeTable = mongoose.model("TimeTable", timeTableSchema);
-module.exports = TimeTable;
+module.exports = { TimeTable, TimeSlot };

@@ -1,15 +1,16 @@
 const { default: mongoose } = require("mongoose");
-const Class = require("../Models/Class");
+const classInfo = require("../Models/Class");
 
 const getClassDetails = async (req, res) => {
   const { batch, department, section } = req.query;
 
   try {
-    const classDetails = await Class.findOne({
-      batch: batch,
-      department: department,
-      section: section,
-    })
+    const classDetails = await classInfo
+      .findOne({
+        batch: batch,
+        department: department,
+        section: section,
+      })
       .select("-__v")
       .populate({
         path: "subjects.subject",
@@ -50,7 +51,7 @@ const newClass = async (req, res) => {
     });
   }
   try {
-    const existingClass = await Class.findOne({
+    const existingClass = await classInfo.findOne({
       batch: batch,
       department: department,
       section: section,
@@ -63,7 +64,7 @@ const newClass = async (req, res) => {
       });
     }
 
-    const newClass = new Class({
+    const newClass = new classInfo({
       department: department,
       classTeacher: classTeacherId,
       batch: batch,

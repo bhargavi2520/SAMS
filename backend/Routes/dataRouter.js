@@ -2,16 +2,17 @@ const express = require("express");
 const DataRouter = express.Router();
 const ensureAuthenticated = require("../Middlewares/Authentication.js");
 const {
-  getStudentDatabyCriteria,
+  getStudentDataByCriteria,
   getFaculties,
   getFacultyDashboard,
   getSubjectFacultyInfo,
+  getStudentSchedule,
 } = require("../Controllers/DataController.js");
 
 DataRouter.get(
   "/students",
   ensureAuthenticated(["Admin", "HOD", "Faculty"]),
-  getStudentDatabyCriteria
+  getStudentDataByCriteria
 );
 DataRouter.get(
   "/faculties",
@@ -30,6 +31,12 @@ DataRouter.get(
   "/subjectFaculties",
   ensureAuthenticated([]),
   getSubjectFacultyInfo
+);
+
+DataRouter.get(
+  "/student/schedule",
+  ensureAuthenticated([]),
+  getStudentSchedule
 );
 
 module.exports = DataRouter;

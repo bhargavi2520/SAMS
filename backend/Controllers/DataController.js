@@ -1,8 +1,10 @@
 const { User } = require("../Models/User");
+const classInfo = require("../Models/Class");
 const AssignedSubject = require("../Models/AssignedSubjects");
 const Subject = require("../Models/Subject");
+const TimeTable = require("../Models/TimeTable");
 
-const getStudentDatabyCriteria = async (req, res) => {
+const getStudentDataByCriteria = async (req, res) => {
   const { department, year, semester, section } = req.query;
   try {
     const query = {};
@@ -13,7 +15,7 @@ const getStudentDatabyCriteria = async (req, res) => {
 
     const students = await User.find(query)
       .where("role")
-      .equals("Student")
+      .equals("STUDENT")
       .select("-password -__v");
     if (students.length === 0) {
       return res.status(404).json({
@@ -148,7 +150,10 @@ const getFacultyDashboard = async (req, res) => {
   }
 };
 
-//student dashboard - subject faculty info
+/**
+ * function for student dashboard
+ * returns all subjects of student's current semester along their assigned Faculties
+ */
 
 const getSubjectFacultyInfo = async (req, res) => {
   const studentId = req.user.id;
@@ -172,7 +177,7 @@ const getSubjectFacultyInfo = async (req, res) => {
         message: "No Subjects found",
       });
     }
-    const subjectFacultyinfo = await Promise.all(
+    const subjectFacultyInfo = await Promise.all(
       subjects.map(async (subject) => {
         const faculty = await AssignedSubject.findOne({
           subject: subject._id,
@@ -197,11 +202,11 @@ const getSubjectFacultyInfo = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: subjectFacultyinfo,
+      data: subjectFacultyInfo,
       message: "subject Faculty Info fetched successfully",
     });
   } catch (err) {
-    console.error("Error in getSubjectFacultyInfo:", err);
+    console.error("Error in geTSubjectFacultyInfo:", err);
     res.status(500).json({
       message: "Internal server error",
       success: false,
@@ -209,9 +214,65 @@ const getSubjectFacultyInfo = async (req, res) => {
   }
 };
 
+/**
+ * function for student dashboard
+ * returns the schedule/timetable for the current semester created by higher authorities
+ */
+
+const getStudentSchedule = async (req, res) => {
+  const studentId = req.user.id;
+  try {
+    const student = await User.findById(studentId).select(
+      "-_id -password -_v "
+    );
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student Not Found",
+      });
+    }
+    const classDocument = await classInfo
+      .findOne({
+        department: student.department,
+        section: student.section,
+        year: student.year,
+      })
+      .select("_id");
+
+    if (!classDocument) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Your Class is not registered yet, please contact your department",
+      });
+    }
+
+    const timeTable = await TimeTable.findOne({ class: classDocument._id });
+    if (!timeTable) {
+      return res.status(404).json({
+        success: false,
+        message: "No schedule found for your class",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Schedule found",
+      data: timeTable,
+    });
+  } catch (err) {
+    console.error("Error in getStudentSchedule:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server occurred",
+    });
+  }
+};
+
 module.exports = {
-  getStudentDatabyCriteria,
+  getStudentDataByCriteria,
   getFaculties,
   getFacultyDashboard,
   getSubjectFacultyInfo,
+  getStudentSchedule,
 };
