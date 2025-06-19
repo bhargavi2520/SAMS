@@ -37,15 +37,6 @@ const navConfig = {
     { label: 'Timetable', icon: <Calendar className="w-6 h-6" />, section: 'Timetable' },
     // Add more if needed for Timetable dashboard
   ],
-  class_teacher: [
-    { label: 'Quick Stats', icon: <Home className="w-6 h-6" />, section: 'quick-stats' },
-    { label: 'Attendance', icon: <CheckSquare className="w-6 h-6" />, section: 'attendance-section' },
-    { label: 'Student List', icon: <Users className="w-6 h-6" />, section: 'student-list' },
-    { label: 'Timetable', icon: <Calendar className="w-6 h-6" />, section: 'weekly-timetable' },
-    { label: 'Class Monitors & Representatives', icon: <UserCog className="w-6 h-6" />, section: 'monitors-representatives' },
-    { label: 'Communication', icon: <MessageCircle className="w-6 h-6" />, section: 'communication' },
-    { label: 'Reports', icon: <FileBarChart2 className="w-6 h-6" />, section: 'reports' },
-  ],
   hod: [
     { label: 'Dashboard', icon: <Home className="w-6 h-6" />, section: 'dashboard' },
     { label: 'Faculty Management', icon: <UserCog className="w-6 h-6" />, section: 'faculty-management' },

@@ -1,4 +1,12 @@
-const { User, Student, Admin, Faculty, HOD, Guest } = require("../Models/User");
+const {
+  User,
+  Student,
+  Admin,
+  Faculty,
+  HOD,
+  ClassTeacher,
+  Guest,
+} = require("../Models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const classInfo = require("../Models/Class");

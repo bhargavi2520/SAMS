@@ -1,86 +1,249 @@
-import React, { useMemo } from 'react';
-import KpiCard from '../components/dashboard/KpiCard';
-import WeeklySchedule from '../components/dashboard/WeeklySchedule';
-import QuickActions from '../components/dashboard/QuickActions';
-import useTimetable from '../hooks/useTimetable';
-import { BookOpen, FlaskConical, Users, MapPin } from 'lucide-react';
-import { TimetableEntry } from '../types/timetable.types'; // Still relevant for data.schedule
+import React, { useState } from 'react';
 import DashboardNav from '../../../components/dashboard/DashboardNav';
 
-interface KpiDataItem {
-  title: string;
-  value: number;
-  trend: string;
-  icon: React.ReactNode;
-}
+const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
+const years = ['1', '2', '3', '4'];
+const sections = ['1', '2', '3'];
+const subjects = ['Maths', 'Physics', 'Chemistry', 'English', 'Computer Science'];
+const faculties = ['Dr. Smith', 'Prof. Wilson', 'Dr. Brown', 'Ms. Clark'];
 
 const TimetableDashboard = () => {
-  // Example: Fetch schedule for the current week.
-  // You might want a more sophisticated way to determine the weekId or params.
-  const { data, loading, error } = useTimetable({ weekId: 'current' }); // Using the hook
+  // Step 1: Setup form state
+  const [setup, setSetup] = useState({
+    branch: '',
+    year: '',
+    section: '',
+    periods: 6,
+  });
+  const [step, setStep] = useState(1);
 
-  // Memoize Kpi data to prevent re-computation if not needed
-  const kpiDisplayData = useMemo(() => {
-    if (!data?.metrics) return [];
-    return [
-      { title: "Total Classes", value: data.metrics.totalClasses, trend: "+5%", icon: <BookOpen className="h-5 w-5 text-muted-foreground" /> },
-      { title: "Labs Scheduled", value: data.metrics.labsScheduled, trend: "-2%", icon: <FlaskConical className="h-5 w-5 text-muted-foreground" /> },
-      // Add other KPIs based on data.metrics.
-      // For example, if you add facultyOccupancy and roomUtilization to TimetableMetrics:
-      // { title: "Faculty Occupancy", value: data.metrics.facultyOccupancy || 0, trend: "+1.2%", icon: <Users className="h-5 w-5 text-muted-foreground" /> },
-      // { title: "Room Utilization", value: data.metrics.roomUtilization || 0, trend: "+3%", icon: <MapPin className="h-5 w-5 text-muted-foreground" /> },
-    ];
-  }, [data?.metrics]);
+  // Step 2: Timetable grid state
+  const [timetable, setTimetable] = useState([]); // 2D array: days x periods
+  const [error, setError] = useState('');
 
-  // Determine the start of the week for WeeklySchedule
-  // This is a simplified example; you'll need robust date logic
-  const startOfWeekForSchedule = useMemo(() => {
-    const today = new Date();
-    const currentDay = today.getDay(); // Sunday - 0, Monday - 1, ..., Saturday - 6
-    const newDate = new Date(today); // Create a new date object to avoid mutating `today` if it's used elsewhere
-    newDate.setDate(today.getDate() - currentDay + (currentDay === 0 ? -6 : 1)); // Adjust to Monday
-    newDate.setHours(0, 0, 0, 0); // Set to the beginning of the day
-    return newDate;
-  }, []);
+  // Handle setup form changes
+  const handleSetupChange = (e) => {
+    const { name, value } = e.target;
+    setSetup(prev => ({ ...prev, [name]: value }));
+  };
 
-  if (loading) {
-    return <div className="container mx-auto p-4 md:p-6 text-center">Loading dashboard data...</div>;
-  }
+  // On setup submit, create empty timetable grid
+  const handleSetupSubmit = (e) => {
+    e.preventDefault();
+    if (setup.branch && setup.year && setup.section && setup.periods > 0) {
+      const emptyGrid = days.map(() =>
+        Array.from({ length: Number(setup.periods) }, () => ({ subject: '', faculty: '', startTime: '', endTime: '', isBreak: false, breakLabel: '' }))
+      );
+      setTimetable(emptyGrid);
+      setStep(2);
+      setError('');
+    }
+  };
 
-  if (error) {
-    return <div className="container mx-auto p-4 md:p-6 text-center text-red-500">Error loading data: {error.message}</div>;
-  }
+  // Handle cell edit
+  const handleCellChange = (dayIdx, periodIdx, field, value) => {
+    setTimetable(prev => {
+      const updated = prev.map(row => row.map(cell => ({ ...cell })));
+      if (field === 'startTime' && periodIdx > 0 && !updated[dayIdx][periodIdx].isBreak) {
+        const prevCell = updated[dayIdx][periodIdx - 1];
+        if (!prevCell.isBreak && prevCell.endTime && value < prevCell.endTime) {
+          setError(`The time is already assigned to Period ${periodIdx} (ends at ${prevCell.endTime}). Please choose a valid start time.`);
+          updated[dayIdx][periodIdx][field] = '';
+          return updated;
+        }
+      }
+      updated[dayIdx][periodIdx][field] = value;
+      // If marking as break, clear other fields
+      if (field === 'isBreak' && value) {
+        updated[dayIdx][periodIdx].subject = '';
+        updated[dayIdx][periodIdx].faculty = '';
+        updated[dayIdx][periodIdx].startTime = '';
+        updated[dayIdx][periodIdx].endTime = '';
+      }
+      if (field === 'isBreak' && !value) {
+        updated[dayIdx][periodIdx].breakLabel = '';
+      }
+      setError('');
+      return updated;
+    });
+  };
+
+  // Validation for empty fields and overlapping times
+  const validateTimetable = () => {
+    for (let dayIdx = 0; dayIdx < timetable.length; dayIdx++) {
+      const periods = timetable[dayIdx];
+      // Check for empty fields (skip breaks)
+      for (let periodIdx = 0; periodIdx < periods.length; periodIdx++) {
+        const cell = periods[periodIdx];
+        if (!cell.isBreak) {
+          if (!cell.subject || !cell.faculty || !cell.startTime || !cell.endTime) {
+            setError(`All fields must be filled. Missing at Day: ${days[dayIdx]}, Period: ${periodIdx + 1}`);
+            return false;
+          }
+          // Check valid time order
+          if (cell.startTime >= cell.endTime) {
+            setError(`Start time must be before end time at Day: ${days[dayIdx]}, Period: ${periodIdx + 1}`);
+            return false;
+          }
+        }
+      }
+      // Check for overlapping times within the same day (skip breaks)
+      const sortedPeriods = periods
+        .map((cell, idx) => ({ ...cell, idx }))
+        .filter(cell => !cell.isBreak)
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
+      for (let i = 1; i < sortedPeriods.length; i++) {
+        if (sortedPeriods[i].startTime < sortedPeriods[i - 1].endTime) {
+          setError(`Period ${sortedPeriods[i].idx + 1} on ${days[dayIdx]} starts before the previous period ends (Period ${sortedPeriods[i - 1].idx + 1} ends at ${sortedPeriods[i - 1].endTime}). Please fix the timings.`);
+          return false;
+        }
+      }
+    }
+    setError('');
+    return true;
+  };
+
+  // Handle timetable submit
+  const handleTimetableSubmit = () => {
+    if (validateTimetable()) {
+      alert(JSON.stringify(timetable, null, 2));
+    }
+  };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <DashboardNav activeSection={"Timetable"} onNavClick={() => {}} dashboardType="timetable" />
-      <main className="flex-1 overflow-auto md:ml-20 pb-16 md:pb-0">
-        <div className="p-2 sm:p-4 md:p-6 space-y-4 md:space-y-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Timetable Dashboard</h1>
-
-          {/* KPI Cards Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {kpiDisplayData.map((kpi) => (
-              <KpiCard
-                key={kpi.title}
-                title={kpi.title}
-                value={kpi.value ?? 0} // Provide a fallback for value if it can be undefined
-                trend={kpi.trend}
-                icon={kpi.icon}
+      <main className="flex-1 flex flex-col items-center justify-center p-8">
+        <h1 className="text-3xl font-bold mb-4">Timetable Dashboard</h1>
+        <p className="text-gray-600 mb-8">Build and edit your class timetable below.</p>
+        {error && (
+          <div className="mb-4 w-full max-w-2xl bg-red-100 text-red-700 px-4 py-2 rounded border border-red-300">{error}</div>
+        )}
+        {/* Step 1: Setup Form */}
+        {step === 1 && (
+          <section className="w-full max-w-xl bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-semibold mb-4">Setup Timetable</h2>
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSetupSubmit}>
+              <select name="branch" value={setup.branch} onChange={handleSetupChange} className="border rounded p-2" required>
+                <option value="">Select Branch</option>
+                {branches.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+              <select name="year" value={setup.year} onChange={handleSetupChange} className="border rounded p-2" required>
+                <option value="">Select Year</option>
+                {years.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+              <select name="section" value={setup.section} onChange={handleSetupChange} className="border rounded p-2" required>
+                <option value="">Select Section</option>
+                {sections.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <input
+                type="number"
+                name="periods"
+                min={1}
+                max={10}
+                value={setup.periods}
+                onChange={handleSetupChange}
+                className="border rounded p-2"
+                placeholder="Number of Periods"
+                required
               />
-            ))}
-          </div>
-
-          <QuickActions />
-
-          <div className="overflow-x-auto w-full">
-            <WeeklySchedule
-              scheduleData={data?.schedule || []}
-              title="Weekly Schedule"
-              dateRange={{ startOfWeek: startOfWeekForSchedule }}
-            />
-          </div>
-        </div>
+              <button type="submit" className="md:col-span-2 bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700 transition mt-2">Create Timetable</button>
+            </form>
+          </section>
+        )}
+        {/* Step 2: Editable Timetable Grid */}
+        {step === 2 && (
+          <section className="w-full max-w-5xl bg-white rounded-lg shadow p-6 mb-8 overflow-x-auto">
+            <h2 className="text-xl font-semibold mb-4">Edit Timetable for {setup.branch} - Year {setup.year} - Section {setup.section}</h2>
+            <table className="min-w-full text-sm border">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="p-2 border">Day / Period</th>
+                  {Array.from({ length: Number(setup.periods) }, (_, pIdx) => (
+                    <th key={pIdx} className="p-2 border">Period {pIdx + 1}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {days.map((day, dayIdx) => (
+                  <tr key={day}>
+                    <td className="p-2 border font-semibold bg-gray-50">{day}</td>
+                    {Array.from({ length: Number(setup.periods) }, (_, periodIdx) => {
+                      const cell = timetable[dayIdx]?.[periodIdx] || {};
+                      return (
+                        <td key={periodIdx} className={`p-2 border min-w-[240px] ${cell.isBreak ? 'bg-yellow-100' : ''}`}>
+                          <div className="flex flex-col gap-1">
+                            <label className="flex items-center gap-2 mb-1">
+                              <input
+                                type="checkbox"
+                                checked={!!cell.isBreak}
+                                onChange={e => handleCellChange(dayIdx, periodIdx, 'isBreak', e.target.checked)}
+                              />
+                              <span className="text-sm">Break</span>
+                            </label>
+                            {cell.isBreak ? (
+                              <input
+                                type="text"
+                                value={cell.breakLabel || ''}
+                                onChange={e => handleCellChange(dayIdx, periodIdx, 'breakLabel', e.target.value)}
+                                className="border rounded p-1"
+                                placeholder="Break label (e.g. Lunch Break)"
+                              />
+                            ) : (
+                              <>
+                                <select
+                                  value={cell.subject || ''}
+                                  onChange={e => handleCellChange(dayIdx, periodIdx, 'subject', e.target.value)}
+                                  className="border rounded p-1 mb-1"
+                                >
+                                  <option value="">Subject</option>
+                                  {subjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                                </select>
+                                <select
+                                  value={cell.faculty || ''}
+                                  onChange={e => handleCellChange(dayIdx, periodIdx, 'faculty', e.target.value)}
+                                  className="border rounded p-1 mb-1"
+                                >
+                                  <option value="">Teacher</option>
+                                  {faculties.map(fac => <option key={fac} value={fac}>{fac}</option>)}
+                                </select>
+                                <div className="flex gap-1">
+                                  <input
+                                    type="time"
+                                    value={cell.startTime || ''}
+                                    onChange={e => handleCellChange(dayIdx, periodIdx, 'startTime', e.target.value)}
+                                    className="border rounded p-1 w-1/2"
+                                    placeholder="Start Time"
+                                  />
+                                  <input
+                                    type="time"
+                                    value={cell.endTime || ''}
+                                    onChange={e => handleCellChange(dayIdx, periodIdx, 'endTime', e.target.value)}
+                                    className="border rounded p-1 w-1/2"
+                                    placeholder="End Time"
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-end mt-6">
+              <button
+                className="bg-green-600 text-white rounded px-6 py-2 font-semibold hover:bg-green-700 transition"
+                onClick={handleTimetableSubmit}
+              >
+                Submit Timetable
+              </button>
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

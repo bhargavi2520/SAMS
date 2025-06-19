@@ -4,7 +4,6 @@ import StudentDashboard from '@/modules/user-management1/components/dashboard/St
 import FacultyDashboard from '@/modules/user-management1/components/dashboard/FacultyDashboard';
 import AdminDashboard from '@/modules/user-management1/components/dashboard/AdminDashboard';
 import HODDashboard from '@/modules/user-management1/components/dashboard/HODDashboard';
-import ClassTeacherDashboard from '@/modules/user-management1/components/dashboard/ClassTeacherDashboard';
 import GuestDashboard from '@/modules/user-management1/components/dashboard/GuestDashboard';
 import { Card, CardContent } from '@/common/components/ui/card';
 import { Link } from 'react-router-dom';
@@ -29,8 +28,6 @@ const DashboardPage = () => {
       return <StudentDashboard />;
     case 'FACULTY':
       return <FacultyDashboard />;
-    case 'CLASS_TEACHER':
-      return <ClassTeacherDashboard />;
     case 'ADMIN':
       return <AdminDashboard />;
     case 'HOD':

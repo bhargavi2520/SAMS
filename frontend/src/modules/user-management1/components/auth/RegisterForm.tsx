@@ -76,7 +76,6 @@ const RegisterForm = () => {
     { value: 'STUDENT', label: 'Student'},
     { value: 'FACULTY', label: 'Faculty'},
     { value: 'HOD', label: 'Head of Department'},
-    { value: 'CLASS_TEACHER', label: 'Class Teacher'},
     { value: 'GUEST', label: 'Guest'}
   ];
 
@@ -164,7 +163,7 @@ const RegisterForm = () => {
                   name="rollNumber"
                   type="text"
                   placeholder="Enter your roll number"
-                  value={formData.profileData.rollNumber || ''}
+                  value={(formData.profileData as StudentProfile).rollNumber || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -295,9 +294,9 @@ const RegisterForm = () => {
                     <SelectValue placeholder="Select section" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Section-1">Section-1</SelectItem>
-                    <SelectItem value="Section-2">Section-2</SelectItem>
-                    <SelectItem value="Section-3">Section-3</SelectItem>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -375,21 +374,6 @@ const RegisterForm = () => {
             )}
 
             {formData.role === 'FACULTY' && (
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone number</Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="tel"
-                  placeholder="Phone number"
-                  value={formData.profileData.phoneNumber || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-              </div>
-            )}
-
-            {formData.role === 'CLASS_TEACHER' && (
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Phone number</Label>
                 <Input

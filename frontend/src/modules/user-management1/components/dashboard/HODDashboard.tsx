@@ -70,7 +70,6 @@ const badgeColor = (badge) => {
 const statusColor = (status) =>
   status === 'completed' ? 'bg-green-600 text-white' : 'bg-yellow-400 text-black';
 
-// Accept a prop to determine if the user is HOD
 const HODDashboard = ({ isHOD = true }) => {
   // Section refs for scroll navigation
   const dashboardRef = useRef(null);
@@ -88,8 +87,20 @@ const HODDashboard = ({ isHOD = true }) => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showAnnouncementTab, setShowAnnouncementTab] = useState(false);
   const [announcementText, setAnnouncementText] = useState("");
-  const [announcements, setAnnouncements] = useState([]); // For demo, local state
+  const [announcements, setAnnouncements] = useState([]);
   const yearOptions = [1, 2, 3, 4];
+
+  const handleAnnouncementSubmit = (e) => {
+    e.preventDefault();
+    if (announcementText.trim()) {
+      setAnnouncements([
+        { text: announcementText, date: new Date().toLocaleString() },
+        ...announcements,
+      ]);
+      setAnnouncementText("");
+      setShowAnnouncementTab(false);
+    }
+  };
 
   // Define sectionContent inside the component to access isHOD
   const sectionContent = {
@@ -308,11 +319,42 @@ const HODDashboard = ({ isHOD = true }) => {
     ),
     announcements: (
       <div className="p-6">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
-          <Bell className="w-5 h-5" /> Announcements
-          <div className="flex-1" />
-          <Button className="ml-auto bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium">Make Announcement</Button>
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <h2>Announcements</h2>
+          <Button
+            className="ml-auto bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+            onClick={() => setShowAnnouncementTab(true)}
+          >
+            Make Announcement
+          </Button>
+        </div>
+        {showAnnouncementTab ? (
+          <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-4 flex flex-col gap-3 border border-primary/30">
+            <textarea
+              className="w-full min-h-[80px] rounded border border-gray-300 dark:border-neutral-600 p-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Write your announcement here..."
+              value={announcementText}
+              onChange={e => setAnnouncementText(e.target.value)}
+              autoFocus
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                onClick={handleAnnouncementSubmit}
+                disabled={!announcementText.trim()}
+              >
+                Submit
+              </Button>
+              <Button
+                variant="outline"
+                className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
+                onClick={() => { setShowAnnouncementTab(false); setAnnouncementText(''); }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : null}
         <div className="text-sm text-gray-500 dark:text-gray-300">Department announcements and notifications go here.</div>
       </div>
     ),
@@ -385,19 +427,6 @@ const HODDashboard = ({ isHOD = true }) => {
         i === idx ? { ...item, action } : item
       )
     );
-  };
-
-  // Handler for announcement submit
-  const handleAnnouncementSubmit = (e) => {
-    e.preventDefault();
-    if (announcementText.trim()) {
-      setAnnouncements([
-        { text: announcementText, date: new Date().toLocaleString() },
-        ...announcements,
-      ]);
-      setAnnouncementText("");
-      setShowAnnouncementTab(false);
-    }
   };
 
   // Ensure all approval items have an 'action' property in state, but not in the initial data
@@ -776,16 +805,15 @@ const HODDashboard = ({ isHOD = true }) => {
           <section ref={announcementsRef} id="announcements" className="scroll-mt-24">
             <Card className="bg-white dark:bg-neutral-800 mb-6">
               <CardContent className="p-4 md:p-6">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
-                  <Bell className="w-5 h-5" /> Announcements
-                  <div className="flex-1" />
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <h2>Announcements</h2>
                   <Button
-                    className="ml-auto bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                    className="ml-auto mb-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
                     onClick={() => setShowAnnouncementTab(true)}
                   >
                     Make Announcement
                   </Button>
-                </h2>
+                </div>
                 {showAnnouncementTab ? (
                   <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-4 flex flex-col gap-3 border border-primary/30">
                     <textarea

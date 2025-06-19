@@ -1,5 +1,5 @@
 import apiClient from '@/api'; // <-- Import our new API client
-import { LoginCredentials, RegisterData, User, StudentProfile, FacultyProfile, AdminProfile, HODProfile, ClassTeacherProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
+import { LoginCredentials, RegisterData, User, StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
@@ -47,7 +47,7 @@ class AuthService {
     localStorage.removeItem('authToken');
   }
 
-  async updateProfile(profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>): Promise<User> {
+  async updateProfile(profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>): Promise<User> {
     try {
       // Send a PUT request to your backend's /auth/profile endpoint (or similar)
       const response = await apiClient.put('/auth/profile', profileData);

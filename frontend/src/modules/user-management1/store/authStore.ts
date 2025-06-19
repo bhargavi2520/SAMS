@@ -1,7 +1,6 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, User, LoginCredentials, RegisterData, StudentProfile, FacultyProfile, AdminProfile, HODProfile, ClassTeacherProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
+import { AuthState, User, LoginCredentials, RegisterData, StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
 import { authService } from '@/modules/user-management1/services/auth.service';
 
 interface AuthStore extends AuthState {
@@ -9,7 +8,7 @@ interface AuthStore extends AuthState {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   clearError: () => void;
-  updateProfile: (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>) => Promise<void>;
+  updateProfile: (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>) => Promise<void>;
   setLoading: (loading: boolean) => void;
 }
 
@@ -76,7 +75,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ error: null });
       },
 
-      updateProfile: async (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>) => {
+      updateProfile: async (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>) => {
         try {
           set({ isLoading: true, error: null });
           

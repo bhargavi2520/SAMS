@@ -52,13 +52,7 @@ const getClassDetails = async (req, res) => {
  * returns a new created class for the details entered
  */
 const newClass = async (req, res) => {
-  const { department, classTeacherId, year, batch, section } = req.body;
-  if (!mongoose.Types.ObjectId.isValid(classTeacherId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid ClassTeacher Id",
-    });
-  }
+  const { department, year, batch, section } = req.body;
   try {
     const existingClass = await classInfo.findOne({
       batch: batch,
@@ -75,7 +69,6 @@ const newClass = async (req, res) => {
 
     const newClass = new classInfo({
       department: department,
-      classTeacher: classTeacherId,
       batch: batch,
       year: year,
       section: section,
@@ -88,7 +81,6 @@ const newClass = async (req, res) => {
       message: "New class created successfully",
       classDetails: {
         department: department,
-        classTeacher: classTeacherId,
         batch: batch,
         year: year,
         section: section,
