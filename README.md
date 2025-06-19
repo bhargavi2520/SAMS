@@ -8,10 +8,9 @@ You can check it out [Here](https://bhargavi2520.github.io/SAMS/).
 
 ## 🚀 Overview
 
-SAMS is not just a student portal — it’s a powerful academic ecosystem for:
+SAMS is not just a student portal — it's a powerful academic ecosystem for:
 - 👨‍🎓 Students: Real-time insights, grades, attendance, and portfolio tracking.
 - 👩‍🏫 Faculty: Attendance logging, mid-term & project evaluations.
-- 📋 Class Teachers: Class-level analytics & academic tracking.
 - 🛠 Admins: Master control over timetables, users, evaluations, reports.
 - 📈 Department Heads & Examiners: Oversight and verification access.
 
@@ -56,7 +55,7 @@ SAMS is not just a student portal — it’s a powerful academic ecosystem for:
 - Role-specific dashboards.
 - Secure login with JWT, optional 2FA.
 - Device-aware sessions.
-- Admin, Faculty, Class Teacher, Student roles.
+- Admin, Faculty, Student roles.
 
 ---
 
@@ -115,7 +114,7 @@ SAMS is not just a student portal — it’s a powerful academic ecosystem for:
 
 ## 🤝 Contributing
 
-Pull requests are welcome! If you’d like to add enhancements or suggest features, feel free to open an issue.
+Pull requests are welcome! If you'd like to add enhancements or suggest features, feel free to open an issue.
 
 ---
 

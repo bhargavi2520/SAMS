@@ -76,7 +76,6 @@ const RegisterForm = () => {
     { value: 'STUDENT', label: 'Student'},
     { value: 'FACULTY', label: 'Faculty'},
     { value: 'HOD', label: 'Head of Department'},
-    { value: 'CLASS_TEACHER', label: 'Class Teacher'},
     { value: 'GUEST', label: 'Guest'}
   ];
 
@@ -375,21 +374,6 @@ const RegisterForm = () => {
             )}
 
             {formData.role === 'FACULTY' && (
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone number</Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="tel"
-                  placeholder="Phone number"
-                  value={formData.profileData.phoneNumber || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-              </div>
-            )}
-
-            {formData.role === 'CLASS_TEACHER' && (
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Phone number</Label>
                 <Input

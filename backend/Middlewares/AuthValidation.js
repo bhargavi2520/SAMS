@@ -5,7 +5,7 @@ const baseSchema = {
   password: joi.string().required(),
   role: joi
     .string()
-    .valid("STUDENT", "ADMIN", "FACULTY", "HOD", "CLASS_TEACHER", "GUEST")
+    .valid("STUDENT", "ADMIN", "FACULTY", "HOD", "GUEST")
     .required(),
 };
 
@@ -61,12 +61,6 @@ const schemasByRole = {
     ...baseSchema,
     profileData: simpleProfileSchema,
   }),
-  CLASS_TEACHER: joi
-    .object({
-      ...baseSchema,
-      profileData: simpleProfileSchema,
-    })
-    .unknown(true),
   HOD: joi
     .object({
       ...baseSchema,

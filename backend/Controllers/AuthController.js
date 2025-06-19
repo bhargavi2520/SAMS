@@ -4,7 +4,6 @@ const {
   Admin,
   Faculty,
   HOD,
-  ClassTeacher,
   Guest,
 } = require("../Models/User");
 const bcrypt = require("bcryptjs");
@@ -19,7 +18,6 @@ const registerUser = async (req, res) => {
       STUDENT: Student,
       FACULTY: Faculty,
       HOD: HOD,
-      CLASS_TEACHER: ClassTeacher,
       GUEST: Guest,
     };
 

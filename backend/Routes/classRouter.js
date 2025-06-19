@@ -9,7 +9,7 @@ const ClassRouter = express.Router();
 
 ClassRouter.get(
   "/classDetails",
-  ensureAuthenticated(["ADMIN", "HOD", "CLASS", "CLASS_TEACHER"]),
+  ensureAuthenticated(["ADMIN", "HOD", "CLASS"]),
   getClassValidation,
   getClassDetails
 );

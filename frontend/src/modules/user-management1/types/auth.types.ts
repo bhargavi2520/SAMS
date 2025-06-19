@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'FACULTY' | 'STUDENT' | 'HOD' | 'CLASS_TEACHER' | 'GUEST';
+export type UserRole = 'ADMIN' | 'FACULTY' | 'STUDENT' | 'HOD' | 'GUEST';
 
 export interface User {
   name:string;
@@ -10,7 +10,7 @@ export interface User {
   is2faEnabled: boolean;
   lastLogin?: string;
   createdAt: string;
-  profile?: StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile;
+  profile?: StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile;
 }
 
 export interface BaseUserProfile {
@@ -71,14 +71,6 @@ export interface HODProfile extends BaseUserProfile {
   faculty: FacultyProfile;
 }
 
-export interface ClassTeacherProfile extends BaseUserProfile {
-  facultyId: string;
-  classAssigned: string; 
-  appointmentDate: string;
-  tenureEndDate?: string;
-  faculty: FacultyProfile;
-}
-
 export interface GuestProfile extends BaseUserProfile {
   affiliation?: string; 
 }
@@ -94,7 +86,7 @@ export interface RegisterData {
   password: string;
   confirmPassword?: string;
   role: UserRole;
-  profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | ClassTeacherProfile | GuestProfile>;
+  profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>;
 }
 
 export interface AuthState {
