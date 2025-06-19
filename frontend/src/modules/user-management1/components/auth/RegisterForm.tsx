@@ -163,7 +163,7 @@ const RegisterForm = () => {
                   name="rollNumber"
                   type="text"
                   placeholder="Enter your roll number"
-                  value={formData.profileData.rollNumber || ''}
+                  value={(formData.profileData as StudentProfile).rollNumber || ''}
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -294,9 +294,9 @@ const RegisterForm = () => {
                     <SelectValue placeholder="Select section" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Section-1">Section-1</SelectItem>
-                    <SelectItem value="Section-2">Section-2</SelectItem>
-                    <SelectItem value="Section-3">Section-3</SelectItem>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
                   </SelectContent>
                 </Select>
 
