@@ -7,11 +7,12 @@ const {
   getFacultyDashboard,
   getSubjectFacultyInfo,
   getStudentSchedule,
+  createTimeTable,
 } = require("../Controllers/DataController.js");
 
 DataRouter.get(
   "/students",
-  ensureAuthenticated(["Admin", "HOD", "Faculty"]),
+  ensureAuthenticated(["Admin", "HOD", "FACULTY"]),
   getStudentDataByCriteria
 );
 DataRouter.get(
@@ -37,6 +38,12 @@ DataRouter.get(
   "/student/schedule",
   ensureAuthenticated([]),
   getStudentSchedule
+);
+
+DataRouter.post(
+  "/newSchedule",
+  ensureAuthenticated(["HOD", "ADMIN"]),
+  createTimeTable
 );
 
 module.exports = DataRouter;

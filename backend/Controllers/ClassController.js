@@ -1,6 +1,10 @@
 const { default: mongoose } = require("mongoose");
 const classInfo = require("../Models/Class");
 
+/**
+ * function for getting class details for a specific batch , department and year 
+ * it returns class details along the all subject and students for this class.
+ */
 const getClassDetails = async (req, res) => {
   const { batch, department, section } = req.query;
 
@@ -42,6 +46,11 @@ const getClassDetails = async (req, res) => {
   }
 };
 
+/**
+ * function for creating new class only can be created by Admin or HOD
+ * it checks if database have no existing class with same batch , department and section
+ * returns a new created class for the details entered
+ */
 const newClass = async (req, res) => {
   const { department, classTeacherId, year, batch, section } = req.body;
   if (!mongoose.Types.ObjectId.isValid(classTeacherId)) {

@@ -1,16 +1,12 @@
-const {
-  User,
-  Student,
-  Admin,
-  Faculty,
-  HOD,
-  ClassTeacher,
-  Guest,
-} = require("../Models/User");
+const { User, Student, Admin, Faculty, HOD, Guest } = require("../Models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const classInfo = require("../Models/Class");
 
+/**
+ * Register user Function
+ * Logs in the user after registration
+ */
 const registerUser = async (req, res) => {
   try {
     const { email, password, role, profileData } = req.body;
@@ -18,8 +14,8 @@ const registerUser = async (req, res) => {
     const roleModels = {
       STUDENT: Student,
       FACULTY: Faculty,
+      ADMIN: Admin,
       HOD: HOD,
-      CLASS_TEACHER: ClassTeacher,
       GUEST: Guest,
     };
 
@@ -72,6 +68,10 @@ const registerUser = async (req, res) => {
   }
 };
 
+/**
+ * Login Function
+ * Valid User can login and will get the essential profile data
+ */
 const loginUser = async (req, res) => {
   const { email, password, rememberMe } = req.body;
 
@@ -80,17 +80,20 @@ const loginUser = async (req, res) => {
     return res.status(400).json({ message: "User not found", success: false });
   }
 
-  // const isMatch = await bcrypt.compare(password, user.password);
-  // if (!isMatch) {
-  //   return res
-  //     .status(400)
-  //     .json({ message: "Invalid Password", success: false });
-  // }
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res
+      .status(400)
+      .json({ message: "Invalid Password", success: false });
+  }
 
   return generateTokenAndLogin(user, rememberMe, req, res);
 };
 
-//login Helper function
+/**
+ * Login helper function
+ * being called in login and Register function
+ */
 const generateTokenAndLogin = async (user, rememberMe, req, res) => {
   try {
     const expiresIn = rememberMe ? "7d" : "24h";

@@ -4,6 +4,11 @@ const AssignedSubject = require("../Models/AssignedSubjects");
 const Subject = require("../Models/Subject");
 const TimeTable = require("../Models/TimeTable");
 
+/**
+ * function to get students by the department ,year, semester and section
+ * it finds the student for the given criteria
+ * returns all details of students email , phone , parent Phone etc.
+ */
 const getStudentDataByCriteria = async (req, res) => {
   const { department, year, semester, section } = req.query;
   try {
@@ -37,6 +42,11 @@ const getStudentDataByCriteria = async (req, res) => {
   }
 };
 
+/**
+ * function for admin dashboard
+ * can get all faculties registered
+ * return faculty mongoose Id , name , email
+ */
 const getFaculties = async (req, res) => {
   try {
     const faculties = await User.find({ role: "FACULTY" }).select(
@@ -68,6 +78,12 @@ const getFaculties = async (req, res) => {
   }
 };
 
+/**
+ * faculty Dashboard function
+ * will get all data that is needed on faculty dashboard
+ * ---------------- Not completed Yet ------------------
+ * currently returning assigned subjects and corresponding students for the subject.
+ */
 const getFacultyDashboard = async (req, res) => {
   const facultyId = req.user.id;
 
@@ -152,7 +168,8 @@ const getFacultyDashboard = async (req, res) => {
 
 /**
  * function for student dashboard
- * returns all subjects of student's current semester along their assigned Faculties
+ * returns all subjects of student's current semester 
+   along their assigned Faculty name and email
  */
 
 const getSubjectFacultyInfo = async (req, res) => {
@@ -216,7 +233,7 @@ const getSubjectFacultyInfo = async (req, res) => {
 
 /**
  * function for student dashboard
- * returns the schedule/timetable for the current semester created by higher authorities
+ * returns the schedule/timetable for the current semester- created by higher authorities
  */
 
 const getStudentSchedule = async (req, res) => {
@@ -269,10 +286,102 @@ const getStudentSchedule = async (req, res) => {
   }
 };
 
+/**
+ * logic for the creating timetable
+ * where we checks if timetable is already not created for the same class 
+ * also checks that faculty is not busy with another class for the same day - time.
+ * creates new timetable for the given class without overlapping of lectures.
+ -----------------------TESTING IS REQUIRED ---------------------------
+ */
+
+const dayMap = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+const createTimeTable = async (req, res) => {
+  const timeTable = req.body;
+  const classDetails = req.body;
+  try {
+    const classId = await classInfo
+      .findOne({
+        department: classDetails.department,
+        year: classDetails.year,
+        section: classDetails.section,
+      })
+      .select("_id");
+
+    if (!classId) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+    const existing = await TimeTable.findOne({ class: classId._id });
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Timetable already exists for this class",
+      });
+    }
+    const newTimeTable = {
+      class: classId._id,
+      timeSlots: [],
+    };
+    for (let dayIndex = 0; dayIndex < timeTable.length; dayIndex++) {
+      const day = dayMap[dayIndex];
+      const slots = timeTable[dayIndex];
+
+      for (let slot of slots) {
+        const facultyConflict = await TimeTable.findOne({
+          class: { $ne: classId._id }, 
+          "timeSlots.day": day,
+          "timeSlots.faculty": slot.faculty,
+          $or: [
+            {
+              $and: [
+                { "timeSlots.startTime": { $lt: slot.endTime } },
+                { "timeSlots.endTime": { $gt: slot.startTime } },
+              ],
+            },
+          ],
+        });
+
+        if (facultyConflict) {
+          return res.status(400).json({
+            success: false,
+            message: `Faculty is already assigned to another class on ${day} at overlapping time (${slot.startTime} - ${slot.endTime})`,
+          });
+        }
+        newTimeTable.timeSlots.push(slot);
+      }
+    }
+
+    const schedule = new TimeTable(newTimeTable);
+    await schedule.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Time Table Created",
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "error while creating new TimeTable",
+    });
+  }
+};
+
 module.exports = {
   getStudentDataByCriteria,
   getFaculties,
   getFacultyDashboard,
   getSubjectFacultyInfo,
   getStudentSchedule,
+  createTimeTable,
 };

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const timeSlotSchema = new mongoose.Schema({
+const TimeSlot = {
   day: {
     type: String,
     enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -14,13 +14,16 @@ const timeSlotSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  assignedSubject: {
-    //at frontend show only subject name in dropdown
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "AssignedSubject",
+  subject: {
+    type: String,
     required: true,
   },
-});
+  faculty: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+};
 
 const timeTableSchema = new mongoose.Schema(
   {
@@ -29,19 +32,10 @@ const timeTableSchema = new mongoose.Schema(
       ref: "Class",
       required: true,
     },
-    timeSlots: [
-      {
-        slot: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "TimeSlot",
-          required: true,
-        },
-      },
-    ],
+    timeSlots: [TimeSlot],
   },
   { timestamps: true }
 );
 
-const TimeSlot = mongoose.model("TimeSlot", timeSlotSchema);
 const TimeTable = mongoose.model("TimeTable", timeTableSchema);
-module.exports = { TimeTable, TimeSlot };
+module.exports = TimeTable;

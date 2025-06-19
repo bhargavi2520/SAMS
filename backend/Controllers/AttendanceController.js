@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const Attendance = require("../Models/Attendance.js");
 
+/**
+ * function for getting the attendance of a student in  a specific subject
+ * her we first checks that the subjectId and studentID is a valid mongoose objectId
+ * then it fetches total Class held for that subject and total Class attended by student
+ */
 const getAttendancebySubject = async (req, res) => {
   const { studentId, subjectId } = req.query;
   if (

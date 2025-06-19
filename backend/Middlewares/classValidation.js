@@ -1,5 +1,9 @@
 const joi = require("joi");
 
+/**
+ * validates criteria to get class details
+ * batch , department , section
+ */
 const getClassValidation = (req, res, next) => {
   const schema = joi.object({
     batch: joi.string().required(),
@@ -16,6 +20,10 @@ const getClassValidation = (req, res, next) => {
   next();
 };
 
+/** 
+ * validate essential details to be added in a new class
+ * department, class Teacher , year , batch , section
+ */
 const newClassValidation = (req, res, next) => {
   const schema = joi.object({
     department: joi.string().required(),

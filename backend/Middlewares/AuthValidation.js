@@ -1,14 +1,16 @@
 const joi = require("joi");
 
+// common details every role have
 const baseSchema = {
   email: joi.string().email().required(),
   password: joi.string().required(),
   role: joi
     .string()
-    .valid("STUDENT", "ADMIN", "FACULTY", "HOD", "CLASS_TEACHER", "GUEST")
+    .valid("STUDENT", "ADMIN", "FACULTY", "HOD", "GUEST")
     .required(),
 };
 
+// student data
 const studentProfileSchema = joi.object({
   firstName: joi.string().required(),
   lastName: joi.string().required(),
@@ -36,6 +38,7 @@ const studentProfileSchema = joi.object({
     .required(),
 });
 
+// common schema for same details
 const simpleProfileSchema = joi.object({
   firstName: joi.string().required(),
   lastName: joi.string().required(),
@@ -45,11 +48,13 @@ const simpleProfileSchema = joi.object({
     .required(),
 });
 
+// guest details
 const guestProfileSchema = joi.object({
   firstName: joi.string().required(),
   lastName: joi.string().required(),
 });
 
+// all roles in a single object
 const schemasByRole = {
   STUDENT: joi
     .object({
@@ -61,12 +66,6 @@ const schemasByRole = {
     ...baseSchema,
     profileData: simpleProfileSchema,
   }),
-  CLASS_TEACHER: joi
-    .object({
-      ...baseSchema,
-      profileData: simpleProfileSchema,
-    })
-    .unknown(true),
   HOD: joi
     .object({
       ...baseSchema,
@@ -87,6 +86,10 @@ const schemasByRole = {
     .unknown(true),
 };
 
+/**
+ * runs before the actual registration
+ * checks all details are available as per schemas 
+ */
 const registerValidation = (req, res, next) => {
   try {
     const { role } = req.body;
@@ -113,6 +116,10 @@ const registerValidation = (req, res, next) => {
   }
 };
 
+/**
+ * runs before the login function
+ * checks login details are available as per login schema
+ */
 const loginValidation = (req, res, next) => {
   const schema = joi.object({
     email: joi.string().email().lowercase().required(),

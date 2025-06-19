@@ -3,6 +3,10 @@ const { User } = require("../Models/User.js");
 const AssignedSubject = require("../Models/AssignedSubjects.js");
 const Class = require("../Models/Class.js");
 
+/**
+ * function to find all subjects for the given department , year, semester
+ * returns subject info (subjectName, subjectCode etc.)
+ */
 const getSubjectsbyCriteria = async (req, res) => {
   const { department, year, semester } = req.query;
   try {
@@ -32,6 +36,12 @@ const getSubjectsbyCriteria = async (req, res) => {
   }
 };
 
+/**
+ * function for adding new Subject 
+ * gets subject name , code other essential things 
+ * fetch for existing subject with same details (if)
+ * returns a newly created subject 
+ */
 const addSubject = async (req, res) => {
   const { name, code, department, year, semester } = req.body;
   try {
@@ -71,6 +81,13 @@ const addSubject = async (req, res) => {
   }
 };
 
+/**
+ * function for assigning a subject to a faculty
+ * it gets subject Id , facultyId (NOTE- mongoose Id), section.
+ * it checks that faculty id and student id is available in database 
+    and then check for existing assignment of subject and the faculty 
+ *  returns the newly assigned subjectName and facultyName
+ */
 const assignSubject = async (req, res) => {
   const { subjectId, facultyId, section } = req.body;
   try {

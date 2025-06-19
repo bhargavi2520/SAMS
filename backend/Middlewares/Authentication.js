@@ -1,5 +1,9 @@
 const jwt = require('jsonwebtoken');
 
+/**
+ * helper function to authenticate every database request 
+ * a valid user with a valid token 
+ */
 const ensureAuthenticated = (roles = []) => {
     return (req, res, next) => {
         const auth = req.headers['authorization'];

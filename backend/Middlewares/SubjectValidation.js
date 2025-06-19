@@ -1,5 +1,10 @@
 const joi = require("joi");
 
+/**
+ * validate subject details 
+ * subject name , subject code
+ * department , year , semester
+ */
 const addSubjectValidation = (req, res, next) => {
   const schema = joi.object({
     name: joi.string().required(),
@@ -18,6 +23,10 @@ const addSubjectValidation = (req, res, next) => {
   next();
 };
 
+/**
+ * checks if we are getting efficient data to assign a subject
+ * faculty , subject , and section to be assigned
+ */
 const assignSubjectValidation = (req, res, next) => {
   const schema = joi.object({
     subjectId: joi.string().required(),
@@ -34,6 +43,10 @@ const assignSubjectValidation = (req, res, next) => {
   next();
 };
 
+/**
+ * check if req have following data
+ * department , year, section
+ */
 const getSubjectsValidation = (req, res, next) => {
   const schema = joi.object({
     department: joi.string().required(),
