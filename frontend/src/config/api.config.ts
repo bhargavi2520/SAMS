@@ -12,7 +12,7 @@ interface ImportMeta {
 
 // Helper function to get the API base URL
 const getApiBaseUrl = () => {
-    return import.meta.env.VITE_API_URL || 'http://localhost:5000'; // Fallback for safety
+    return import.meta.env.VITE_API_URL || 'https://sams-5crs.onrender.com/'; // Fallback for safety
 };
 
 export const apiConfig = {
