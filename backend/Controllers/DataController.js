@@ -291,7 +291,6 @@ const getStudentSchedule = async (req, res) => {
  * where we checks if timetable is already not created for the same class 
  * also checks that faculty is not busy with another class for the same day - time.
  * creates new timetable for the given class without overlapping of lectures.
- -----------------------TESTING IS REQUIRED ---------------------------
  */
 
 const dayMap = [
@@ -304,8 +303,8 @@ const dayMap = [
 ];
 
 const createTimeTable = async (req, res) => {
-  const timeTable = req.body;
-  const classDetails = req.body;
+  const { timeTable, classDetails } = req.body;
+
   try {
     const classId = await classInfo
       .findOne({
@@ -313,7 +312,8 @@ const createTimeTable = async (req, res) => {
         year: classDetails.year,
         section: classDetails.section,
       })
-      .select("_id");
+      .select("_id")
+      .lean(); 
 
     if (!classId) {
       return res.status(404).json({
@@ -321,58 +321,103 @@ const createTimeTable = async (req, res) => {
         message: "Class not found",
       });
     }
-    const existing = await TimeTable.findOne({ class: classId._id });
+
+    const existing = await TimeTable.findOne({ class: classId._id }).lean();
     if (existing) {
       return res.status(400).json({
         success: false,
         message: "Timetable already exists for this class",
       });
     }
-    const newTimeTable = {
-      class: classId._id,
-      timeSlots: [],
-    };
+
+    const allTimeSlots = [];
+    const facultyTimeMap = new Map(); 
+
     for (let dayIndex = 0; dayIndex < timeTable.length; dayIndex++) {
       const day = dayMap[dayIndex];
       const slots = timeTable[dayIndex];
 
-      for (let slot of slots) {
-        const facultyConflict = await TimeTable.findOne({
-          class: { $ne: classId._id }, 
-          "timeSlots.day": day,
-          "timeSlots.faculty": slot.faculty,
-          $or: [
-            {
-              $and: [
-                { "timeSlots.startTime": { $lt: slot.endTime } },
-                { "timeSlots.endTime": { $gt: slot.startTime } },
-              ],
-            },
-          ],
-        });
+      for (let i = 0; i < slots.length; i++) {
+        for (let j = i + 1; j < slots.length; j++) {
+          const slotA = slots[i];
+          const slotB = slots[j];
 
-        if (facultyConflict) {
-          return res.status(400).json({
-            success: false,
-            message: `Faculty is already assigned to another class on ${day} at overlapping time (${slot.startTime} - ${slot.endTime})`,
-          });
+          if (
+            slotA.startTime < slotB.endTime &&
+            slotA.endTime > slotB.startTime
+          ) {
+            return res.status(400).json({
+              success: false,
+              message: `Overlapping lectures detected on ${day}: (${slotA.startTime} - ${slotA.endTime}) and (${slotB.startTime} - ${slotB.endTime})`,
+            });
+          }
         }
-        newTimeTable.timeSlots.push(slot);
+      }
+
+      for (const slot of slots) {
+        const slotWithDay = { ...slot, day };
+        allTimeSlots.push(slotWithDay);
+
+        const facultyKey = `${slot.faculty}_${day}`;
+        if (!facultyTimeMap.has(facultyKey)) {
+          facultyTimeMap.set(facultyKey, []);
+        }
+        facultyTimeMap.get(facultyKey).push({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          day,
+        });
       }
     }
 
-    const schedule = new TimeTable(newTimeTable);
-    await schedule.save();
+    const facultyIds = [...new Set(allTimeSlots.map((slot) => slot.faculty))];
+    const days = [...new Set(allTimeSlots.map((slot) => slot.day))];
+
+    const existingSchedules = await TimeTable.find({
+      class: { $ne: classId._id },
+      "timeSlots.faculty": { $in: facultyIds },
+      "timeSlots.day": { $in: days },
+    })
+      .select("timeSlots")
+      .lean();
+
+    for (const schedule of existingSchedules) {
+      for (const existingSlot of schedule.timeSlots) {
+        const facultyKey = `${existingSlot.faculty}_${existingSlot.day}`;
+        const newSlots = facultyTimeMap.get(facultyKey);
+
+        if (newSlots) {
+          for (const newSlot of newSlots) {
+            if (
+              existingSlot.startTime < newSlot.endTime &&
+              existingSlot.endTime > newSlot.startTime
+            ) {
+              return res.status(400).json({
+                success: false,
+                message: `Faculty is already assigned to another class on ${existingSlot.day} at overlapping time (${newSlot.startTime} - ${newSlot.endTime})`,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    const newTimeTable = new TimeTable({
+      class: classId._id,
+      timeSlots: allTimeSlots,
+    });
+
+    await newTimeTable.save();
 
     return res.status(201).json({
       success: true,
       message: "Time Table Created",
     });
   } catch (err) {
-    console.log(err);
+    console.error("Error creating timetable:", err);
     return res.status(500).json({
       success: false,
-      message: "error while creating new TimeTable",
+      message: "Error while creating new TimeTable",
     });
   }
 };

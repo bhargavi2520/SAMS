@@ -34,11 +34,21 @@ const registerUser = async (req, res) => {
         .json({ message: "Invalid role specified", success: false });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      $or: [
+        { email },
+        { rollNumber: profileData.rollNumber },
+        { aparId: profileData.aparId },
+      ],
+    });
     if (existingUser) {
       return res
         .status(400)
-        .json({ message: "User already exists", success: false });
+        .json({
+          message:
+            "User already exists with the same email or roll number or aparId",
+          success: false,
+        });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

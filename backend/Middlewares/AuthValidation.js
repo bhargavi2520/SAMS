@@ -2,7 +2,7 @@ const joi = require("joi");
 
 // common details every role have
 const baseSchema = {
-  email: joi.string().email().required(),
+  email: joi.string().email().required().trim(),
   password: joi.string().required(),
   role: joi
     .string()
@@ -12,7 +12,7 @@ const baseSchema = {
 
 // student data
 const studentProfileSchema = joi.object({
-  firstName: joi.string().required(),
+  firstName: joi.string().required().trim(),
   lastName: joi.string().required(),
   phoneNumber: joi
     .string()
@@ -25,14 +25,14 @@ const studentProfileSchema = joi.object({
   dateOfBirth: joi.date().required(),
   semester: joi.number().required(),
   department: joi.string().required(),
-  section: joi.string().required(),
+  section: joi.number().required(),
   transport: joi.string().required(),
   busRoute: joi.when("transport", {
     is: "College Bus",
-    then: joi.string().required(),
+    then: joi.string().required().trim(),
     otherwise: joi.string().optional(),
   }),
-  address: joi.string().required(),
+  address: joi.string().required().trim(),
   parentPhoneNumber: joi
     .string()
     .pattern(/^[0-9]{10}$/)
@@ -41,8 +41,8 @@ const studentProfileSchema = joi.object({
 
 // common schema for same details
 const simpleProfileSchema = joi.object({
-  firstName: joi.string().required(),
-  lastName: joi.string().required(),
+  firstName: joi.string().required().trim(),
+  lastName: joi.string().required().trim(),
   phoneNumber: joi
     .string()
     .pattern(/^[0-9]{10}$/)
@@ -51,8 +51,8 @@ const simpleProfileSchema = joi.object({
 
 // guest details
 const guestProfileSchema = joi.object({
-  firstName: joi.string().required(),
-  lastName: joi.string().required(),
+  firstName: joi.string().required().trim(),
+  lastName: joi.string().required().trim(),
 });
 
 // all roles in a single object
@@ -123,7 +123,7 @@ const registerValidation = (req, res, next) => {
  */
 const loginValidation = (req, res, next) => {
   const schema = joi.object({
-    email: joi.string().email().lowercase().required(),
+    email: joi.string().email().lowercase().required().trim(),
     password: joi.string().required(),
     rememberMe: joi.boolean(),
   });

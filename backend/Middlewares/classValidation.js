@@ -8,7 +8,7 @@ const getClassValidation = (req, res, next) => {
   const schema = joi.object({
     batch: joi.string().required(),
     department: joi.string().required(),
-    section: joi.string().required(),
+    section: joi.number().required(),
   });
 
   const { error } = schema.validate(req.query, { convert: true });
@@ -29,7 +29,7 @@ const newClassValidation = (req, res, next) => {
     department: joi.string().required(),
     year: joi.number().required(),
     batch: joi.string().required(),
-    section: joi.string().required(),
+    section: joi.number().required(),
   });
 
   const { error } = schema.validate(req.body);
