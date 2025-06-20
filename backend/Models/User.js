@@ -38,6 +38,10 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  rollNumber:{
+    type : String,
+    required : true,
+  },
   aparId: {
     type: String,
     required: true,
@@ -63,7 +67,7 @@ const studentSchema = new mongoose.Schema({
     required: true,
   },
   section: {
-    type: String,
+    type: Number,
     required: true,
   },
   transport: {

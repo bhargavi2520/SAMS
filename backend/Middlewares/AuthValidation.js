@@ -19,6 +19,7 @@ const studentProfileSchema = joi.object({
     .pattern(/^[0-9]{10}$/)
     .required(),
   aparId: joi.string().required(),
+  rollNumber: joi.string().required(),
   admission_academic_year: joi.date().max("now").required(),
   year: joi.number().required(),
   dateOfBirth: joi.date().required(),
@@ -88,7 +89,7 @@ const schemasByRole = {
 
 /**
  * runs before the actual registration
- * checks all details are available as per schemas 
+ * checks all details are available as per schemas
  */
 const registerValidation = (req, res, next) => {
   try {

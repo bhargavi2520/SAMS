@@ -16,7 +16,7 @@ const ClassSchema = new mongoose.Schema(
       required: true,
     },
     section: {
-      type: String,
+      type: Number,
       required: true,
     },
     subjects: [

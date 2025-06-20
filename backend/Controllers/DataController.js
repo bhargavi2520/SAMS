@@ -110,7 +110,7 @@ const getFacultyDashboard = async (req, res) => {
 
           const students = await User.find({
             role: "STUDENT",
-            section: "Section-1",
+            section: subject.section,
             department: subject.department,
             year: yearNum,
             semester: semesterNum,
@@ -198,7 +198,7 @@ const getSubjectFacultyInfo = async (req, res) => {
       subjects.map(async (subject) => {
         const faculty = await AssignedSubject.findOne({
           subject: subject._id,
-          section: 1,
+          section: section,
         }).populate("faculty");
         return {
           subject: {

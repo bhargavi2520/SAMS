@@ -108,7 +108,7 @@ const assignSubject = async (req, res) => {
     const existingAssignment = await AssignedSubject.findOne({
       subject: subject._id,
       faculty: faculty._id,
-      section: section ? section : 1,
+      section: section ,
     });
     if (existingAssignment) {
       return res.status(400).json({
@@ -119,7 +119,7 @@ const assignSubject = async (req, res) => {
     const newAssignment = new AssignedSubject({
       subject: subject._id,
       faculty: faculty._id,
-      section: section ? section : 1,
+      section: section,
     });
 
     await newAssignment.save();
