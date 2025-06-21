@@ -27,18 +27,6 @@ DataRouter.get(
   getFacultyDashboard
 );
 
-// for student dashboard
-DataRouter.get(
-  "/subjectFaculties",
-  ensureAuthenticated([]),
-  getSubjectFacultyInfo
-);
-
-DataRouter.get(
-  "/student/schedule",
-  ensureAuthenticated([]),
-  getStudentSchedule
-);
 
 DataRouter.post(
   "/newSchedule",

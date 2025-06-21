@@ -11,6 +11,7 @@ const DataRouter = require("./Routes/dataRouter");
 const SubjectRouter = require("./Routes/subjectRouter");
 const AttendanceRouter = require("./Routes/attendanceRouter");
 const ClassRouter = require("./Routes/classRouter");
+const DashboardRouter = require("./Routes/dashboardRouter");
 
 const PORT = process.env.PORT || 5000;
 
@@ -66,6 +67,7 @@ app.use("/userData", DataRouter);
 app.use("/subjectData", SubjectRouter);
 app.use("/attendance", AttendanceRouter);
 app.use("/class", ClassRouter);
+app.use("/dashboard", DashboardRouter);
 
 app.listen(PORT, () => {
   console.log(`server started at ${PORT}`);
