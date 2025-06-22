@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-// import { useAuthStore } from '@/store/authStore'; // Removed problematic import
+import { useAuthStore } from '../../store/authStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/common/components/ui/card';
 import { Button } from '@/common/components/ui/button';
 import {
@@ -43,13 +43,13 @@ import {
 	BarElement, // Added BarElement for bar chart
     ChartOptions // Import ChartOptions for explicit typing
 } from 'chart.js';
-import DashboardNav from '../../../../components/dashboard/DashboardNav';
+import DashboardNav from './DashboardNav';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend, ArcElement, BarElement);
 
 const sidebarItems = [
-    { label: 'My Profile', path: '#my-profile', icon: <User className="w-5 h-5" /> },
+   // { label: 'My Profile', path: '#my-profile', icon: <User className="w-5 h-5" /> },
 	{ label: 'Dashboard', path: '#dashboard', icon: <Home className="w-5 h-5" /> },
 	{ label: 'Timetable', path: '#timetable', icon: <Calendar className="w-5 h-5" /> }, // Moved Timetable up
 	{ label: 'Subjects Faculty', path: '#subjects-faculty', icon: <BookOpen className="w-5 h-5" /> }, // Moved Subjects Faculty below Timetable
@@ -560,35 +560,8 @@ const CircularProgress = ({ percent }: { percent: number }) => {
 };
 
 const StudentDashboard = () => {
-	 //const { user } = useAuthStore(); 
-	// Mock studentProfile as useAuthStore is not available in this context
-	const studentProfile: StudentProfile = {
-		id: "1",
-		userId: "user-1",
-		firstName: "Marcela",
-		lastName: "Santos",
-		email: "marcela.santos@gmail.com",
-		phoneNumber: "7894232145",
-		profilePictureUrl: undefined,
-		rollNumber: "2024PHY001",
-		dateOfBirth: "2004-05-19",
-		gender: "FEMALE",
-		personalEmail: undefined,
-		parentName: "Carlos Santos",
-		parentPhone: "9876543210",
-		currentSemester: 4,
-		branch: "Physics",
-		courseProgram: "BSc Physics",
-		section: undefined,
-		studentStatus: "ACTIVE",
-		feeStatus: "PAID",
-		enrollmentYear: 2022,
-		current_academic_year: "2024-2025",
-		currentAddress: "123 Main Street, City, Country",
-		permanentAddress: "456 Secondary Street, City, Country",
-		aparId: undefined,
-	};
-
+	// The 'user' object from the auth store is aliased to 'studentProfile' for use in this component.
+	const { user: studentProfile} = useAuthStore();
 
 	const [activeSection, setActiveSection] = useState<string>('dashboard'); // Set initial active section to My Profile
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar visibility
@@ -722,19 +695,16 @@ const StudentDashboard = () => {
 								<div className="flex-1">
 									<div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
 										<h2 className="text-xl md:text-2xl font-bold text-gray-900">
-											{studentProfile?.firstName || "Marcela"} {studentProfile?.lastName || "Santos"}
+											{studentProfile?.firstName} {studentProfile?.lastName}
 										</h2>
 										<button className="p-1 text-gray-400 hover:text-gray-600">
 											<Edit className="w-4 h-4" />
 										</button>
 									</div>
-									<p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">{studentProfile?.email || "marcela.santos@gmail.com"}</p>
+									<p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">{studentProfile?.email }</p>
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
 										<div>
-											<span className="font-medium">Date of birth:</span> {dayjs(studentProfile?.dateOfBirth).format('DD/MM/YYYY') || "18/02/1999"}
-										</div>
-										<div>
-											<span className="font-medium">Phone:</span> {studentProfile?.phoneNumber || "(44) 99704-8887"}
+											<span className="font-medium">Phone:</span> {studentProfile?.phoneNumber }
 										</div>
 									</div>
 									<div className="mt-4 md:mt-6">
@@ -1143,9 +1113,6 @@ const StudentDashboard = () => {
 
 export default StudentDashboard;
 
-function useAuthStore(): { user: unknown } {
-	throw new Error('Function not implemented.');
-}
 
 // Mid marks data for current semester (should be fetched from backend in real app)
 const midMarksData = [

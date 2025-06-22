@@ -8,7 +8,7 @@ import { Button } from '@/common/components/ui/button';
 import { format } from 'date-fns'; // Add this import at the top if you have date-fns installed
 import { ChartOptions } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
-import DashboardNav from '../../../../components/dashboard/DashboardNav'
+import DashboardNav from './DashboardNav'
 
 // Mock Attendance Data
 const attendanceData = [

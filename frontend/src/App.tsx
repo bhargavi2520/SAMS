@@ -14,6 +14,8 @@ import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet } from "react-router-dom"; // Import Outlet
 import TimetableDashboard from "@/modules/timetable2/pages/TimetableDashboard"; // Your TimetableDashboard page
 import AdminDashboard from "@/modules/user-management1/components/dashboard/AdminDashboard"; // Import the actual AdminDashboard
+import ProfilePage from "@/modules/user-management1/pages/profile"; // Import the ProfilePage
+
 
 const queryClient = new QueryClient();
 
@@ -136,15 +138,10 @@ const App = () => {
                 <Route path="timetable" element={<TimetableDashboard />} />
                 {/* ...other admin routes... */}
               </Route>
-
+            {/*path to profile page*/}
               <Route
                 path="profile" 
-                element={
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Profile Management</h1>
-                    <p className="text-gray-600">Profile editing features coming soon...</p>
-                  </div>
-                } 
+                  element={<ProfilePage/>}
               />
               <Route 
                 path="settings" 

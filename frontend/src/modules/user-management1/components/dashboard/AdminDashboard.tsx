@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/common/components/ui/card';
 import { Badge } from '@/common/components/ui/badge';
 import { Button } from '@/common/components/ui/button';
-import DashboardNav from '../../../../components/dashboard/DashboardNav';
+import DashboardNav from './DashboardNav';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Users, UserCheck, Activity, Database, LayoutDashboard, CalendarDays, Home, User, Settings, HelpCircle, BookOpen, Menu, Bell, ClipboardList, FileText, BarChart2, CheckSquare, Award, Megaphone } from 'lucide-react';
 

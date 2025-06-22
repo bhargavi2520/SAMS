@@ -46,7 +46,7 @@ const DashboardLayout = () => {
     
     const profile = user.profile as UserProfileMinimal;
     if (profile.firstName) {
-      return `${profile.firstName} ${profile.lastName || ''}`.trim();
+      return `Hello ${profile.firstName} ${profile.lastName || ''}`.trim();
     }
     return user.email.split('@')[0];
   };

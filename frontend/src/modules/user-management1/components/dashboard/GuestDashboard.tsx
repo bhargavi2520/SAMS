@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/common/components/ui/card';
-import DashboardNav from '../../../../components/dashboard/DashboardNav';
+import DashboardNav from './DashboardNav';
 
 const GuestDashboard = () => (
   <div className="flex flex-col min-h-screen bg-gray-50">

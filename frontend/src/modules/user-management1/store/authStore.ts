@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, User, LoginCredentials, RegisterData, StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
+import { AuthState, BaseUserProfile, LoginCredentials, RegisterData, StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
 import { authService } from '@/modules/user-management1/services/auth.service';
 
 interface AuthStore extends AuthState {

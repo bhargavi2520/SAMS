@@ -125,16 +125,15 @@ const generateTokenAndLogin = async (user, rememberMe, req, res) => {
         expiresIn,
       }
     );
+     // Convert mongoose doc to plain object and remove password
+    const userObj = user.toObject();
+    delete userObj.password;
+    delete userObj.__v;
+
     return res.status(200).json({
       message: "Login successful",
       success: true,
-      user: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        role: user.role,
-      },
+      user: userObj,
       token,
     });
   } catch (error) {

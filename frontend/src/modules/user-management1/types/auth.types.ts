@@ -1,27 +1,26 @@
 export type UserRole = 'ADMIN' | 'FACULTY' | 'STUDENT' | 'HOD' | 'GUEST';
 
-export interface User {
-  name:string;
-  id: string;
-  email: string;
-  role: UserRole;
-  isActive: boolean;
-  isVerified: boolean;
-  is2faEnabled: boolean;
-  lastLogin?: string;
-  createdAt: string;
-  profile?: StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile;
-}
+export type UserProfile =
+  | StudentProfile
+  | FacultyProfile
+  | AdminProfile
+  | HODProfile
+  | GuestProfile;
+
 
 export interface BaseUserProfile {
   id: string;
-  userId: string;
   firstName: string;
-  middleName?: string;
   lastName: string;
   email?: string;
   phoneNumber?: string;
   profilePictureUrl?: string;
+  role: UserRole;
+  isVerified: boolean;
+  is2faEnabled: boolean;
+  lastLogin?: string;
+  createdAt: string;
+  profile?: UserProfile;
 }
 
 export interface StudentProfile extends BaseUserProfile {
@@ -75,6 +74,7 @@ export interface GuestProfile extends BaseUserProfile {
   affiliation?: string; 
 }
 
+
 export interface LoginCredentials {
   email: string;
   password: string;
@@ -90,7 +90,7 @@ export interface RegisterData {
 }
 
 export interface AuthState {
-  user: User | null;
+  user: UserProfile | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;

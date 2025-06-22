@@ -4,7 +4,7 @@ import { Table, TableHead, TableRow, TableCell, TableBody } from '@/common/compo
 import { Badge } from '@/common/components/ui/badge';
 import { Button } from '@/common/components/ui/button';
 import DashboardLayout from '@/common/components/dashboard/DashboardLayout';
-import DashboardNav from '@/components/dashboard/DashboardNav';
+import DashboardNav from '@/modules/user-management1/components/dashboard/DashboardNav';
 import { Mail, Phone, MapPin, User, Building2, BookOpen, Users, FileText, CheckCircle2, Clock, XCircle, BarChart2, ClipboardList, CalendarDays, FileBarChart2, Bell, UserCog } from 'lucide-react';
 
 // Mock Data
