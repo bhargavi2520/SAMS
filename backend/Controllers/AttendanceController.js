@@ -25,7 +25,7 @@ const getAttendancebySubject = async (req, res) => {
     if (!attendance || attendance.length == 0) {
       return res.status(404).json({
         success: false,
-        message: "No Attendance Record fsound for the Subject",
+        message: "No Attendance Record found for the Subject",
       });
     }
     let totalClasses = attendance.length;
@@ -52,7 +52,7 @@ const getAttendancebySubject = async (req, res) => {
     console.log(err);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error Occured",
+      message: "Internal Server Error Occurred",
     });
   }
 };
