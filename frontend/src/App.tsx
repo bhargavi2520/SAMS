@@ -14,7 +14,7 @@ import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet } from "react-router-dom"; // Import Outlet
 import TimetableDashboard from "@/modules/timetable2/pages/TimetableDashboard"; // Your TimetableDashboard page
 import AdminDashboard from "@/modules/user-management1/components/dashboard/AdminDashboard"; // Import the actual AdminDashboard
-import ProfilePage from "@/modules/user-management1/pages/profile"; // Import the ProfilePage
+import ProfilePage from "@/modules/user-management1/pages/Profile"; // Import the ProfilePage
 
 
 const queryClient = new QueryClient();
