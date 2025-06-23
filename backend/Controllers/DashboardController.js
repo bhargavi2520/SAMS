@@ -26,7 +26,7 @@ const getStudentDashboard = async (req, res) => {
       .populate({ path: "subjects.subject", select: "name code" });
     if (!classDoc) {
       return res.status(404).json({
-        message: "No registered class found, Contact your administrator",
+        message: "You are not registered to any Class, Contact your administrator",
         success: false,
       });
     }

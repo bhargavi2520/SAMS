@@ -33,6 +33,7 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true,
             isLoading: false
           });
+          localStorage.setItem("authToken",mockResponse.token);
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : 'Login failed',
@@ -69,6 +70,7 @@ export const useAuthStore = create<AuthStore>()(
           isAuthenticated: false,
           error: null
         });
+        localStorage.removeItem("authToken");
       },
 
       clearError: () => {
