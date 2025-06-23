@@ -2,7 +2,7 @@ const joi = require("joi");
 
 // common details every role have
 const baseSchema = {
-  email: joi.string().email().required().trim(),
+  email: joi.string().email().lowercase().required().trim(),
   password: joi.string().required(),
   role: joi
     .string()
@@ -11,33 +11,54 @@ const baseSchema = {
 };
 
 // student data
-const studentProfileSchema = joi.object({
-  firstName: joi.string().required().trim(),
-  lastName: joi.string().required(),
-  phoneNumber: joi
-    .string()
-    .pattern(/^[0-9]{10}$/)
-    .required(),
-  aparId: joi.string().required(),
-  rollNumber: joi.string().required(),
-  admission_academic_year: joi.date().max("now").required(),
-  year: joi.number().required(),
-  dateOfBirth: joi.date().required(),
-  semester: joi.number().required(),
-  department: joi.string().required(),
-  section: joi.number().required(),
-  transport: joi.string().required(),
-  busRoute: joi.when("transport", {
-    is: "College Bus",
-    then: joi.string().required().trim(),
-    otherwise: joi.string().optional(),
-  }),
-  address: joi.string().required().trim(),
-  parentPhoneNumber: joi
-    .string()
-    .pattern(/^[0-9]{10}$/)
-    .required(),
-});
+const studentProfileSchema = joi
+  .object({
+    firstName: joi.string().required().trim(),
+    lastName: joi.string().required(),
+    phoneNumber: joi
+      .string()
+      .pattern(/^[0-9]{10}$/)
+      .required(),
+    aparId: joi.string().required(),
+    rollNumber: joi.string().required(),
+    admission_academic_year: joi.date().max("now").required(),
+    year: joi.number().required(),
+    dateOfBirth: joi.date().required(),
+    semester: joi.number().required(),
+    department: joi.string().required(),
+    section: joi.number().required(),
+    transport: joi.string().required(),
+    busRoute: joi.when("transport", {
+      is: "College Bus",
+      then: joi.string().required().trim(),
+      otherwise: joi.string().optional(),
+    }),
+    address: joi.string().required().trim(),
+    parentPhoneNumber: joi
+      .string()
+      .pattern(/^[0-9]{10}$/)
+      .required(),
+  })
+  .custom((value, helpers) => {
+    if (value.year == 1 && ![1, 2].includes(value.semester)) {
+      return helpers.error("any.invalid", {
+        message: "For year 1, semester must be 1 or 2",
+      });
+    } else if (value.year == 2 && ![3, 4].includes(value.semester)) {
+      return helpers.error("any.invalid", {
+        message: "For year 1, semester must be 1 or 2",
+      });
+    } else if (value.year == 3 && ![5, 6].includes(value.semester)) {
+      return helpers.error("any.invalid", {
+        message: "For year 1, semester must be 1 or 2",
+      });
+    } else if (value.year == 4 && ![7, 8].includes(value.semester)) {
+      return helpers.error("any.invalid", {
+        message: "For year 1, semester must be 1 or 2",
+      });
+    }
+    return value;
+  });
 
 // common schema for same details
 const simpleProfileSchema = joi.object({

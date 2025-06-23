@@ -63,11 +63,14 @@ const registerUser = async (req, res) => {
     const newUser = new UserModel(userData);
     await newUser.save();
     if (role === "STUDENT") {
-      const { department, year, section } = profileData;
+      const { department, year, section, admission_academic_year} = profileData;
+      const admissionYear = new Date(admission_academic_year).getFullYear();
+      const batch = `${admissionYear}-${admissionYear + 4}`;
       const classDocument = await classInfo.findOne({
         department,
         year,
         section,
+        batch,
       });
       if (classDocument) {
         classDocument.students.push({ student: newUser._id });

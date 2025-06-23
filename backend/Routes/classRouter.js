@@ -1,6 +1,10 @@
 const express = require("express");
 const ensureAuthenticated = require("../Middlewares/Authentication");
-const { getClassDetails, newClass } = require("../Controllers/ClassController");
+const {
+  getClassDetails,
+  newClass,
+  bulkCreateClasses,
+} = require("../Controllers/ClassController");
 const {
   getClassValidation,
   newClassValidation,
@@ -16,9 +20,15 @@ ClassRouter.get(
 
 ClassRouter.post(
   "/newClass",
-  ensureAuthenticated(["ADMIN","HOD"]),
+  ensureAuthenticated(["ADMIN", "HOD"]),
   newClassValidation,
   newClass
+);
+
+ClassRouter.post(
+  "/createBulkClasses",
+  ensureAuthenticated(["ADMIN"]),
+  bulkCreateClasses
 );
 
 module.exports = ClassRouter;
