@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardNav from '../../user-management1/components/dashboard/DashboardNav';
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -424,7 +424,3 @@ const TimetableDashboard = () => {
 };
 
 export default TimetableDashboard;
-
-function useEffect(arg0: () => () => void, arg1: boolean[]) {
-  throw new Error('Function not implemented.');
-}

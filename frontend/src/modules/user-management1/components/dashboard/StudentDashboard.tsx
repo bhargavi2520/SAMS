@@ -44,6 +44,8 @@ import {
     ChartOptions // Import ChartOptions for explicit typing
 } from 'chart.js';
 import DashboardNav from './DashboardNav';
+import api from '@/api';
+import apiClient from '@/api';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend, ArcElement, BarElement);
@@ -66,74 +68,9 @@ const bottomSidebarItems = [
 	{ label: 'Help', path: '#help', icon: <HelpCircle className="w-5 h-5" /> },
 ];
 
-const schedule = [
-	[
-		{ time: '8:00 AM', subject: '4A - Physics' },
-		{ time: '9:00 AM', subject: '3B - Physics' },
-		{ time: '10:00 AM', subject: '2B - Physics' },
-		{ time: '11:00 AM', subject: '1A - Chemistry' },
-		{ time: '1:00 PM', subject: '6A - Chemistry' },
-		{ time: '2:00 PM', subject: '3C - Chemistry' },
-	],
-	[
-		{ time: '8:00 AM', subject: '4A - Chemistry' },
-		{ time: '9:00 AM', subject: '2B - Physics' },
-		{ time: '10:00 AM', subject: '3A - Physics' },
-		{ time: '11:00 AM', subject: '5A - Physics' },
-		{ time: '1:00 PM', subject: '6C' },
-		{ time: '2:00 PM', subject: '2D - Physics' },
-	],
-	[
-		{ time: '8:00 AM', subject: '1A - Chemistry' },
-		{ time: '9:00 AM', subject: '6A - Physics' },
-		{ time: '10:00 AM', subject: '2B - Physics' },
-		{ time: '11:00 AM', subject: '5B - Physics' },
-		{ time: '1:00 PM', subject: '3C - Chemistry' },
-		{ time: '2:00 PM', subject: '2C - Physics' },
-	],
-	[
-		{ time: '8:00 AM', subject: '4A - Chemistry' },
-		{ time: '9:00 AM', subject: '3B - Physics' },
-		{ time: '10:00 AM', subject: '6B - Chemistry' },
-		{ time: '11:00 AM', subject: '5C - Physics' },
-		{ time: '1:00 PM', subject: '6A - Chemistry' },
-		{ time: '2:00 PM', subject: '2B - Chemistry' },
-	],
-	[
-		{ time: '8:00 AM', subject: '4A - Physics' },
-		{ time: '9:00 AM', subject: '3B - Physics' },
-		{ time: '10:00 AM', subject: '2B - Physics' },
-		{ time: '11:00 AM', subject: '6A - Chemistry' },
-		{ time: '1:00 PM', subject: '3C - Chemistry' },
-		{ time: '2:00 PM', subject: '2A - Physics' },
-	],
-	[
-		{ time: '8:00 AM', subject: 'Saturday Class' },
-		{ time: '9:00 AM', subject: 'Saturday Class' },
-		{ time: '10:00 AM', subject: 'Saturday Class' },
-		{ time: '11:00 AM', subject: 'Saturday Class' },
-		{ time: '1:00 PM', subject: 'Saturday Class' },
-		{ time: '2:00 PM', subject: 'Saturday Class' },
-	],
-];
-
 const announcements = [
 	{ title: 'Exam Schedule Released', desc: 'Check the exams section for the latest schedule.' },
 	{ title: 'Holiday Notice', desc: 'School will be closed on Friday for a public holiday.' },
-];
-
-const attendanceData = [
-    { label: 'overall attendance', attended: 10, total: 15 },
-    { label: 'subject A', attended: 12, total: 15 },
-    { label: 'subject B', attended: 15, total: 15 },
-    { label: 'subject C', attended: 12, total: 15 },
-    { label: 'subject D', attended: 15, total: 15 },
-    { label: 'subject E', attended: 13, total: 15 },
-    { label: 'subject F', attended: 14, total: 15 },
-    { label: 'subject G', attended: 11, total: 15 },
-    { label: 'subject H', attended: 12, total: 15 },
-    { label: 'subject I', attended: 13, total: 15 },
-    { label: 'subject J', attended: 15, total: 15 },
 ];
 
 const performanceData = {
@@ -214,15 +151,6 @@ const skillsData = {
 		},
 	],
 };
-
-// Changed subjectDetails to subjectsFaculty
-const subjectsFaculty = [
-	{ faculty: 'Physics Department', teacher: 'Dr. R. Sharma', book: 'Concepts of Physics (H.C. Verma)' },
-	{ faculty: 'Chemistry Department', teacher: 'Ms. S. Rao', book: 'Modern Approach to Chemical Calculations (R.C. Mukherjee)' },
-	{ faculty: 'Mathematics Department', teacher: 'Mr. A. Kumar', book: 'Mathematics for Class 12 (R.D. Sharma)' },
-	{ faculty: 'Biology Department', teacher: 'Dr. P. Singh', book: 'Trueman\'s Elementary Biology' },
-	{ faculty: 'English Department', teacher: 'Mrs. N. Das', book: 'Hornbill (NCERT)' },
-];
 
 const coursesData = [
 	{ id: 1, name: 'The Secret Sales Formula', category: 'Sales', progress: 100, status: 'Completed', lastAccess: '11/05/2024 17:59:23' },
@@ -460,65 +388,65 @@ const GPA_Calculator = () => {
 
 
 
-const AttendanceGraph = () => {
-    const chartData = {
-        labels: attendanceData.map(item => item.label),
-        datasets: [
-            {
-                label: 'Classes Attended',
-                data: attendanceData.map(item => item.attended),
-                backgroundColor: '#3b82f6',
-                borderColor: '#3b82f6',
-                borderWidth: 1,
-            },
-            {
-                label: 'Total Classes',
-                data: attendanceData.map(item => item.total),
-                backgroundColor: '#e2e8f0',
-                borderColor: '#e2e8f0',
-                borderWidth: 1,
-            },
-        ],
-    };
+const AttendanceGraph = ({ attendanceData }: { attendanceData: { label: string; attended: number; total: number }[] }) => {
+	const chartData = {
+		labels: attendanceData.map(item => item.label),
+		datasets: [
+			{
+				label: 'Classes Attended',
+				data: attendanceData.map(item => item.attended),
+				backgroundColor: '#3b82f6',
+				borderColor: '#3b82f6',
+				borderWidth: 1,
+			},
+			{
+				label: 'Total Classes',
+				data: attendanceData.map(item => item.total),
+				backgroundColor: '#e2e8f0',
+				borderColor: '#e2e8f0',
+				borderWidth: 1,
+			},
+		],
+	};
 
-    // Explicitly define ChartOptions for the Bar chart
-    const chartOptions: ChartOptions<'bar'> = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top', // This is now correctly typed as a literal
-            },
-            title: {
-                display: false,
-                text: 'Attendance Overview',
-            },
-        },
-        scales: {
-            x: {
-                grid: {
-                    display: false,
-                },
-            },
-            y: {
-                beginAtZero: true,
-                max: 15, // Max total classes in mock data
-                ticks: {
-                    stepSize: 5,
-                },
-            },
-        },
-    };
+	// Explicitly define ChartOptions for the Bar chart
+	const chartOptions: ChartOptions<'bar'> = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: {
+				position: 'top', // This is now correctly typed as a literal
+			},
+			title: {
+				display: false,
+				text: 'Attendance Overview',
+			},
+		},
+		scales: {
+			x: {
+				grid: {
+					display: false,
+				},
+			},
+			y: {
+				beginAtZero: true,
+				max: 15, // Max total classes in mock data
+				ticks: {
+					stepSize: 5,
+				},
+			},
+		},
+	};
 
-    return (
-        <div className="p-4">
-            <h4 className="text-lg font-semibold mb-4">Current Semester Attendance</h4>
-            <p className="text-gray-600 mb-4">Current Semester: Fall 2025</p>
-            <div className="h-64">
-                <Bar data={chartData} options={chartOptions} />
-            </div>
-        </div>
-    );
+	return (
+		<div className="p-4">
+			<h4 className="text-lg font-semibold mb-4">Current Semester Attendance</h4>
+			<p className="text-gray-600 mb-4">Current Semester: Fall 2025</p>
+			<div className="h-64">
+				<Bar data={chartData} options={chartOptions} />
+			</div>
+		</div>
+	);
 };
 
 // CircularProgress for attendance percentage (no percentage text inside)
@@ -558,6 +486,29 @@ const CircularProgress = ({ percent }: { percent: number }) => {
         </svg>
     );
 };
+
+// Define types for backend data
+interface FacultyInfo {
+  facultyName: string;
+  email: string;
+}
+interface SubjectInfo {
+  subjectName: string;
+  subjectCode: string;
+}
+interface AttendanceInfo {
+  totalClasses: number;
+  totalAttended: number;
+}
+interface AttendanceAndFacultyInfo {
+  subject: SubjectInfo;
+  faculty: FacultyInfo | null;
+  attendance: AttendanceInfo;
+}
+interface DashboardData {
+  timeTable: { day: string; startTime: string; endTime: string; subject: string; faculty: string }[];
+  attendanceAndFacultyInfo: AttendanceAndFacultyInfo[];
+}
 
 const StudentDashboard = () => {
 	// The 'user' object from the auth store is aliased to 'studentProfile' for use in this component.
@@ -634,6 +585,25 @@ const StudentDashboard = () => {
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
 
+	// Add state for backend data
+	const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+	const [loading, setLoading] = useState<boolean>(true);
+	const [error, setError] = useState<string | null>(null);
+
+	// For timetable:
+	const timetableSlots = dashboardData?.timeTable || [];
+	// For subjects faculty and attendance:
+	const subjectsFaculty = dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
+		faculty: item.faculty?.facultyName || 'N/A',
+		teacher: item.faculty?.facultyName || 'N/A',
+		book: '-', // No book info from backend
+	})) || [];
+	const attendanceData = dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
+		label: item.subject.subjectName,
+		attended: item.attendance.totalAttended,
+		total: item.attendance.totalClasses,
+	})) || [];
+
 	// Feedback form state (moved above conditional)
 	const [feedbackRecipient, setFeedbackRecipient] = useState<string>('College');
 	const [feedbackText, setFeedbackText] = useState<string>('');
@@ -667,14 +637,50 @@ const StudentDashboard = () => {
 		}, 1000);
 	};
 
+	// Fetch dashboard data on mount
+	useEffect(() => {
+		const fetchDashboardData = async () => {
+			setLoading(true);
+			setError(null);
+			try {
+				const res = await apiClient.get('/dashboard/student');
+				if (res.data && res.data.success) {
+					setDashboardData(res.data.data);
+				} else {
+					setError(res.data?.message || 'Failed to fetch dashboard data');
+				}
+			} catch (err: unknown) {
+				if (err && typeof err === 'object' && err !== null && 'response' in err) {
+					const errorObj = err as { response?: { data?: { message?: string } }, message?: string };
+					setError(errorObj.response?.data?.message || errorObj.message || 'Failed to fetch dashboard data');
+				} else {
+					setError('Failed to fetch dashboard data');
+				}
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchDashboardData();
+	}, []);
+
 	// The `if (!studentProfile)` check is no longer strictly necessary since studentProfile is now mocked
 	// but keeping it as a safeguard or if the mock logic changes in the future.
-	if (!studentProfile) {
+	if (loading) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
 				<div className="text-center">
 					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-					<p className="text-gray-500">Loading student information...</p>
+					<p className="text-gray-500">Loading dashboard...</p>
+				</div>
+			</div>
+		);
+	}
+	if (error) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="text-center">
+					<div className="text-red-600 font-semibold mb-2">{error}</div>
+					<button onClick={() => window.location.reload()} className="bg-blue-600 text-white px-4 py-2 rounded">Retry</button>
 				</div>
 			</div>
 		);
@@ -838,18 +844,16 @@ const StudentDashboard = () => {
 											</tr>
 										</thead>
 										<tbody>
-											{[...Array(6)].map((_, slotIdx) => (
+											{timetableSlots.map((slot, slotIdx) => (
 												<tr key={slotIdx} className="border-b border-gray-100 last:border-b-0">
 													<td className="p-2 md:p-3 text-center font-medium bg-gray-50">
-														{schedule[0][slotIdx]?.time}
+														{slot.startTime} - {slot.endTime}
 													</td>
-													{[...Array(6)].map((_, dayIdx) => (
-														<td key={dayIdx} className="p-2 md:p-3 text-center">
-															<span className="inline-block bg-blue-50 text-blue-700 rounded-lg px-2 py-1 text-xs font-medium">
-																{schedule[dayIdx]?.[slotIdx]?.subject || ''}
-															</span>
-														</td>
-													))}
+													<td className="p-2 md:p-3 text-center">
+														<span className="inline-block bg-blue-50 text-blue-700 rounded-lg px-2 py-1 text-xs font-medium">
+															{slot.subject || ''}
+														</span>
+													</td>
 												</tr>
 											))}
 										</tbody>
