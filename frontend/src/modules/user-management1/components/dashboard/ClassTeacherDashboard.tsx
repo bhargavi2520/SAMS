@@ -18,7 +18,7 @@ const AttendanceSwitch = ({ checked, onChange }: { checked: boolean; onChange: (
     />
   </button>
 );
-import DashboardNav from '../../../../components/dashboard/DashboardNav';
+import DashboardNav from './DashboardNav';
 
 const overviewStats = [
   { label: 'Class Strength', value: 48, icon: '👥', color: 'bg-blue-100 text-blue-800' },
