@@ -23,10 +23,11 @@ const getStudentDashboard = async (req, res) => {
     const { department, year, section } = student;
     const classDoc = await classInfo
       .findOne({ department, year, section })
-      .populate({ path: "subjects.subject", select: "name code" });
+      .populate({ path: "subjects.subject", select: "name code" }).select("-students")
     if (!classDoc) {
       return res.status(404).json({
-        message: "You are not registered to any Class, Contact your administrator",
+        message:
+          "You are not registered to any Class, Contact your administrator",
         success: false,
       });
     }
@@ -34,16 +35,16 @@ const getStudentDashboard = async (req, res) => {
     let attendanceAndFacultyInfo = [];
     if (classDoc.subjects.length > 0) {
       const subjectsInfo = await Promise.all(
-        classDoc.subjects.map(async (subject) => {
+        classDoc.subjects.map(async (individual) => {
           const faculty = await AssignedSubject.findOne({
-            subject: subject._id,
+            subject: individual.subject._id,
             section: section,
           })
             .populate("faculty")
             .lean();
           //attendance
           const attendanceRecords = await Attendance.find({
-            subject: subject._id,
+            subject: individual.subject._id,
           })
             .select("-__v")
             .lean();
@@ -64,11 +65,11 @@ const getStudentDashboard = async (req, res) => {
               }
             });
           }
-
+          
           return {
             subject: {
-              subjectName: subject.name,
-              subjectCode: subject.code,
+              subjectName: individual.subject.name,
+              subjectCode: individual.subject.code,
             },
             faculty:
               faculty && faculty.faculty

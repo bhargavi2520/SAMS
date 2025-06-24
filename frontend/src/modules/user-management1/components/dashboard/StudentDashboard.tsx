@@ -767,35 +767,45 @@ const StudentDashboard = () => {
     "Friday",
     "Saturday",
   ];
-  let timetableGrid: any[] = [];
-  if (timetableSlots.length > 0) {
-    // Get all unique time slots (startTime-endTime)
-    const timeSlots = Array.from(
-      new Set(timetableSlots.map((slot) => `${slot.startTime}-${slot.endTime}`))
-    ).sort();
 
-    timetableGrid = timeSlots.map((time) => {
-      const [startTime, endTime] = time.split("-");
-      const row: any = { startTime, endTime };
-      for (const day of allDays) {
-        const found = timetableSlots.find(
-          (slot) =>
-            slot.day === day &&
-            slot.startTime === startTime &&
-            slot.endTime === endTime
-        );
-        row[day] = found ? found.subject : "";
-      }
-      return row;
-    });
+  const presentDays = allDays.filter((day) =>
+    timetableSlots.some(
+      (slot) => slot.day === day && slot.subject && slot.subject.trim() !== ""
+    )
+  );
+  function parseTime(str) {
+    // str: "9:00" or "10:20"
+    const [h, m] = str.split(":").map(Number);
+    return h * 60 + m;
   }
+  const timeSlots = Array.from(
+    new Set(timetableSlots.map((slot) => `${slot.startTime}-${slot.endTime}`))
+  ).sort((a, b) => {
+    const [aStart] = a.split("-");
+    const [bStart] = b.split("-");
+    return parseTime(aStart) - parseTime(bStart);
+  });
+  const timetableGrid = timeSlots.map((time) => {
+    const [startTime, endTime] = time.split("-");
+    const row = { startTime, endTime };
+    for (const day of presentDays) {
+      const found = timetableSlots.find(
+        (slot) =>
+          slot.day === day &&
+          slot.startTime === startTime &&
+          slot.endTime === endTime
+      );
+      row[day] = found ? found.subject : "";
+    }
+    return row;
+  });
   // For subjects faculty and attendance:
   const subjectsFaculty =
-    dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
-      faculty: item.faculty?.facultyName || "N/A",
-      teacher: item.faculty?.facultyName || "N/A",
-      book: "-", // No book info from backend
-    })) || [];
+  dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
+    subjectName: item.subject.subjectName,
+    faculty: item.faculty?.facultyName || "N/A",
+    book: "-", // No book info from backend
+  })) || []
   const attendanceData =
     dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
       label: item.subject.subjectName,
@@ -813,7 +823,7 @@ const StudentDashboard = () => {
   // Build recipient options: College + all teachers from subjectsFaculty
   const feedbackRecipients = [
     { label: "College", value: "College" },
-    ...subjectsFaculty.map((s) => ({ label: s.teacher, value: s.teacher })),
+    ...subjectsFaculty.map((s) => ({ label: s.faculty, value: s.faculty })),
   ];
 
   const handleFeedbackSubmit = (e: React.FormEvent) => {
@@ -1119,7 +1129,7 @@ const StudentDashboard = () => {
                             <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">
                               Time
                             </th>
-                            {allDays.map((day) => (
+                            {presentDays.map((day) => (
                               <th
                                 key={day}
                                 className="p-2 md:p-3 font-semibold text-center bg-gray-50"
@@ -1138,7 +1148,7 @@ const StudentDashboard = () => {
                               <td className="p-2 md:p-3 text-center font-medium bg-gray-50">
                                 {row.startTime} - {row.endTime}
                               </td>
-                              {allDays.map((day) => (
+                              {presentDays.map((day) => (
                                 <td
                                   key={day}
                                   className="p-2 md:p-3 text-center"
@@ -1185,22 +1195,22 @@ const StudentDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {subjectsFaculty.map((detail, index) => (
+                      {subjectsFaculty.length >0 ? subjectsFaculty.map((detail, index) => (
                         <tr
                           key={index}
                           className="border-b border-gray-100 last:border-b-0"
                         >
                           <td className="py-2 md:py-3 text-gray-600">
-                            {detail.faculty}
+                            {detail.subjectName}
                           </td>
                           <td className="py-2 md:py-3 text-gray-600">
-                            {detail.teacher}
+                            {detail.faculty}
                           </td>
                           <td className="py-2 md:py-3 text-gray-600">
                             {detail.book}
                           </td>
                         </tr>
-                      ))}
+                      )) : <tr className="border-b border-gray-100 last:border-b-0"><td colSpan={2} className="py-2 md: py-3 text-gray-600 text-center">No Data Available Right Now</td></tr>}
                     </tbody>
                   </table>
                 </div>

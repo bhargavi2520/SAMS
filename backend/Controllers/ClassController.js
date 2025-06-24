@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const classInfo = require("../Models/Class");
-
+const { User } = require("../Models/User.js");
 /**
  * function for getting class details for a specific batch , department and year
  * it returns class details along the all subject and students for this class.
@@ -94,7 +94,7 @@ const newClass = async (req, res) => {
     });
   }
 };
-
+/*
 const bulkCreateClasses = async (req, res) => {
   const { classes } = req.body; 
   if (!Array.isArray(classes)) {
@@ -142,8 +142,58 @@ const bulkCreateClasses = async (req, res) => {
   });
 };
 
+*/
+
+// const addStudent = async (req, res) => {
+//   const { department, section, year, studentId, batch } = req.body;
+//   try {
+//     const studentExists = await User.findOne({
+//       _id: studentId,
+//       role: "STUDENT",
+//     }).lean();
+//     if (!studentExists) {
+//       return res.status(404).json({
+//         message: "Student doesn't exists",
+//         success: false,
+//       });
+//     }
+
+//     const correspondingClass = await classInfo.findOne({
+//       department,
+//       section,
+//       year,
+//       batch,
+//     });
+//     if (!correspondingClass) {
+//       return res
+//         .status(404)
+//         .json({ message: "Class doesn't Exist", success: false });
+//     }
+//     const alreadyExists = correspondingClass.students.some(
+//       (student) => student.student && student.student.toString() === studentId
+//     );
+//     if (alreadyExists) {
+//       return res.status(409).json({
+//         message: "Student already exists",
+//         success: false,
+//       });
+//     }
+//     correspondingClass.students.push({ student: studentId });
+//     await correspondingClass.save();
+//     return res.status(201).json({
+//       message: "Student added successfully",
+//       success: true,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).json({
+//       message: "Internal Server Occurred",
+//       success: false,
+//     });
+//   }
+// };
+
 module.exports = {
   getClassDetails,
   newClass,
-  bulkCreateClasses,
 };

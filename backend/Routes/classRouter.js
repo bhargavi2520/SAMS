@@ -3,7 +3,6 @@ const ensureAuthenticated = require("../Middlewares/Authentication");
 const {
   getClassDetails,
   newClass,
-  bulkCreateClasses,
 } = require("../Controllers/ClassController");
 const {
   getClassValidation,
@@ -25,10 +24,12 @@ ClassRouter.post(
   newClass
 );
 
-ClassRouter.post(
-  "/createBulkClasses",
-  ensureAuthenticated(["ADMIN"]),
-  bulkCreateClasses
-);
+// ClassRouter.post(
+//   "/createBulkClasses",
+//   ensureAuthenticated(["ADMIN"]),
+//   bulkCreateClasses
+// );
+
+// ClassRouter.post("/newStudentToClass", addStudent);
 
 module.exports = ClassRouter;
