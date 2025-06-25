@@ -23,7 +23,8 @@ const getStudentDashboard = async (req, res) => {
     const { department, year, section } = student;
     const classDoc = await classInfo
       .findOne({ department, year, section })
-      .populate({ path: "subjects.subject", select: "name code" }).select("-students")
+      .populate({ path: "subjects.subject", select: "name code" })
+      .select("-students");
     if (!classDoc) {
       return res.status(404).json({
         message:
@@ -65,7 +66,7 @@ const getStudentDashboard = async (req, res) => {
               }
             });
           }
-          
+
           return {
             subject: {
               subjectName: individual.subject.name,
@@ -75,9 +76,11 @@ const getStudentDashboard = async (req, res) => {
               faculty && faculty.faculty
                 ? {
                     facultyName:
-                      faculty.faculty.firstName +
+                      faculty.faculty.firstName.charAt(0).toUpperCase() +
+                      faculty.faculty.firstName.slice(1).toLowerCase() +
                       " " +
-                      faculty.faculty.lastName,
+                      (faculty.faculty.lastName.charAt(0).toUpperCase() +
+                        faculty.faculty.lastName.slice(1).toLowerCase()),
                     email: faculty.faculty.email,
                   }
                 : null,

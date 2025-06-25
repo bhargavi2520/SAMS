@@ -31,7 +31,7 @@ const assignSubjectValidation = (req, res, next) => {
   const schema = joi.object({
     subjectId: joi.string().required(),
     facultyId: joi.string().required(),
-    section: joi.string().required(),
+    section: joi.number().required(),
   });
   const { error } = schema.validate(req.body);
 

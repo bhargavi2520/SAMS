@@ -37,13 +37,13 @@ const getSubjectsbyCriteria = async (req, res) => {
 };
 
 /**
- * function for adding new Subject 
- * gets subject name , code other essential things 
+ * function for adding new Subject
+ * gets subject name , code other essential things
  * fetch for existing subject with same details (if)
- * returns a newly created subject 
+ * returns a newly created subject
  */
 const addSubject = async (req, res) => {
-  const { name, code, department, year, semester } = req.body;
+  const { name, code, department, year, semester, batch } = req.body;
   try {
     const existingSubject = await Subject.findOne({ code });
     if (existingSubject) {
@@ -61,9 +61,9 @@ const addSubject = async (req, res) => {
     });
     await newSubject.save();
     await Class.updateMany(
-      { department, year },
+      { department, year, batch },
       {
-        $push: { subjects: { subject: newSubject._id } },
+        $addToSet: { subjects: { subject: newSubject._id } },
       }
     );
 
@@ -108,7 +108,7 @@ const assignSubject = async (req, res) => {
     const existingAssignment = await AssignedSubject.findOne({
       subject: subject._id,
       faculty: faculty._id,
-      section: section ,
+      section: section,
     });
     if (existingAssignment) {
       return res.status(400).json({
