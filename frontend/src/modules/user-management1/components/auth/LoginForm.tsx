@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/common/components/ui/button';
 import { Input } from '@/common/components/ui/input';
@@ -20,6 +20,16 @@ const LoginForm = () => {
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
+  // Ref to the submit button so we can programmatically trigger a click on Enter key
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Handle Enter key press anywhere inside the form
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent default form submission to avoid page reload
+      submitButtonRef.current?.click(); // Programmatically trigger the sign-in button
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +71,7 @@ const LoginForm = () => {
             </Alert>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -134,6 +144,7 @@ const LoginForm = () => {
             </div>
             
             <Button
+              ref={submitButtonRef}
               type="submit"
               className="w-full bg-white border-2 border-blue-700 text-blue-700 shadow-md hover:bg-blue-700 hover:text-white hover:shadow-blue-500/70 hover:shadow-lg transition-all duration-200"
               disabled={isLoading}
