@@ -79,6 +79,35 @@ const RegisterForm = () => {
     { value: 'GUEST', label: 'Guest'}
   ];
 
+  // Mapping of year to allowed semesters
+  const semesterMap: Record<string, string[]> = {
+    '1': ['1', '2'],
+    '2': ['3', '4'],
+    '3': ['5', '6'],
+    '4': ['7', '8'],
+  };
+
+  // Helper to get current allowed semesters based on selected year
+  const selectedYear = (formData.profileData as any).year as string | undefined;
+  const allowedSemesters = selectedYear ? semesterMap[selectedYear] : ['1','2','3','4','5','6','7','8'];
+
+  // When year changes, if current semester not in allowed list reset it
+  const handleYearChange = (value: string) => {
+    setFormData(prev => {
+      const currentSemester = (prev.profileData as any).semester as string | undefined;
+      const semestersForYear = semesterMap[value];
+      const newSemester = currentSemester && semestersForYear.includes(currentSemester) ? currentSemester : '';
+      return {
+        ...prev,
+        profileData: {
+          ...prev.profileData,
+          year: value,
+          semester: newSemester,
+        },
+      };
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <Card className="w-full max-w-lg shadow-xl">
@@ -203,15 +232,7 @@ const RegisterForm = () => {
                 <Label htmlFor="year">Year</Label>
                 <Select
                   value={(formData.profileData as any).year || ''}
-                  onValueChange={value =>
-                    setFormData(prev => ({
-                      ...prev,
-                      profileData: {
-                        ...prev.profileData,
-                        year: value
-                      }
-                    }))
-                  }
+                  onValueChange={handleYearChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select year" />
@@ -247,14 +268,9 @@ const RegisterForm = () => {
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="4">4</SelectItem>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="6">6</SelectItem>
-                    <SelectItem value="7">7</SelectItem>
-                    <SelectItem value="8">8</SelectItem>
+                    {allowedSemesters.map((sem) => (
+                      <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
