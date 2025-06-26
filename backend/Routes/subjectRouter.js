@@ -11,6 +11,7 @@ const {
   addSubjectValidation,
   assignSubjectValidation,
 } = require("../Middlewares/SubjectValidation");
+const checkAccess = require("../Middlewares/SubjectAccessValidation");
 
 SubjectRouter.get("/", (req, res) => {
   res.send("It is the Subject Router!");
@@ -27,12 +28,14 @@ SubjectRouter.post(
   "/addSubject",
   ensureAuthenticated(["HOD"]),
   addSubjectValidation,
+  checkAccess,
   addSubject
 );
 SubjectRouter.post(
   "/assignSubject",
   ensureAuthenticated(["HOD", "ADMIN"]),
   assignSubjectValidation,
+  checkAccess,
   assignSubject
 );
 
