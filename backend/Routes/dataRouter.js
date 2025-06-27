@@ -4,9 +4,6 @@ const ensureAuthenticated = require("../Middlewares/Authentication.js");
 const {
   getStudentDataByCriteria,
   getFaculties,
-  getFacultyDashboard,
-  getSubjectFacultyInfo,
-  getStudentSchedule,
   createTimeTable,
 } = require("../Controllers/DataController.js");
 
@@ -20,13 +17,6 @@ DataRouter.get(
   ensureAuthenticated(["Admin", "HOD"]),
   getFaculties
 );
-
-DataRouter.get(
-  "/facultyDash",
-  ensureAuthenticated(["FACULTY"]),
-  getFacultyDashboard
-);
-
 
 DataRouter.post(
   "/newSchedule",
