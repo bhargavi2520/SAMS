@@ -801,11 +801,11 @@ const StudentDashboard = () => {
   });
   // For subjects faculty and attendance:
   const subjectsFaculty =
-  dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
-    subjectName: item.subject.subjectName,
-    faculty: item.faculty?.facultyName || "N/A",
-    book: "-", // No book info from backend
-  })) || []
+    dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
+      subjectName: item.subject.subjectName,
+      faculty: item.faculty?.facultyName || "N/A",
+      book: "-", // No book info from backend
+    })) || [];
   const attendanceData =
     dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
       label: item.subject.subjectName,
@@ -1121,26 +1121,30 @@ const StudentDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  {(() => {
-                    return (
-                      <table className="min-w-full text-xs md:text-sm">
-                        <thead>
-                          <tr>
-                            <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">
-                              Time
+                  {timetableSlots.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      Timetable is not available at the moment.
+                    </div>
+                  ) : (
+                    <table className="min-w-full text-xs md:text-sm">
+                      <thead>
+                        <tr>
+                          <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">
+                            Time
+                          </th>
+                          {presentDays.map((day) => (
+                            <th
+                              key={day}
+                              className="p-2 md:p-3 font-semibold text-center bg-gray-50"
+                            >
+                              {day}
                             </th>
-                            {presentDays.map((day) => (
-                              <th
-                                key={day}
-                                className="p-2 md:p-3 font-semibold text-center bg-gray-50"
-                              >
-                                {day}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {timetableGrid.map((row, idx) => (
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {timetableGrid.length > 0 ? (
+                          timetableGrid.map((row, idx) => (
                             <tr
                               key={idx}
                               className="border-b border-gray-100 last:border-b-0"
@@ -1157,11 +1161,20 @@ const StudentDashboard = () => {
                                 </td>
                               ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    );
-                  })()}
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={presentDays.length + 1}
+                              className="py-2 md:py-3 text-gray-600 text-center"
+                            >
+                              No Data Available at the moment.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1195,22 +1208,33 @@ const StudentDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {subjectsFaculty.length >0 ? subjectsFaculty.map((detail, index) => (
-                        <tr
-                          key={index}
-                          className="border-b border-gray-100 last:border-b-0"
-                        >
-                          <td className="py-2 md:py-3 text-gray-600">
-                            {detail.subjectName}
-                          </td>
-                          <td className="py-2 md:py-3 text-gray-600">
-                            {detail.faculty}
-                          </td>
-                          <td className="py-2 md:py-3 text-gray-600">
-                            {detail.book}
+                      {subjectsFaculty.length > 0 ? (
+                        subjectsFaculty.map((detail, index) => (
+                          <tr
+                            key={index}
+                            className="border-b border-gray-100 last:border-b-0"
+                          >
+                            <td className="py-2 md:py-3 text-gray-600">
+                              {detail.subjectName}
+                            </td>
+                            <td className="py-2 md:py-3 text-gray-600">
+                              {detail.faculty}
+                            </td>
+                            <td className="py-2 md:py-3 text-gray-600">
+                              {detail.book}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr className="border-b border-gray-100 last:border-b-0">
+                          <td
+                            colSpan={2}
+                            className="py-2 md: py-3 text-gray-600 text-center"
+                          >
+                            No Data Available at the moment.
                           </td>
                         </tr>
-                      )) : <tr className="border-b border-gray-100 last:border-b-0"><td colSpan={2} className="py-2 md: py-3 text-gray-600 text-center">No Data Available Right Now</td></tr>}
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1344,96 +1368,108 @@ const StudentDashboard = () => {
                 </p>
                 {/* Desktop/tablet table */}
                 <div className="overflow-x-auto mt-4 hidden sm:block">
-                  <table className="min-w-full text-xs md:text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100">
-                        <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-left">
-                          Category
-                        </th>
-                        <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">
-                          Number of Classes
-                          <br className="hidden md:block" />
-                          Till Date
-                        </th>
-                        <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">
-                          Attended
-                          <br className="hidden md:block" />
-                          Classes
-                        </th>
-                        <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">
-                          Present
-                          <br className="hidden md:block" />
-                          Percentage
-                        </th>
-                        <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {attendanceData.map((item, index) => {
-                        const percent =
-                          item.total > 0
-                            ? Math.round((item.attended / item.total) * 100)
-                            : 0;
-                        return (
-                          <tr
-                            key={index}
-                            className={`transition-colors ${
-                              index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                            }`}
-                          >
-                            <td className="py-3 px-2 text-gray-700 capitalize font-medium">
-                              {item.label}
-                            </td>
-                            <td className="py-3 px-2 text-center text-gray-700">
-                              {item.total}
-                            </td>
-                            <td className="py-3 px-2 text-center text-gray-700">
-                              {item.attended}
-                            </td>
-                            <td className="py-3 px-2 text-center text-gray-900 font-semibold">
-                              {percent}%
-                            </td>
-                            <td className="py-3 px-2 w-20 text-center">
-                              <CircularProgress percent={percent} />
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  {attendanceData.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      Attendance data is not available right now.
+                    </div>
+                  ) : (
+                    <table className="min-w-full text-xs md:text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-left">
+                            Category
+                          </th>
+                          <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">
+                            Number of Classes
+                            <br className="hidden md:block" />
+                            Till Date
+                          </th>
+                          <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">
+                            Attended
+                            <br className="hidden md:block" />
+                            Classes
+                          </th>
+                          <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center">
+                            Present
+                            <br className="hidden md:block" />
+                            Percentage
+                          </th>
+                          <th className="pb-2 md:pb-3 font-semibold text-gray-500 text-center"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {attendanceData.map((item, index) => {
+                          const percent =
+                            item.total > 0
+                              ? Math.round((item.attended / item.total) * 100)
+                              : 0;
+                          return (
+                            <tr
+                              key={index}
+                              className={`transition-colors ${
+                                index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                              }`}
+                            >
+                              <td className="py-3 px-2 text-gray-700 capitalize font-medium">
+                                {item.label}
+                              </td>
+                              <td className="py-3 px-2 text-center text-gray-700">
+                                {item.total}
+                              </td>
+                              <td className="py-3 px-2 text-center text-gray-700">
+                                {item.attended}
+                              </td>
+                              <td className="py-3 px-2 text-center text-gray-900 font-semibold">
+                                {percent}%
+                              </td>
+                              <td className="py-3 px-2 w-20 text-center">
+                                <CircularProgress percent={percent} />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
                 {/* Mobile cards */}
                 <div className="sm:hidden flex flex-col gap-3 mt-2">
-                  {attendanceData.map((item, index) => {
-                    const percent =
-                      item.total > 0
-                        ? Math.round((item.attended / item.total) * 100)
-                        : 0;
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100"
-                      >
-                        <div className="flex items-center gap-3">
-                          <CircularProgress percent={percent} />
-                          <span className="ml-2 mr-2 text-base font-semibold text-gray-900">
-                            {percent}%
-                          </span>
-                          <div>
-                            <div className="font-semibold text-gray-800 capitalize text-sm">
-                              {item.label}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              <span className="font-medium">
-                                {item.attended}
-                              </span>{" "}
-                              / {item.total} classes
+                  {attendanceData.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      Attendance data is not available right now.
+                    </div>
+                  ) : (
+                    attendanceData.map((item, index) => {
+                      const percent =
+                        item.total > 0
+                          ? Math.round((item.attended / item.total) * 100)
+                          : 0;
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100"
+                        >
+                          <div className="flex items-center gap-3">
+                            <CircularProgress percent={percent} />
+                            <span className="ml-2 mr-2 text-base font-semibold text-gray-900">
+                              {percent}%
+                            </span>
+                            <div>
+                              <div className="font-semibold text-gray-800 capitalize text-sm">
+                                {item.label}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                <span className="font-medium">
+                                  {item.attended}
+                                </span>{" "}
+                                / {item.total} classes
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
             </Card>

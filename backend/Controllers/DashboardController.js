@@ -102,7 +102,7 @@ const getStudentDashboard = async (req, res) => {
       message: "Student Dashboard Info are ..",
       success: true,
       data: {
-        timeTable: schedule.timeSlots || [],
+        timeTable: schedule && schedule.timeSlots ? schedule.timeSlots : [],
         attendanceAndFacultyInfo,
       },
     });
