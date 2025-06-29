@@ -58,6 +58,7 @@ app.get("/", (req, res) => {
   res.send(" Backend is LIVE! Welcome to SAMS");
 });
 app.get("/api/health", (req, res) => {
+  console.log("Server Awake !!");
   res.json({ status: "UP", message: "All good, No worries!" });
 });
 app.get("/api/test", (req, res) => {
