@@ -6,9 +6,6 @@ const {
   getFaculties,
   createTimeTable,
 } = require("../Controllers/DataController.js");
-const {
-  createTimeTableValidation,
-} = require("../Middlewares/CreateTimeTableValidation.js");
 
 DataRouter.get(
   "/students",
@@ -24,7 +21,6 @@ DataRouter.get(
 DataRouter.post(
   "/newSchedule",
   ensureAuthenticated(["HOD", "ADMIN"]),
-  createTimeTableValidation,
   createTimeTable
 );
 

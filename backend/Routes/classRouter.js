@@ -1,10 +1,13 @@
 const express = require("express");
 const ensureAuthenticated = require("../Middlewares/Authentication");
-const { getClassDetails, newClass } = require("../Controllers/ClassController");
+const {
+  getClassDetails,
+  newClass,
+} = require("../Controllers/ClassController");
 const {
   getClassValidation,
   newClassValidation,
-} = require("../Middlewares/ClassValidation.js");
+} = require("../Middlewares/classValidation");
 const ClassRouter = express.Router();
 
 ClassRouter.get(
