@@ -113,7 +113,7 @@ const createTimeTable = async (req, res) => {
       });
     }
 
-    const existing = await TimeTable.findOne({ class: classId._id }).lean();
+    const existing = await TimeTable.findOne({ class: classId._id });
     if (existing) {
       return res.status(400).json({
         success: false,
@@ -193,23 +193,53 @@ const createTimeTable = async (req, res) => {
       }
     }
 
-    const newTimeTable = new TimeTable({
-      class: classId._id,
-      timeSlots: allTimeSlots,
-    });
-
-    await newTimeTable.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "Time Table Created",
-    });
+    if (existing) {
+      existing.timeSlots = allTimeSlots;
+      await existing.save();
+      return res.status(200).json({
+        success: true,
+        message: "Timetable updated successfully",
+      });
+    } else {
+      const newTimeTable = new TimeTable({
+        class: classId._id,
+        timeSlots: allTimeSlots,
+      });
+      await newTimeTable.save();
+      return res.status(201).json({
+        success: true,
+        message: "Time Table Created",
+      });
+    }
   } catch (err) {
-    console.error("Error creating timetable:", err);
+    console.error("Error creating/updating timetable:", err);
     return res.status(500).json({
       success: false,
-      message: "Error while creating new TimeTable",
+      message: "Error while creating/updating TimeTable",
     });
+  }
+};
+
+/**
+ * Check if a timetable exists for a class
+ * GET /userData/checkTimetable?department=...&year=...&section=...
+ */
+const checkTimetableExists = async (req, res) => {
+  const { department, year, section } = req.query;
+  try {
+    const classDoc = await classInfo.findOne({ department, year, section }).select('_id');
+    if (!classDoc) {
+      return res.status(404).json({ exists: false, message: 'Class not found' });
+    }
+    const timetable = await TimeTable.findOne({ class: classDoc._id });
+    if (timetable) {
+      return res.status(200).json({ exists: true, timetable });
+    } else {
+      return res.status(200).json({ exists: false });
+    }
+  } catch (err) {
+    console.error('Error checking timetable existence:', err);
+    return res.status(500).json({ exists: false, message: 'Internal server error' });
   }
 };
 
@@ -217,4 +247,5 @@ module.exports = {
   getStudentDataByCriteria,
   getFaculties,
   createTimeTable,
+  checkTimetableExists,
 };

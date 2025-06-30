@@ -5,6 +5,7 @@ const {
   getStudentDataByCriteria,
   getFaculties,
   createTimeTable,
+  checkTimetableExists,
 } = require("../Controllers/DataController.js");
 const {
   createTimeTableValidation,
@@ -12,12 +13,12 @@ const {
 
 DataRouter.get(
   "/students",
-  ensureAuthenticated(["Admin", "HOD", "FACULTY"]),
+  ensureAuthenticated(["ADMIN", "HOD", "FACULTY"]),
   getStudentDataByCriteria
 );
 DataRouter.get(
   "/faculties",
-  ensureAuthenticated(["Admin", "HOD"]),
+  ensureAuthenticated(["ADMIN", "HOD"]),
   getFaculties
 );
 
@@ -26,6 +27,12 @@ DataRouter.post(
   ensureAuthenticated(["HOD", "ADMIN"]),
   createTimeTableValidation,
   createTimeTable
+);
+
+DataRouter.get(
+  "/checkTimetable",
+  ensureAuthenticated(["ADMIN", "HOD"]),
+  checkTimetableExists
 );
 
 module.exports = DataRouter;
