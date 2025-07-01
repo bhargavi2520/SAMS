@@ -39,8 +39,8 @@ const navConfig = {
   ],
   hod: [
     { label: 'Dashboard', icon: <Home className="w-6 h-6" />, section: 'dashboard' },
-    { label: 'Faculty Management', icon: <UserCog className="w-6 h-6" />, section: 'faculty-management' },
-    { label: 'Student Management', icon: <Users className="w-6 h-6" />, section: 'student-management' },
+    { label: 'User Management', icon: <Users className="w-6 h-6" />, section: 'user-management' },
+    { label: 'Teacher Assignment', icon: <UserCog className="w-6 h-6" />, section: 'teacher-assignment' },
     { label: 'Timetable', icon: <Calendar className="w-6 h-6" />, section: 'timetable' },
     { label: 'Exams', icon: <FileText className="w-6 h-6" />, section: 'exams' },
     { label: 'Announcements', icon: <Bell className="w-6 h-6" />, section: 'announcements' },

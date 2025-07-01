@@ -73,8 +73,8 @@ const statusColor = (status) =>
 const HODDashboard = ({ isHOD = true }) => {
   // Section refs for scroll navigation
   const dashboardRef = useRef(null);
-  const facultyManagementRef = useRef(null);
-  const studentManagementRef = useRef(null);
+  const userManagementRef = useRef(null);
+  const teacherAssignmentRef = useRef(null);
   const timetableRef = useRef(null);
   const attendanceRef = useRef(null);
   const examsRef = useRef(null);
@@ -88,7 +88,74 @@ const HODDashboard = ({ isHOD = true }) => {
   const [showAnnouncementTab, setShowAnnouncementTab] = useState(false);
   const [announcementText, setAnnouncementText] = useState("");
   const [announcements, setAnnouncements] = useState([]);
+  const [userTypeFilter, setUserTypeFilter] = useState('all'); // 'all', 'faculty', 'students'
   const yearOptions = [1, 2, 3, 4];
+
+  // Teacher Assignment State
+  const [showAssignmentForm, setShowAssignmentForm] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedAssignmentYear, setSelectedAssignmentYear] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
+  const [isClassTeacher, setIsClassTeacher] = useState(false);
+  const [assignments, setAssignments] = useState([
+    {
+      id: 1,
+      faculty: 'Dr. Michael Smith',
+      subject: 'Data Structures',
+      year: '2nd Year',
+      branch: 'CSE',
+      section: '1',
+      isClassTeacher: true,
+      assignedDate: '2024-01-15'
+    },
+    {
+      id: 2,
+      faculty: 'Prof. Lisa Wilson',
+      subject: 'Advanced Algorithms',
+      year: '3rd Year',
+      branch: 'CSE',
+      section: '2',
+      isClassTeacher: false,
+      assignedDate: '2024-01-14'
+    },
+    {
+      id: 3,
+      faculty: 'Dr. Robert Brown',
+      subject: 'Database Systems',
+      year: '2nd Year',
+      branch: 'CSE',
+      section: '3',
+      isClassTeacher: true,
+      assignedDate: '2024-01-13'
+    }
+  ]);
+
+  // Mock data for dropdowns
+  const facultyList = [
+    'Dr. Michael Smith',
+    'Prof. Lisa Wilson', 
+    'Dr. Robert Brown',
+    'Dr. Emily Clark',
+    'Prof. James Davis',
+    'Dr. Sarah Johnson'
+  ];
+
+  const subjectsList = [
+    'Data Structures',
+    'Advanced Algorithms',
+    'Database Systems',
+    'Computer Networks',
+    'Operating Systems',
+    'Software Engineering',
+    'Machine Learning',
+    'Artificial Intelligence'
+  ];
+
+  const branchesList = ['CSE', 'ECE', 'EEE', 'MECH', 'CSM', 'CSD'];
+  const sectionsList = ['1', '2', '3'];
+  const yearsList = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
   const handleAnnouncementSubmit = (e) => {
     e.preventDefault();
@@ -363,8 +430,8 @@ const HODDashboard = ({ isHOD = true }) => {
   // Scroll to section on nav click
   const sectionRefs = {
     dashboard: dashboardRef,
-    'faculty-management': facultyManagementRef,
-    'student-management': studentManagementRef,
+    'user-management': userManagementRef,
+    'teacher-assignment': teacherAssignmentRef,
     timetable: timetableRef,
     attendance: attendanceRef,
     exams: examsRef,
@@ -385,8 +452,8 @@ const HODDashboard = ({ isHOD = true }) => {
     const handleScroll = () => {
       const sections = [
         { section: 'dashboard', ref: dashboardRef },
-        { section: 'faculty-management', ref: facultyManagementRef },
-        { section: 'student-management', ref: studentManagementRef },
+        { section: 'user-management', ref: userManagementRef },
+        { section: 'teacher-assignment', ref: teacherAssignmentRef },
         { section: 'timetable', ref: timetableRef },
         { section: 'attendance', ref: attendanceRef },
         { section: 'exams', ref: examsRef },
@@ -408,6 +475,49 @@ const HODDashboard = ({ isHOD = true }) => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Teacher Assignment Handlers
+  const handleAssignmentSubmit = (e) => {
+    e.preventDefault();
+    if (selectedFaculty && selectedSubject && selectedAssignmentYear && selectedBranch && selectedSection) {
+      const newAssignment = {
+        id: Date.now(),
+        faculty: selectedFaculty,
+        subject: selectedSubject,
+        year: selectedAssignmentYear,
+        branch: selectedBranch,
+        section: selectedSection,
+        isClassTeacher: isClassTeacher,
+        assignedDate: new Date().toISOString().split('T')[0]
+      };
+      setAssignments([...assignments, newAssignment]);
+      
+      // Reset form
+      setSelectedFaculty('');
+      setSelectedSubject('');
+      setSelectedAssignmentYear('');
+      setSelectedBranch('');
+      setSelectedSection('');
+      setIsClassTeacher(false);
+      setShowAssignmentForm(false);
+    }
+  };
+
+  const handleDeleteAssignment = (id) => {
+    setAssignments(assignments.filter(assignment => assignment.id !== id));
+  };
+
+  const handleEditAssignment = (assignment) => {
+    setSelectedFaculty(assignment.faculty);
+    setSelectedSubject(assignment.subject);
+    setSelectedAssignmentYear(assignment.year);
+    setSelectedBranch(assignment.branch);
+    setSelectedSection(assignment.section);
+    setIsClassTeacher(assignment.isClassTeacher);
+    setShowAssignmentForm(true);
+    // Remove the assignment being edited
+    setAssignments(assignments.filter(a => a.id !== assignment.id));
+  };
 
   // Handler to update activity status
   const handleUpdateStatus = (idx) => {
@@ -576,13 +686,15 @@ const HODDashboard = ({ isHOD = true }) => {
             </div>
           </section>
 
-          {/* Faculty Management Section */}
-          <section ref={facultyManagementRef} id="faculty-management" className="scroll-mt-24 space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2"><UserCog className="w-6 h-6" /> Faculty Management</h2>
+          {/* User Management Section */}
+          <section ref={userManagementRef} id="user-management" className="scroll-mt-24 space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> User Management</h2>
+            
+            {/* Faculty Management Card */}
             <Card className="bg-white dark:bg-neutral-800">
               <CardContent className="p-4 md:p-6">
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5" /> Faculty Performance
+                  <UserCog className="w-5 h-5" /> Faculty Management
                 </h3>
                 {/* Unified Table for all screen sizes, scrollable on small screens */}
                 <div className="overflow-x-auto">
@@ -615,15 +727,12 @@ const HODDashboard = ({ isHOD = true }) => {
                 </div>
               </CardContent>
             </Card>
-          </section>
 
-          {/* Student Management Section */}
-          <section ref={studentManagementRef} id="student-management" className="scroll-mt-24 space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> Student Management</h2>
+            {/* Student Management Card */}
             <Card className="bg-white dark:bg-neutral-800">
               <CardContent className="p-4 md:p-6">
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
-                  <BarChart2 className="w-5 h-5" /> Academic Performance
+                  <Users className="w-5 h-5" /> Student Management
                   <div className="flex-1" />
                   <div className="flex items-center gap-2">
                     <label htmlFor="year-select" className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">Year:</label>
@@ -662,6 +771,206 @@ const HODDashboard = ({ isHOD = true }) => {
                           </td>
                           <td className="px-3 py-2 sm:px-4 sm:py-3 w-1/4 align-middle text-center">
                             <Button size="sm" variant="outline" className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200">Report</Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Teacher Assignment Section */}
+          <section ref={teacherAssignmentRef} id="teacher-assignment" className="scroll-mt-24 space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2"><UserCog className="w-6 h-6" /> Teacher Assignment</h2>
+            
+            <Card className="bg-white dark:bg-neutral-800">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" /> Subject Assignments
+                  </h3>
+                  <Button
+                    onClick={() => setShowAssignmentForm(true)}
+                    className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                  >
+                    Assign Teacher
+                  </Button>
+                </div>
+
+                {/* Assignment Form */}
+                {showAssignmentForm && (
+                  <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-6 border border-primary/30">
+                    <h4 className="text-base font-semibold mb-4">New Teacher Assignment</h4>
+                    <form onSubmit={handleAssignmentSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Faculty</label>
+                        <select
+                          value={selectedFaculty}
+                          onChange={(e) => setSelectedFaculty(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          required
+                        >
+                          <option value="">Select Faculty</option>
+                          {facultyList.map((faculty) => (
+                            <option key={faculty} value={faculty}>{faculty}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Subject</label>
+                        <select
+                          value={selectedSubject}
+                          onChange={(e) => setSelectedSubject(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          required
+                        >
+                          <option value="">Select Subject</option>
+                          {subjectsList.map((subject) => (
+                            <option key={subject} value={subject}>{subject}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Year</label>
+                        <select
+                          value={selectedAssignmentYear}
+                          onChange={(e) => setSelectedAssignmentYear(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          required
+                        >
+                          <option value="">Select Year</option>
+                          {yearsList.map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Branch</label>
+                        <select
+                          value={selectedBranch}
+                          onChange={(e) => setSelectedBranch(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          required
+                        >
+                          <option value="">Select Branch</option>
+                          {branchesList.map((branch) => (
+                            <option key={branch} value={branch}>{branch}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Section</label>
+                        <select
+                          value={selectedSection}
+                          onChange={(e) => setSelectedSection(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          required
+                        >
+                          <option value="">Select Section</option>
+                          {sectionsList.map((section) => (
+                            <option key={section} value={section}>{section}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="classTeacher"
+                          checked={isClassTeacher}
+                          onChange={(e) => setIsClassTeacher(e.target.checked)}
+                          className="mr-2 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                        />
+                        <label htmlFor="classTeacher" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                          Class Teacher
+                        </label>
+                      </div>
+
+                      <div className="md:col-span-2 lg:col-span-3 flex gap-2 justify-end">
+                        <Button
+                          type="submit"
+                          className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                          disabled={!selectedFaculty || !selectedSubject || !selectedAssignmentYear || !selectedBranch || !selectedSection}
+                        >
+                          Assign Teacher
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setShowAssignmentForm(false);
+                            setSelectedFaculty('');
+                            setSelectedSubject('');
+                            setSelectedAssignmentYear('');
+                            setSelectedBranch('');
+                            setSelectedSection('');
+                            setIsClassTeacher(false);
+                          }}
+                          className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Assignments Table */}
+                <div className="overflow-x-auto">
+                  <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                    <thead className="bg-gray-100 dark:bg-neutral-800">
+                      <tr>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm">Faculty</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm">Subject</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm">Year</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm">Branch</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm">Section</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm">Class Teacher</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm">Assigned Date</th>
+                        <th scope="col" className="px-3 py-2 sm:px-4 sm:py-3 text-center font-bold text-primary text-xs sm:text-sm">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                      {assignments.map((assignment) => (
+                        <tr key={assignment.id} className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">{assignment.faculty}</td>
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">{assignment.subject}</td>
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">{assignment.year}</td>
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">{assignment.branch}</td>
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">{assignment.section}</td>
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm">
+                            {assignment.isClassTeacher ? (
+                              <Badge className="bg-green-600 text-white text-xs">Yes</Badge>
+                            ) : (
+                              <Badge className="bg-gray-400 text-white text-xs">No</Badge>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">{assignment.assignedDate}</td>
+                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-center">
+                            <div className="flex gap-2 justify-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditAssignment(assignment)}
+                                className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteAssignment(assignment.id)}
+                                className="hover:bg-red-100 dark:hover:bg-red-900 border-red-300 dark:border-red-600 text-red-700 dark:text-red-200"
+                              >
+                                Delete
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
