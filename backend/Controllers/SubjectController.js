@@ -13,7 +13,20 @@ const getSubjectsbyCriteria = async (req, res) => {
     const query = {};
     if (department) query.department = department;
     if (year) query.year = year;
-    if (semester) query.semester = semester;
+
+    let semesterToUse = semester;
+
+    if (!semester) {
+      const maxSemesterDoc = await Subject.find(query)
+        .sort({ semester: -1 })
+        .limit(1)
+        .select("semester");
+      if (maxSemesterDoc.length > 0) {
+        semesterToUse = maxSemesterDoc[0].semester;
+      }
+    }
+
+    if (semesterToUse) query.semester = semesterToUse;
 
     const subjects = await Subject.find(query).select("-__v");
     if (subjects.length === 0) {

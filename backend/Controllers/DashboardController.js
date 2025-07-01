@@ -124,61 +124,83 @@ const getFacultyDashboard = async (req, res) => {
   const facultyId = req.user.id;
 
   try {
-    const assignedSubjects = await AssignedSubject.find({ faculty: facultyId });
-
+    // 1. Get all assigned subjects for faculty
+    const assignedSubjects = await AssignedSubject.find({ faculty: facultyId }).lean();
     if (!assignedSubjects || assignedSubjects.length === 0) {
       return res.status(404).json({
         message: "No subjects assigned to you",
         success: false,
       });
     }
-    const studentsAndSubjects = await Promise.all(
-      assignedSubjects.map(async (assigned) => {
-        try {
-          const subject = await Subject.findById(assigned.subject).lean();
-          if (!subject) {
-            console.warn(`Subject not found for ID: ${assigned.subject}`);
-            return null;
-          }
-          const yearNum = subject.year;
-          const semesterNum = subject.semester;
 
-          const students = await User.find({
-            role: "STUDENT",
-            section: assigned.section,
-            department: subject.department,
-            year: yearNum,
-            semester: semesterNum,
-          }).select("-password -__v");
-          return {
-            subject: {
-              id: subject._id,
-              name: subject.name,
-              department: subject.department,
-              year: subject.year,
-              semester: subject.semester,
-            },
-            section: assigned.section,
-            students: students.map((student) => {
-              return {
-                Id: student._id,
-                name: student.firstName + " " + student.lastName,
-              };
-            }),
-            studentCount: students.length,
-          };
-        } catch (error) {
-          console.error(
-            `Error processing assigned subject ${assigned._id}:`,
-            error
-          );
-          return null;
-        }
-      })
-    );
-    const validResults = studentsAndSubjects.filter((item) => item !== null);
+    // 2. Get all subject details in one go
+    const subjectIds = assignedSubjects.map(a => a.subject);
+    const subjects = await Subject.find({ _id: { $in: subjectIds } })
+      .select('_id name department year semester')
+      .lean();
+    const subjectMap = Object.fromEntries(subjects.map(s => [s._id.toString(), s]));
 
-    if (validResults.length === 0) {
+    // 3. Build all unique combos for student queries
+    const combos = assignedSubjects.map(a => {
+      const subj = subjectMap[a.subject.toString()];
+      return {
+        section: a.section,
+        department: subj.department,
+        year: subj.year,
+        semester: subj.semester,
+        subjectId: subj._id.toString(),
+      };
+    });
+
+    // 4. Fetch all students for all combos in one query
+    const studentQuery = {
+      role: "STUDENT",
+      $or: combos.map(c => ({
+        section: c.section,
+        department: c.department,
+        year: c.year,
+        semester: c.semester,
+      })),
+    };
+    const allStudents = await User.find(studentQuery)
+      .select('_id firstName lastName section department year semester')
+      .lean();
+
+    // 5. Group students by combo for fast lookup
+    const studentsByCombo = {};
+    combos.forEach(c => {
+      const key = `${c.subjectId}-${c.section}`;
+      studentsByCombo[key] = allStudents.filter(s =>
+        s.section === c.section &&
+        s.department === c.department &&
+        s.year === c.year &&
+        s.semester === c.semester
+      );
+    });
+
+    // 6. Build the response
+    const results = assignedSubjects.map(a => {
+      const subj = subjectMap[a.subject.toString()];
+      const key = `${subj._id.toString()}-${a.section}`;
+      const students = (studentsByCombo[key] || []).map(student => ({
+        Id: student._id,
+        name: student.firstName + " " + student.lastName,
+      }));
+      return {
+        subject: {
+          id: subj._id,
+          name: subj.name,
+          department: subj.department,
+          year: subj.year,
+          semester: subj.semester,
+        },
+        section: a.section,
+        students,
+        studentCount: students.length,
+      };
+    });
+
+    if (results.length === 0) {
       return res.status(404).json({
         message: "No valid subjects found or all subjects failed to load",
         success: false,
@@ -188,8 +210,8 @@ const getFacultyDashboard = async (req, res) => {
     return res.status(200).json({
       message: "Subjects and students fetched successfully",
       success: true,
-      data: validResults,
-      totalSubjects: validResults.length,
+      data: results,
+      totalSubjects: results.length,
     });
   } catch (err) {
     console.error("Error in getFacultyDashboard:", err);

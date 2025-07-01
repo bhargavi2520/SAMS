@@ -113,14 +113,7 @@ const createTimeTable = async (req, res) => {
       });
     }
 
-    const existing = await TimeTable.findOne({ class: classId._id });
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: "Timetable already exists for this class",
-      });
-    }
-
+    
     const allTimeSlots = [];
     const facultyTimeMap = new Map(); 
 
@@ -160,10 +153,10 @@ const createTimeTable = async (req, res) => {
         });
       }
     }
-
+    
     const facultyIds = [...new Set(allTimeSlots.map((slot) => slot.faculty))];
     const days = [...new Set(allTimeSlots.map((slot) => slot.day))];
-
+    
     const existingSchedules = await TimeTable.find({
       class: { $ne: classId._id },
       "timeSlots.faculty": { $in: facultyIds },
@@ -192,7 +185,8 @@ const createTimeTable = async (req, res) => {
         }
       }
     }
-
+    
+    const existing = await TimeTable.findOne({ class: classId._id });
     if (existing) {
       existing.timeSlots = allTimeSlots;
       await existing.save();

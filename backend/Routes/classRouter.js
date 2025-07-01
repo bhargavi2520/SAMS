@@ -4,7 +4,7 @@ const { getClassDetails, newClass } = require("../Controllers/ClassController");
 const {
   getClassValidation,
   newClassValidation,
-} = require("../Middlewares/ClassValidation.js");
+} = require("../Middlewares/ClassRequestValidation");
 const ClassRouter = express.Router();
 
 ClassRouter.get(
