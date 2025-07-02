@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -32,6 +32,22 @@ import { format } from "date-fns"; // Add this import at the top if you have dat
 import { ChartOptions } from "chart.js";
 import { Bar, Pie } from "react-chartjs-2";
 import DashboardNav from "./DashboardNav";
+import { toast } from "@/common/hooks/use-toast";
+
+type FacultyDataItem = {
+  subject: {
+    id: string;
+    name: string;
+    department: string;
+    year: string;
+  };
+  section: string;
+  students: {
+    Id: string;
+    id?: string; // if both are used, otherwise just one
+    name: string;
+  }[];
+};
 
 // Mock Attendance Data
 const attendanceData = [
@@ -102,8 +118,7 @@ const StudentPieChart = () => {
 };
 
 // Helper to generate roll numbers in format "23815A0405"
-const getRollNo = (id: number) => {
-  // Example: 23815A04${id.toString().padStart(2, '0')}
+const getRollNo = (id: string | number) => {
   return `23815A04${id.toString().padStart(2, "0")}`;
 };
 
@@ -205,7 +220,7 @@ const days = [
 
 const FacultyDashboard = () => {
   // Refs for each section
-  const [facultyData, setFacultyData] = useState<any[]>([]);
+  const [facultyData, setFacultyData] = useState<FacultyDataItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -246,10 +261,12 @@ const FacultyDashboard = () => {
     sectionOptions[0]?.value || ""
   );
 
-  const studentsForSelectedClass =
+  const studentsForSelectedClass = useMemo(() =>
     facultyData.find(
       (item) => `${item.subject.id}-${item.section}` === selectedClass
-    )?.students || [];
+    )?.students || [],
+    [facultyData, selectedClass]
+  );
   // Attendance date state
   const [attendanceDate, setAttendanceDate] = useState(() => {
     const today = new Date();
@@ -266,22 +283,17 @@ const FacultyDashboard = () => {
 
   useEffect(() => {
     setAttendance(
-      studentsForSelectedClass.map((s: any) => ({
+      (studentsForSelectedClass || []).map((s: FacultyDataItem['students'][number]) => ({
         id: s.Id,
         name: s.name,
         present: false,
       }))
     );
-  }, [selectedClass, facultyData]);
-
-  // // Update attendance list when class changes
-  // React.useEffect(() => {
-  //   setAttendance(classStudents[selectedClass].map((s) => ({ ...s, present: false })));
-  // }, [selectedClass]);
+  }, [selectedClass, facultyData, studentsForSelectedClass]);
 
   // Exams section state
   const [selectedExamClass, setSelectedExamClass] = useState("A");
-  const [selectedExamStudent, setSelectedExamStudent] = useState(1);
+  const [selectedExamStudent, setSelectedExamStudent] = useState("");
   const [examMarks, setExamMarks] = useState(0);
   const [bitPaperMarks, setBitPaperMarks] = useState(0);
   const [assignmentMarks, setAssignmentMarks] = useState(0);
@@ -293,7 +305,7 @@ const FacultyDashboard = () => {
     facultyData.find((item) => item.section === selectedExamClass)?.students ||
     [];
   const selectedStudent = studentsForExam.find(
-    (s) => s.id === selectedExamStudent
+    (s) => String(s.id) === selectedExamStudent
   );
 
   const calcMidTermScore = (exam: number, bit: number, assign: number) => {
@@ -557,7 +569,7 @@ const FacultyDashboard = () => {
                 value={selectedExamClass}
                 onChange={(e) => {
                   setSelectedExamClass(e.target.value);
-                  setSelectedExamStudent(1);
+                  setSelectedExamStudent("");
                 }}
                 aria-label="Select class for marks entry"
               >
@@ -574,12 +586,12 @@ const FacultyDashboard = () => {
                 id="exam-student-select"
                 className="border rounded px-2 py-1 text-sm"
                 value={selectedExamStudent}
-                onChange={(e) => setSelectedExamStudent(Number(e.target.value))}
+                onChange={(e) => setSelectedExamStudent(e.target.value)}
                 aria-label="Select student for marks entry"
               >
                 {studentsForExam.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({getRollNo(s.id)})
+                    {s.name} ({getRollNo(s.id ?? s.Id)})
                   </option>
                 ))}
               </select>
@@ -724,7 +736,7 @@ const FacultyDashboard = () => {
       (item) => `${item.subject.id}-${item.section}` === selectedClass
     );
     if (!selected) {
-      alert("Selected class not found");
+      toast({ title: "Selected class not found", variant: "destructive" });
       return;
     }
     const payload = {
@@ -743,10 +755,10 @@ const FacultyDashboard = () => {
     console.log(payload);
     try {
       await apiClient.post("/attendance/mark", payload);
-      alert("Attendance submitted successfully");
+      toast({ title: "Attendance submitted successfully", variant: "default" });
     } catch (err) {
       console.error("Error submitting attendance:", err);
-      alert("Failed to submit attendance");
+      toast({ title: "Failed to submit attendance", variant: "destructive" });
     }
   };
 
@@ -1020,9 +1032,9 @@ const FacultyDashboard = () => {
                                 {item.name}
                               </div>
                               {/* Roll No */}
-                              <div className="flex justify-center">
-                                <span className="bg-blue-50 text-blue-600 font-semibold text-xs px-2 py-1 rounded">
-                                  {getRollNo(Number(item.id ?? 0))}
+                              <div className="flex justify-start min-w-0">
+                                <span className="bg-blue-50 text-blue-600 font-semibold text-xs px-2 py-1 rounded break-all min-w-0">
+                                  {getRollNo(item.id)}
                                 </span>
                               </div>
                               {/* Status Switch and Label */}
@@ -1140,7 +1152,7 @@ const FacultyDashboard = () => {
                       value={selectedExamClass}
                       onChange={(e) => {
                         setSelectedExamClass(e.target.value);
-                        setSelectedExamStudent(1);
+                        setSelectedExamStudent("");
                       }}
                       aria-label="Select class for marks entry"
                     >
@@ -1157,14 +1169,12 @@ const FacultyDashboard = () => {
                       id="exam-student-select"
                       className="border rounded px-2 py-1 text-sm"
                       value={selectedExamStudent}
-                      onChange={(e) =>
-                        setSelectedExamStudent(Number(e.target.value))
-                      }
+                      onChange={(e) => setSelectedExamStudent(e.target.value)}
                       aria-label="Select student for marks entry"
                     >
                       {studentsForExam.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.name} ({getRollNo(s.id)})
+                          {s.name} ({getRollNo(s.id ?? s.Id)})
                         </option>
                       ))}
                     </select>

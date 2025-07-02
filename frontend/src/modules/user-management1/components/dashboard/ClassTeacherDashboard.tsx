@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from "@/common/hooks/use-toast";
 
 // Attendance Switch Component
 const AttendanceSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
@@ -235,7 +236,7 @@ const ClassTeacherDashboard: React.FC = () => {
                 type="button"
                 className="px-3 py-1 rounded bg-green-500 text-white text-xs font-semibold hover:bg-green-600 transition-colors"
                 onClick={() => {
-                  alert(`Attendance submitted for ${attendanceDate}!`);
+                  toast({ title: `Attendance submitted for ${attendanceDate}!`, variant: "default" });
                 }}
               >
                 Submit

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardNav from '../../user-management1/components/dashboard/DashboardNav';
+import { toast } from "@/common/hooks/use-toast";
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
@@ -152,7 +153,7 @@ const TimetableDashboard = () => {
   // Handle timetable submit
   const handleTimetableSubmit = () => {
     if (validateTimetable()) {
-      alert(JSON.stringify(timetable, null, 2));
+      toast({ title: "Timetable Data", description: JSON.stringify(timetable, null, 2), variant: "default" });
     }
   };
 
