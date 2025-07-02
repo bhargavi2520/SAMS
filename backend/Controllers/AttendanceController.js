@@ -66,7 +66,6 @@ const getAttendancebySubject = async (req, res) => {
  * verify if faculty is assigned to the subject that he is trying to mark attendance for
  * verify class exists and verify subject exists
  * then mark attendance for each students in studentsAttendance
- * ---------Validation MiddleWare is not implemented yet---------
  */
 const markAttendance = async (req, res) => {
   const facultyId = req.user.id;

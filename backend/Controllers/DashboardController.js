@@ -124,7 +124,6 @@ const getFacultyDashboard = async (req, res) => {
   const facultyId = req.user.id;
 
   try {
-    // 1. Get all assigned subjects for faculty
     const assignedSubjects = await AssignedSubject.find({ faculty: facultyId }).lean();
     if (!assignedSubjects || assignedSubjects.length === 0) {
       return res.status(404).json({
@@ -132,15 +131,12 @@ const getFacultyDashboard = async (req, res) => {
         success: false,
       });
     }
-
-    // 2. Get all subject details in one go
     const subjectIds = assignedSubjects.map(a => a.subject);
     const subjects = await Subject.find({ _id: { $in: subjectIds } })
       .select('_id name department year semester')
       .lean();
     const subjectMap = Object.fromEntries(subjects.map(s => [s._id.toString(), s]));
 
-    // 3. Build all unique combos for student queries
     const combos = assignedSubjects.map(a => {
       const subj = subjectMap[a.subject.toString()];
       return {
@@ -152,7 +148,6 @@ const getFacultyDashboard = async (req, res) => {
       };
     });
 
-    // 4. Fetch all students for all combos in one query
     const studentQuery = {
       role: "STUDENT",
       $or: combos.map(c => ({
@@ -166,7 +161,6 @@ const getFacultyDashboard = async (req, res) => {
       .select('_id firstName lastName section department year semester')
       .lean();
 
-    // 5. Group students by combo for fast lookup
     const studentsByCombo = {};
     combos.forEach(c => {
       const key = `${c.subjectId}-${c.section}`;
@@ -178,7 +172,6 @@ const getFacultyDashboard = async (req, res) => {
       );
     });
 
-    // 6. Build the response
     const results = assignedSubjects.map(a => {
       const subj = subjectMap[a.subject.toString()];
       const key = `${subj._id.toString()}-${a.section}`;
