@@ -41,7 +41,8 @@ const registerUser = async (req, res) => {
 
     let message = "User already exists with the same email";
     if (role == "STUDENT")
-      message = "User already exists with the same email or roll number or aparId";
+      message =
+        "User already exists with the same email or roll number or aparId";
 
     if (existingUser) {
       return res.status(400).json({
@@ -52,20 +53,27 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let admissionYear;
+    let batch;
+    if (role === "STUDENT") {
+      admissionYear = new Date(
+        profileData.admission_academic_year
+      ).getFullYear();
+      batch = `${admissionYear}-${admissionYear + 4}`;
+    }
+
     const userData = {
       email,
       password: hashedPassword,
       role,
       ...profileData,
+      ...(role === "STUDENT" && { batch }),
     };
 
     const newUser = new UserModel(userData);
     await newUser.save();
     if (role === "STUDENT") {
-      const { department, year, section, admission_academic_year } =
-        profileData;
-      const admissionYear = new Date(admission_academic_year).getFullYear();
-      const batch = `${admissionYear}-${admissionYear + 4}`;
+      const { department, year, section } = profileData;
       const classDocument = await classInfo.findOne({
         department,
         year,

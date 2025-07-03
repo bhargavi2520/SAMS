@@ -46,6 +46,7 @@ type FacultyDataItem = {
     Id: string;
     id?: string; // if both are used, otherwise just one
     name: string;
+    rollNumber?: string,
   }[];
 };
 
@@ -231,9 +232,12 @@ const FacultyDashboard = () => {
         setFacultyData(res.data.data || []);
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load faculty data");
+      .catch((err) => {
         setLoading(false);
+        setError(
+        err?.response?.data?.message ||
+        " Please contact support."
+      );
       });
   }, []);
 
@@ -277,15 +281,16 @@ const FacultyDashboard = () => {
   const agendaMonthYear = format(new Date(attendanceDate), "MMMM yyyy");
 
   // Attendance state for selected class
-  const [attendance, setAttendance] = useState<
-    { id: string; name: string; present: boolean }[]
-  >([]);
+ const [attendance, setAttendance] = useState<
+  { id: string; name: string; rollNumber?: string; present: boolean }[]
+>([]);
 
   useEffect(() => {
     setAttendance(
       (studentsForSelectedClass || []).map((s: FacultyDataItem['students'][number]) => ({
         id: s.Id,
         name: s.name,
+        rollNumber : s.rollNumber,
         present: false,
       }))
     );
@@ -763,7 +768,35 @@ const FacultyDashboard = () => {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
+        <svg
+          className="w-16 h-16 text-red-400 mb-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
+          />
+        </svg>
+        <h2 className="text-2xl font-bold mb-2 text-gray-800">Something's Wrong</h2>
+        <p className="text-gray-600 mb-6 text-center">{error}</p>
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
+          onClick={() => window.open('mailto:support@college.edu')}
+        >
+          Contact Support
+        </button>
+      </div>
+    </div>
+  );
+}
   return (
     /* Main Dashboard Layout */
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
@@ -1034,7 +1067,7 @@ const FacultyDashboard = () => {
                               {/* Roll No */}
                               <div className="flex justify-start min-w-0">
                                 <span className="bg-blue-50 text-blue-600 font-semibold text-xs px-2 py-1 rounded break-all min-w-0">
-                                  {getRollNo(item.id)}
+                                  {item.rollNumber}
                                 </span>
                               </div>
                               {/* Status Switch and Label */}

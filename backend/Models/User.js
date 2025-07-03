@@ -16,12 +16,14 @@ const baseUserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-   role: {
-    type: String,
-    required: true,
-    enum: ['STUDENT', 'FACULTY', 'HOD', 'CLASS_TEACHER', 'GUEST']
-    }
-}, options);
+    role: {
+      type: String,
+      required: true,
+      enum: ["STUDENT", "FACULTY", "HOD", "CLASS_TEACHER", "GUEST"],
+    },
+  },
+  options
+);
 
 const User = mongoose.model("User", baseUserSchema);
 
@@ -38,9 +40,9 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rollNumber:{
-    type : String,
-    required : true,
+  rollNumber: {
+    type: String,
+    required: true,
   },
   aparId: {
     type: String,
@@ -85,6 +87,10 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  batch: {
+    type: String,
+    required: true,
+  },
 });
 
 const Student = User.discriminator("STUDENT", studentSchema);
@@ -104,7 +110,7 @@ const facultySchema = new mongoose.Schema({
   },
 });
 
-const Faculty = User.discriminator('FACULTY', facultySchema);
+const Faculty = User.discriminator("FACULTY", facultySchema);
 
 const classTeacherSchema = new mongoose.Schema({
   firstName: {

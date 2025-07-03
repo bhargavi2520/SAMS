@@ -124,20 +124,24 @@ const getFacultyDashboard = async (req, res) => {
   const facultyId = req.user.id;
 
   try {
-    const assignedSubjects = await AssignedSubject.find({ faculty: facultyId }).lean();
+    const assignedSubjects = await AssignedSubject.find({
+      faculty: facultyId,
+    }).lean();
     if (!assignedSubjects || assignedSubjects.length === 0) {
       return res.status(404).json({
         message: "No subjects assigned to you",
         success: false,
       });
     }
-    const subjectIds = assignedSubjects.map(a => a.subject);
+    const subjectIds = assignedSubjects.map((a) => a.subject);
     const subjects = await Subject.find({ _id: { $in: subjectIds } })
-      .select('_id name department year semester')
+      .select("_id name department year semester")
       .lean();
-    const subjectMap = Object.fromEntries(subjects.map(s => [s._id.toString(), s]));
+    const subjectMap = Object.fromEntries(
+      subjects.map((s) => [s._id.toString(), s])
+    );
 
-    const combos = assignedSubjects.map(a => {
+    const combos = assignedSubjects.map((a) => {
       const subj = subjectMap[a.subject.toString()];
       return {
         section: a.section,
@@ -150,7 +154,7 @@ const getFacultyDashboard = async (req, res) => {
 
     const studentQuery = {
       role: "STUDENT",
-      $or: combos.map(c => ({
+      $or: combos.map((c) => ({
         section: c.section,
         department: c.department,
         year: c.year,
@@ -158,26 +162,28 @@ const getFacultyDashboard = async (req, res) => {
       })),
     };
     const allStudents = await User.find(studentQuery)
-      .select('_id firstName lastName section department year semester')
+      .select("_id firstName lastName section department year semester rollNumber")
       .lean();
 
     const studentsByCombo = {};
-    combos.forEach(c => {
+    combos.forEach((c) => {
       const key = `${c.subjectId}-${c.section}`;
-      studentsByCombo[key] = allStudents.filter(s =>
-        s.section === c.section &&
-        s.department === c.department &&
-        s.year === c.year &&
-        s.semester === c.semester
+      studentsByCombo[key] = allStudents.filter(
+        (s) =>
+          s.section === c.section &&
+          s.department === c.department &&
+          s.year === c.year &&
+          s.semester === c.semester
       );
     });
 
-    const results = assignedSubjects.map(a => {
+    const results = assignedSubjects.map((a) => {
       const subj = subjectMap[a.subject.toString()];
       const key = `${subj._id.toString()}-${a.section}`;
-      const students = (studentsByCombo[key] || []).map(student => ({
+      const students = (studentsByCombo[key] || []).map((student) => ({
         Id: student._id,
         name: student.firstName + " " + student.lastName,
+        rollNumber: student.rollNumber,
       }));
       return {
         subject: {

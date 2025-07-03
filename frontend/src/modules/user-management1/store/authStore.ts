@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthState, BaseUserProfile, LoginCredentials, RegisterData, StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
 import { authService } from '@/modules/user-management1/services/auth.service';
-
+import apiClient from '@/api';
 interface AuthStore extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
@@ -34,6 +34,7 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false
           });
           localStorage.setItem("authToken",mockResponse.token);
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${mockResponse.token}`;
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : 'Login failed',
@@ -55,6 +56,7 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false
           });
           localStorage.setItem("authToken",mockResponse.token);
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${mockResponse.token}`;
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : 'Registration failed',
