@@ -33,22 +33,21 @@ const registerUser = async (req, res) => {
         .status(400)
         .json({ message: "Invalid role specified", success: false });
     }
+    const orConditions = [{ email }];
+    if (profileData.rollNumber)
+      orConditions.push({ rollNumber: profileData.rollNumber });
+    if (profileData.aparId) orConditions.push({ aparId: profileData.aparId });
+    const existingUser = await User.findOne({ $or: orConditions });
 
-    const existingUser = await User.findOne({
-      $or: [
-        { email },
-        { rollNumber: profileData.rollNumber },
-        { aparId: profileData.aparId },
-      ],
-    });
+    let message = "User already exists with the same email";
+    if (role == "STUDENT")
+      message = "User already exists with the same email or roll number or aparId";
+
     if (existingUser) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "User already exists with the same email or roll number or aparId",
-          success: false,
-        });
+      return res.status(400).json({
+        message,
+        success: false,
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,7 +62,8 @@ const registerUser = async (req, res) => {
     const newUser = new UserModel(userData);
     await newUser.save();
     if (role === "STUDENT") {
-      const { department, year, section, admission_academic_year} = profileData;
+      const { department, year, section, admission_academic_year } =
+        profileData;
       const admissionYear = new Date(admission_academic_year).getFullYear();
       const batch = `${admissionYear}-${admissionYear + 4}`;
       const classDocument = await classInfo.findOne({
@@ -128,7 +128,7 @@ const generateTokenAndLogin = async (user, rememberMe, req, res) => {
         expiresIn,
       }
     );
-     // Convert mongoose doc to plain object and remove password
+    // Convert mongoose doc to plain object and remove password
     const userObj = user.toObject();
     delete userObj.password;
     delete userObj.__v;
