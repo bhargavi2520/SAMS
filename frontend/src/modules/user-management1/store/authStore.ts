@@ -54,6 +54,7 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true,
             isLoading: false
           });
+          localStorage.setItem("authToken",mockResponse.token);
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : 'Registration failed',
