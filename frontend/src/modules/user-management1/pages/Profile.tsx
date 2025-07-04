@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/modules/user-management1/store/authStore";
 import { StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from "@/modules/user-management1/types/auth.types";
 import { Input } from "@/common/components/ui/input";
@@ -22,13 +22,39 @@ function flattenUser(
   return user;
 }
 const ProfilePage = () => {
-  const { user, updateProfile, isLoading } = useAuthStore();
+  const { user, updateProfile, fetchProfile, isLoading } = useAuthStore();
   console.log("User from store:", user);
   // Flatten user and profile fields for editing
   const [formData, setFormData] = useState<
     StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile
   >(flattenUser(user) as StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile);
+  
+  console.log("Form data:", formData);
+  console.log("Student fields:", formData.role === "STUDENT" ? {
+    admission_academic_year: (formData as StudentProfile).admission_academic_year,
+    year: (formData as StudentProfile).year,
+    semester: (formData as StudentProfile).semester,
+    department: (formData as StudentProfile).department,
+    transport: (formData as StudentProfile).transport,
+    busRoute: (formData as StudentProfile).busRoute,
+    address: (formData as StudentProfile).address,
+    parentPhoneNumber: (formData as StudentProfile).parentPhoneNumber
+  } : "Not a student");
   const [isEditing, setIsEditing] = useState(false);
+
+  // Fetch profile data when component mounts
+  useEffect(() => {
+    if (!user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
+
+  // Update formData when user data changes
+  useEffect(() => {
+    if (user) {
+      setFormData(flattenUser(user) as StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile);
+    }
+  }, [user]);
 
   if (!user) return <p>Loading profile...</p>;
 
@@ -65,18 +91,22 @@ const ProfilePage = () => {
     label: string;
     name: string;
     type?: string;
-  }) => (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <Input
-        name={name}
-        type={type}
-        value={formData?.[name] ?? ""}
-        onChange={handleChange}
-        disabled={!isEditing}
-      />
-    </div>
-  );
+  }) => {
+    const value = formData?.[name];
+    console.log(`Field ${name}:`, value, typeof value);
+    return (
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        <Input
+          name={name}
+          type={type}
+          value={value ?? ""}
+          onChange={handleChange}
+          disabled={!isEditing}
+        />
+      </div>
+    );
+  };
 
   // Render fields common to all users
   const renderCommonFields = () => (
@@ -95,34 +125,25 @@ const ProfilePage = () => {
         return (
           <>
             <InputField label="Roll Number" name="rollNumber" />
-            <InputField label="Branch" name="branch" />
-            <InputField label="Course Program" name="courseProgram" />
-            <InputField label="Current Semester" name="currentSemester" type="number" />
-            <InputField label="Parent Name" name="parentName" />
-            <InputField label="Parent Phone" name="parentPhone" />
+            <InputField label="APAR ID" name="aparId" />
+            <InputField label="Admission Academic Year" name="admission_academic_year" type="date" />
+            <InputField label="Year" name="year" type="number" />
             <InputField label="Date of Birth" name="dateOfBirth" type="date" />
-            <InputField label="Section" name="section" />
-            <InputField label="Student Status" name="studentStatus" />
-            <InputField label="Fee Status" name="feeStatus" />
-            <InputField label="Enrollment Year" name="enrollmentYear" type="number" />
-            <InputField label="Current Academic Year" name="current_academic_year" />
-            <InputField label="Current Address" name="currentAddress" />
-            <InputField label="Permanent Address" name="permanentAddress" />
-            <InputField label="Apar ID" name="aparId" />
+            <InputField label="Semester" name="semester" type="number" />
+            <InputField label="Department" name="department" />
+            <InputField label="Section" name="section" type="number" />
+            <InputField label="Transport" name="transport" />
+            {(formData as StudentProfile).transport === "College Bus" && (
+              <InputField label="Bus Route" name="busRoute" />
+            )}
+            <InputField label="Residential Address" name="address" />
+            <InputField label="Parent Phone Number" name="parentPhoneNumber" />
           </>
         );
       case "FACULTY":
         return (
           <>
-            <InputField label="Employee ID" name="employeeId" />
-            <InputField label="Designation" name="designation" />
-            <InputField label="Department" name="department" />
-            <InputField label="Date of Joining" name="dateOfJoining" type="date" />
-            <InputField label="Employment Type" name="employmentType" />
-            <InputField label="Official Email" name="officialEmail" />
-            <InputField label="Highest Qualification" name="highestQualification" />
-            <InputField label="Specialization" name="specialization" />
-            <InputField label="Years of Experience" name="yearsOfExperience" type="number" />
+            <InputField label="Phone Number" name="phoneNumber" />
           </>
         );
       case "ADMIN":

@@ -26,21 +26,29 @@ export interface BaseUserProfile {
 export interface StudentProfile extends BaseUserProfile {
   rollNumber: string;
   dateOfBirth: string;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
   personalEmail?: string;
   parentName?: string;
   parentPhone?: string;
-  currentSemester: number;
-  branch: string;
-  courseProgram: string;
+  parentPhoneNumber?: string;
+  currentSemester?: number;
+  branch?: string;
+  courseProgram?: string;
   section?: string;
-  studentStatus: 'ACTIVE' | 'INACTIVE' | 'DROPOUT' | 'GRADUATED';
+  studentStatus?: 'ACTIVE' | 'INACTIVE' | 'DROPOUT' | 'GRADUATED';
   feeStatus?: 'PAID' | 'PENDING' | 'OVERDUE' | 'EXEMPTED';
   enrollmentYear?: number;
   current_academic_year?: string;
   currentAddress?: string;
   permanentAddress?: string;
   aparId?: string;
+  admission_academic_year?: string;
+  year?: string;
+  semester?: string;
+  department?: string;
+  transport?: string;
+  busRoute?: string;
+  address?: string;
 }
 
 export interface FacultyProfile extends BaseUserProfile {

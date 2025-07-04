@@ -9,6 +9,7 @@ interface AuthStore extends AuthState {
   logout: () => void;
   clearError: () => void;
   updateProfile: (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>) => Promise<void>;
+  fetchProfile: () => Promise<void>;
   setLoading: (loading: boolean) => void;
 }
 
@@ -93,6 +94,24 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : 'Profile update failed',
+            isLoading: false
+          });
+        }
+      },
+
+      fetchProfile: async () => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          const user = await authService.getProfile();
+          
+          set({
+            user,
+            isLoading: false
+          });
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Failed to fetch profile',
             isLoading: false
           });
         }
