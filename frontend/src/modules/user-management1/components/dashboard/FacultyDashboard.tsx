@@ -757,7 +757,7 @@ const FacultyDashboard = () => {
         })),
       },
     };
-    console.log(payload);
+
     try {
       await apiClient.post("/attendance/mark", payload);
       toast({ title: "Attendance submitted successfully", variant: "default" });
@@ -766,6 +766,10 @@ const FacultyDashboard = () => {
       toast({ title: "Failed to submit attendance", variant: "destructive" });
     }
   };
+
+
+
+
 
   if (loading) return <div>Loading...</div>;
   if (error) {
@@ -785,13 +789,12 @@ const FacultyDashboard = () => {
             d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
           />
         </svg>
-        <h2 className="text-2xl font-bold mb-2 text-gray-800">Something's Wrong</h2>
-        <p className="text-gray-600 mb-6 text-center">{error}</p>
+        <h2 className="text-2xl font-bold mb-2 text-gray-800">{error}</h2>
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
+          className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
           onClick={() => window.open('mailto:support@college.edu')}
         >
-          Contact Support
+          Contact Support ?
         </button>
       </div>
     </div>
