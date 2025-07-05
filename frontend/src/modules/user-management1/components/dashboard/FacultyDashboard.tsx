@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -220,6 +221,7 @@ const days = [
 ];
 
 const FacultyDashboard = () => {
+  const navigate = useNavigate();
   // Refs for each section
   const [facultyData, setFacultyData] = useState<FacultyDataItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -849,7 +851,10 @@ const FacultyDashboard = () => {
                     </div>
                   </div>
                   <div className="mt-4 md:mt-6">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium">
+                    <Button 
+                      onClick={() => navigate('/profile')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
+                    >
                       View Profile
                     </Button>
                   </div>

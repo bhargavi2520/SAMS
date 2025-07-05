@@ -1,11 +1,11 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/common/components/ui/card';
 import { Badge } from '@/common/components/ui/badge';
 import { Button } from '@/common/components/ui/button';
 import DashboardNav from './DashboardNav';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Users, UserCheck, Activity, Database, LayoutDashboard, CalendarDays, Home, User, Settings, HelpCircle, BookOpen, Menu, Bell, ClipboardList, FileText, BarChart2, CheckSquare, Award, Megaphone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/modules/user-management1/store/authStore';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/common/components/ui/carousel';
 
@@ -177,6 +177,44 @@ const AdminDashboard = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <DashboardNav activeSection={activeSection} onNavClick={handleNavClick} dashboardType="admin" />
       <div className="max-w-6xl mx-auto py-6 px-4 space-y-10">
+        {/* Admin Profile Section */}
+        <section id="admin-profile" className="scroll-mt-24">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><User className="w-6 h-6" /> Admin Profile</h2>
+          <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="w-8 h-8 md:w-10 md:h-10 text-white" />
+              </div>
+              <div>
+                <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                    System Administrator
+                  </h2>
+                </div>
+                <p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">
+                  admin@college.edu
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
+                  <div>
+                    <span className="font-medium">Role:</span> Administrator
+                  </div>
+                  <div>
+                    <span className="font-medium">Department:</span> IT Management
+                  </div>
+                </div>
+                <div className="mt-4 md:mt-6">
+                  <Button 
+                    onClick={() => navigate('/profile')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
+                  >
+                    View Profile
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </section>
+
         {/* System Overview */}
         <section id="overview" className="scroll-mt-24">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><LayoutDashboard className="w-6 h-6" /> System Overview</h2>

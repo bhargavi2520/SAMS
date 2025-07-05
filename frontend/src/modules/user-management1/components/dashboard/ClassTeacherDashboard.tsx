@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from "@/common/hooks/use-toast";
 
 // Attendance Switch Component
@@ -142,6 +143,7 @@ const sectionIds = [
 ];
 
 const ClassTeacherDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(sectionIds[0]);
 
   const handleNavClick = (section: string) => {
@@ -206,6 +208,44 @@ const ClassTeacherDashboard: React.FC = () => {
         dashboardType="class_teacher"
       />
       <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-10">
+        {/* Class Teacher Profile Section */}
+        <section id="class-teacher-profile" className="scroll-mt-24">
+          <h2 className="text-xl font-bold mb-4">Class Teacher Profile</h2>
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">👨‍🏫</span>
+              </div>
+              <div>
+                <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                    Class Teacher
+                  </h2>
+                </div>
+                <p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">
+                  teacher@college.edu
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
+                  <div>
+                    <span className="font-medium">Role:</span> Class Teacher
+                  </div>
+                  <div>
+                    <span className="font-medium">Class:</span> 10th Grade
+                  </div>
+                </div>
+                <div className="mt-4 md:mt-6">
+                  <button 
+                    onClick={() => navigate('/profile')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
+                  >
+                    View Profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Quick Stats */}
         <section id="quick-stats" className="scroll-mt-24">
           <h2 className="text-xl font-bold mb-4">Quick Stats</h2>

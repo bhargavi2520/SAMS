@@ -4,6 +4,7 @@ import { StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile 
 import { Input } from "@/common/components/ui/input";
 import { Button } from "@/common/components/ui/button";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 // Utility to flatten user + user.profile into one object
 function flattenUser(
@@ -23,6 +24,7 @@ function flattenUser(
 }
 const ProfilePage = () => {
   const { user, updateProfile, fetchProfile, isLoading } = useAuthStore();
+  const navigate = useNavigate();
   console.log("User from store:", user);
   // Flatten user and profile fields for editing
   const [formData, setFormData] = useState<
@@ -173,6 +175,12 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded shadow">
+      <Button 
+        onClick={() => navigate('/dashboard')}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium mb-4"
+      >
+        ← Back to Dashboard
+      </Button>
       <h1 className="text-2xl font-bold mb-4">My Profile</h1>
       <form className="space-y-4">
         {renderCommonFields()}

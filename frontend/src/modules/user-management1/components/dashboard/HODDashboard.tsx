@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/common/components/ui/card";
 import {
   Table,
@@ -185,6 +186,7 @@ const statusColor = (status) =>
     : "bg-yellow-400 text-black";
 
 const HODDashboard = ({ isHOD = true }) => {
+  const navigate = useNavigate();
   // Section refs for scroll navigation
   const dashboardRef = useRef(null);
   const userManagementRef = useRef(null);
@@ -1032,6 +1034,14 @@ const HODDashboard = ({ isHOD = true }) => {
                         {hodProfile.name}
                       </span>
                     </div>
+                  </div>
+                  <div className="mt-4">
+                    <Button 
+                      onClick={() => navigate('/profile')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
+                    >
+                      View Profile
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

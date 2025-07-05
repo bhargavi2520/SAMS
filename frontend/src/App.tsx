@@ -15,6 +15,7 @@ import { Outlet } from "react-router-dom"; // Import Outlet
 import TimetableDashboard from "@/modules/timetable2/pages/TimetableDashboard"; // Your TimetableDashboard page
 import AdminDashboard from "@/modules/user-management1/components/dashboard/AdminDashboard"; // Import the actual AdminDashboard
 import ProfilePage from "@/modules/user-management1/pages/Profile"; // Import the ProfilePage
+import SettingsPage from "@/modules/user-management1/pages/Settings";
 
 
 const queryClient = new QueryClient();
@@ -145,12 +146,7 @@ const App = () => {
               />
               <Route 
                 path="settings" 
-                element={
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Settings</h1>
-                    <p className="text-gray-600">System settings coming soon...</p>
-                  </div>
-                } 
+                element={<SettingsPage />} 
               />
             </Route>
 
