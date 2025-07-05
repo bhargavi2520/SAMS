@@ -56,9 +56,16 @@ const registerUser = async (req, res) => {
     let admissionYear;
     let batch;
     if (role === "STUDENT") {
+      let lateralEntry;
+      if (profileData.lateralEntry) lateralEntry = profileData.lateralEntry;
+
       admissionYear = new Date(
         profileData.admission_academic_year
       ).getFullYear();
+
+      if (lateralEntry) {
+        admissionYear -= 1;
+      }
       batch = `${admissionYear}-${admissionYear + 4}`;
     }
 

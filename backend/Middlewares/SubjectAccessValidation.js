@@ -2,9 +2,7 @@ const { User } = require("../Models/User.js");
 const Subject = require("../Models/Subject.js");
 const departmentAssignment = require("../Models/AssignedDepartments.js");
 
-/**
- * ---------NOT TESTED YET----------------------
- */
+
 const checkAccess = async (req, res, next) => {
   const userId = req.user.id;
 

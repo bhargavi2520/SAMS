@@ -3,6 +3,7 @@ const ensureAuthenticated = require("../Middlewares/Authentication");
 const {
   getAttendancebySubject,
   markAttendance,
+  getAttendanceByDate,
 } = require("../Controllers/AttendanceController");
 const {
   getAttendanceBySubjectValidation,
@@ -22,6 +23,12 @@ AttendanceRouter.post(
   ensureAuthenticated(["FACULTY"]),
   markAttendanceValidation,
   markAttendance
+);
+
+AttendanceRouter.get(
+  "/byDate",
+  ensureAuthenticated(["FACULTY","ADMIN","HOD"]),
+  getAttendanceByDate
 );
 
 module.exports = AttendanceRouter;

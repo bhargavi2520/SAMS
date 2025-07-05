@@ -38,6 +38,7 @@ const studentProfileSchema = joi
       .string()
       .pattern(/^[0-9]{10}$/)
       .required(),
+    lateralEntry: joi.boolean().optional(),
   })
   .custom((value, helpers) => {
     if (value.year == 1 && ![1, 2].includes(value.semester)) {
@@ -127,7 +128,7 @@ const registerValidation = (req, res, next) => {
     if (error) {
       return res.status(400).json({
         success: false,
-        message: "Invalid data",
+        message: error.details[0].message,
         error: error.details[0].message,
       });
     }

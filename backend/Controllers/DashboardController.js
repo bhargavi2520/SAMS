@@ -181,7 +181,7 @@ const getFacultyDashboard = async (req, res) => {
       const subj = subjectMap[a.subject.toString()];
       const key = `${subj._id.toString()}-${a.section}`;
       const students = (studentsByCombo[key] || []).map((student) => ({
-        Id: student._id,
+        id: student._id,
         name: student.firstName + " " + student.lastName,
         rollNumber: student.rollNumber,
       }));

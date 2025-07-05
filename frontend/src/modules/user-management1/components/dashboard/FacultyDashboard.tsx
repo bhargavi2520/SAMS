@@ -44,10 +44,9 @@ type FacultyDataItem = {
   };
   section: string;
   students: {
-    Id: string;
-    id?: string; // if both are used, otherwise just one
+    id: string;
     name: string;
-    rollNumber?: string,
+    rollNumber?: string;
   }[];
 };
 
@@ -127,9 +126,11 @@ const getRollNo = (id: string | number) => {
 const AttendanceSwitch = ({
   checked,
   onChange,
+  disabled,
 }: {
   checked: boolean;
   onChange: () => void;
+  disabled: boolean;
 }) => (
   <button
     type="button"
@@ -139,6 +140,7 @@ const AttendanceSwitch = ({
     }`}
     aria-pressed={checked}
     aria-label={checked ? "Present" : "Absent"}
+    disabled={disabled}
   >
     <span
       className={`absolute left-0 top-0 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
@@ -226,6 +228,9 @@ const FacultyDashboard = () => {
   const [facultyData, setFacultyData] = useState<FacultyDataItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [todayDate, setTodayDate] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
 
   useEffect(() => {
     apiClient
@@ -236,10 +241,7 @@ const FacultyDashboard = () => {
       })
       .catch((err) => {
         setLoading(false);
-        setError(
-        err?.response?.data?.message ||
-        " Please contact support."
-      );
+        setError(err?.response?.data?.message || " Please contact support.");
       });
   }, []);
 
@@ -263,16 +265,23 @@ const FacultyDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Class selection state
-  const [selectedClass, setSelectedClass] = useState(
-    sectionOptions[0]?.value || ""
-  );
+  const [selectedClass, setSelectedClass] = useState("");
+  useEffect(() => {
+    if (facultyData.length > 0 && !selectedClass) {
+      setSelectedClass(
+        `${facultyData[0].subject.id}-${facultyData[0].section}`
+      );
+    }
+  }, [facultyData, selectedClass]);
 
-  const studentsForSelectedClass = useMemo(() =>
-    facultyData.find(
-      (item) => `${item.subject.id}-${item.section}` === selectedClass
-    )?.students || [],
+  const studentsForSelectedClass = useMemo(
+    () =>
+      facultyData.find(
+        (item) => `${item.subject.id}-${item.section}` === selectedClass
+      )?.students || [],
     [facultyData, selectedClass]
   );
+
   // Attendance date state
   const [attendanceDate, setAttendanceDate] = useState(() => {
     const today = new Date();
@@ -283,20 +292,75 @@ const FacultyDashboard = () => {
   const agendaMonthYear = format(new Date(attendanceDate), "MMMM yyyy");
 
   // Attendance state for selected class
- const [attendance, setAttendance] = useState<
-  { id: string; name: string; rollNumber?: string; present: boolean }[]
->([]);
+  const [attendance, setAttendance] = useState<
+    { id: string; name: string; rollNumber?: string; present: boolean }[]
+  >([]);
+  const [attendanceEditable, setAttendanceEditable] = useState(false);
+
+  /**
+   * Previous dates attendance
+   * fetching and storing previous date attendance
+   * ----------------------------------------------------------------
+   */
+
+  const isToday = (dateStr: string) => {
+    const today = new Date();
+    const d = new Date(dateStr);
+    return (
+      today.getFullYear() <= d.getFullYear() &&
+      today.getMonth() <= d.getMonth() &&
+      today.getDate() <= d.getDate()
+    );
+  };
 
   useEffect(() => {
-    setAttendance(
-      (studentsForSelectedClass || []).map((s: FacultyDataItem['students'][number]) => ({
-        id: s.Id,
-        name: s.name,
-        rollNumber : s.rollNumber,
-        present: false,
-      }))
-    );
-  }, [selectedClass, facultyData, studentsForSelectedClass]);
+    if (!selectedClass || facultyData.length == 0) return;
+
+    if (isToday(attendanceDate)) {
+      setAttendance(
+        (studentsForSelectedClass || []).map((s) => ({
+          id: s.id,
+          name: s.name,
+          rollNumber: s.rollNumber,
+          present: false,
+        }))
+      );
+      setAttendanceEditable(true);
+      return;
+    }
+
+    const fetchAttendance = async () => {
+      try {
+        const selected = facultyData.find(
+          (item) => `${item.subject.id}-${item.section}` === selectedClass
+        );
+        if (!selected) return;
+        const response = await apiClient.get(
+          `/attendance/byDate?department=${selected.subject.department}&year=${selected.subject.year}&section=${selected.section}&subjectId=${selected.subject.id}&date=${attendanceDate}`
+        );
+        const att = response.data.attendance;
+        if (att && att.students) {
+          setAttendance(
+            att.students.map((s: any) => ({
+              id: s.studentId,
+              name: s.name,
+              rollNumber: s.rollNumber,
+              present: s.status?.toLowerCase() === "present",
+            }))
+          );
+          setAttendanceEditable(false);
+        } else {
+          setAttendance([]);
+        }
+      } catch (err) {
+        setAttendance([]);
+        console.error("Error fetching attendance:", err);
+        setAttendanceEditable(false);
+      }
+    };
+
+    fetchAttendance();
+  }, [selectedClass, attendanceDate, facultyData, studentsForSelectedClass]);
 
   // Exams section state
   const [selectedExamClass, setSelectedExamClass] = useState("A");
@@ -598,7 +662,7 @@ const FacultyDashboard = () => {
               >
                 {studentsForExam.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({getRollNo(s.id ?? s.Id)})
+                    {s.name} ({s.rollNumber})
                   </option>
                 ))}
               </select>
@@ -763,45 +827,48 @@ const FacultyDashboard = () => {
     try {
       await apiClient.post("/attendance/mark", payload);
       toast({ title: "Attendance submitted successfully", variant: "default" });
-    } catch (err) {
-      console.error("Error submitting attendance:", err);
-      toast({ title: "Failed to submit attendance", variant: "destructive" });
+    } catch (error) {
+      console.error("Error submitting attendance:", error);
+      toast({
+        title: "Something went Wrong",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An error occurred",
+        variant: "destructive",
+      });
     }
   };
 
-
-
-
-
   if (loading) return <div>Loading...</div>;
   if (error) {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
-        <svg
-          className="w-16 h-16 text-red-400 mb-4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
-          />
-        </svg>
-        <h2 className="text-2xl font-bold mb-2 text-gray-800">{error}</h2>
-        <button
-          className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
-          onClick={() => window.open('mailto:support@college.edu')}
-        >
-          Contact Support ?
-        </button>
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
+          <svg
+            className="w-16 h-16 text-red-400 mb-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
+            />
+          </svg>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800">{error}</h2>
+          <button
+            className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
+            onClick={() => window.open("mailto:support@college.edu")}
+          >
+            Contact Support ?
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
   return (
     /* Main Dashboard Layout */
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
@@ -1027,6 +1094,7 @@ const FacultyDashboard = () => {
                       type="date"
                       className="border rounded px-2 py-1 text-sm flex-1 min-w-0"
                       value={attendanceDate}
+                      max={todayDate}
                       onChange={(e) => setAttendanceDate(e.target.value)}
                       style={{ minWidth: 120, maxWidth: 140 }}
                     />
@@ -1042,7 +1110,7 @@ const FacultyDashboard = () => {
                           await handleAttendanceSubmit();
                         }
                       }}
-                      disabled={attendance.length === 0}
+                      disabled={attendance.length === 0 || !attendanceEditable}
                     >
                       Submit
                     </button>
@@ -1083,14 +1151,17 @@ const FacultyDashboard = () => {
                                 <AttendanceSwitch
                                   checked={item.present}
                                   onChange={() =>
-                                    setAttendance((prev) =>
-                                      prev.map((s, i) =>
-                                        i === idx
-                                          ? { ...s, present: !s.present }
-                                          : s
-                                      )
-                                    )
+                                    attendanceEditable
+                                      ? setAttendance((prev) =>
+                                          prev.map((s, i) =>
+                                            i === idx
+                                              ? { ...s, present: !s.present }
+                                              : s
+                                          )
+                                        )
+                                      : undefined
                                   }
+                                  disabled={!attendanceEditable}
                                 />
                                 {item.present ? (
                                   <span className="flex items-center px-2 py-1 rounded-full bg-green-50 text-green-600 text-xs font-semibold border border-green-200">
@@ -1215,7 +1286,7 @@ const FacultyDashboard = () => {
                     >
                       {studentsForExam.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.name} ({getRollNo(s.id ?? s.Id)})
+                          {s.name} ({s.rollNumber})
                         </option>
                       ))}
                     </select>

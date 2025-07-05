@@ -1,27 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/common/components/ui/button';
-import { Input } from '@/common/components/ui/input';
-import { Label } from '@/common/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/common/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/common/components/ui/select';
-import { Alert, AlertDescription } from '@/common/components/ui/alert';
-import { useAuthStore } from '@/modules/user-management1/store/authStore';
-import { RegisterData, UserRole } from '@/modules/user-management1/types/auth.types';
-import type { StudentProfile } from '@/modules/user-management1/types/auth.types';
-import { UserPlus, Eye, EyeOff, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/common/components/ui/button";
+import { Input } from "@/common/components/ui/input";
+import { Label } from "@/common/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/common/components/ui/select";
+import { Alert, AlertDescription } from "@/common/components/ui/alert";
+import { useAuthStore } from "@/modules/user-management1/store/authStore";
+import {
+  RegisterData,
+  UserRole,
+} from "@/modules/user-management1/types/auth.types";
+import type { StudentProfile } from "@/modules/user-management1/types/auth.types";
+import { UserPlus, Eye, EyeOff, Loader2 } from "lucide-react";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
   const { register, isLoading, error, clearError } = useAuthStore();
-  
+  const todayDate = new Date().toISOString().slice(0, 10);
   const [formData, setFormData] = useState<RegisterData>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'STUDENT',
-    profileData: {}
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "STUDENT",
+    profileData: {},
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -29,74 +44,95 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    
+
     // Do not send confirmPassword to the backend
     const { confirmPassword, ...submissionData } = formData;
-
     try {
-        console.log('Form data being submitted:', submissionData);
-        await register(submissionData);
-        console.log('Registration successful');
-        navigate('/dashboard');
+      await register(submissionData);
+      console.log("Registration successful");
+      navigate("/dashboard");
     } catch (err: any) {
-        // The error state is already managed by the useAuthStore,
-        // so no need to manually set it here.
-        console.error('Registration error:', err);
+      // The error state is already managed by the useAuthStore,
+      // so no need to manually set it here.
+      console.error("Registration error:", err);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleRoleChange = (role: UserRole) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       role,
-      profileData: {} // Reset profile data when role changes
+      profileData: {}, // Reset profile data when role changes
     }));
   };
-
+  const [phoneNumberValid, setPhoneNumberValid] = useState(true);
+  const [parentPhoneNumberValid, setParentPhoneNumberValid] = useState(true);
   const handleProfileDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    if (name == "phoneNumber") {
+      if (value && /^\d{10}$/.test(value) && !value.startsWith("0")) {
+        setPhoneNumberValid(true);
+      } else {
+        setPhoneNumberValid(false);
+      }
+    }
+    if (name == "parentPhoneNumber") {
+      if (value && /^\d{10}$/.test(value) && !value.startsWith("0")) {
+        setParentPhoneNumberValid(true);
+      } else {
+        setParentPhoneNumberValid(false);
+      }
+    }
+
+    setFormData((prev) => ({
       ...prev,
       profileData: {
         ...prev.profileData,
-        [name]: value
-      }
+        [name]: value,
+      },
     }));
   };
 
   const roleOptions = [
-    { value: 'STUDENT', label: 'Student'},
-    { value: 'FACULTY', label: 'Faculty'},
-    { value: 'HOD', label: 'Head of Department'},
-    { value: 'GUEST', label: 'Guest'}
+    { value: "STUDENT", label: "Student" },
+    { value: "FACULTY", label: "Faculty" },
+    { value: "HOD", label: "Head of Department" },
+    { value: "GUEST", label: "Guest" },
   ];
 
   // Mapping of year to allowed semesters
   const semesterMap: Record<string, string[]> = {
-    '1': ['1', '2'],
-    '2': ['3', '4'],
-    '3': ['5', '6'],
-    '4': ['7', '8'],
+    "1": ["1", "2"],
+    "2": ["3", "4"],
+    "3": ["5", "6"],
+    "4": ["7", "8"],
   };
 
   // Helper to get current allowed semesters based on selected year
   const selectedYear = (formData.profileData as any).year as string | undefined;
-  const allowedSemesters = selectedYear ? semesterMap[selectedYear] : ['1','2','3','4','5','6','7','8'];
+  const allowedSemesters = selectedYear
+    ? semesterMap[selectedYear]
+    : ["1", "2", "3", "4", "5", "6", "7", "8"];
 
   // When year changes, if current semester not in allowed list reset it
   const handleYearChange = (value: string) => {
-    setFormData(prev => {
-      const currentSemester = (prev.profileData as any).semester as string | undefined;
+    setFormData((prev) => {
+      const currentSemester = (prev.profileData as any).semester as
+        | string
+        | undefined;
       const semestersForYear = semesterMap[value];
-      const newSemester = currentSemester && semestersForYear.includes(currentSemester) ? currentSemester : '';
+      const newSemester =
+        currentSemester && semestersForYear.includes(currentSemester)
+          ? currentSemester
+          : "";
       return {
         ...prev,
         profileData: {
@@ -119,14 +155,14 @@ const RegisterForm = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
         </CardHeader>
-        
+
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
@@ -141,7 +177,7 @@ const RegisterForm = () => {
                 className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select value={formData.role} onValueChange={handleRoleChange}>
@@ -159,7 +195,7 @@ const RegisterForm = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Common fields for all roles */}
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
@@ -168,7 +204,7 @@ const RegisterForm = () => {
                 name="firstName"
                 type="text"
                 placeholder="Enter first name"
-                value={formData.profileData.firstName || ''}
+                value={formData.profileData.firstName || ""}
                 onChange={handleProfileDataChange}
                 required
               />
@@ -178,13 +214,13 @@ const RegisterForm = () => {
                 name="lastName"
                 type="text"
                 placeholder="Enter last name"
-                value={formData.profileData.lastName || ''}
+                value={formData.profileData.lastName || ""}
                 onChange={handleProfileDataChange}
                 required
               />
             </div>
             {/* Role-specific fields */}
-            {formData.role === 'STUDENT' && (
+            {formData.role === "STUDENT" && (
               <div className="space-y-2">
                 <Label htmlFor="rollNumber">Roll Number</Label>
                 <Input
@@ -192,7 +228,9 @@ const RegisterForm = () => {
                   name="rollNumber"
                   type="text"
                   placeholder="Enter your roll number"
-                  value={(formData.profileData as StudentProfile).rollNumber || ''}
+                  value={
+                    (formData.profileData as StudentProfile).rollNumber || ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -203,10 +241,17 @@ const RegisterForm = () => {
                   name="phoneNumber"
                   type="tel"
                   placeholder="Phone number"
-                  value={formData.profileData.phoneNumber || ''}
+                  value={formData.profileData.phoneNumber || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
+                {!phoneNumberValid && (
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      Phone Number should be 10 digit and not leading zeroes
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 <Label htmlFor="aparId">APAR id</Label>
                 <Input
@@ -214,7 +259,11 @@ const RegisterForm = () => {
                   name="aparId"
                   type="text"
                   placeholder="APAR id"
-                  value={formData.role === 'STUDENT' ? (formData.profileData as any).aparId || '' : ''}
+                  value={
+                    formData.role === "STUDENT"
+                      ? (formData.profileData as any).aparId || ""
+                      : ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
@@ -224,14 +273,37 @@ const RegisterForm = () => {
                   id="admission_academic_year"
                   name="admission_academic_year"
                   type="date"
-                  value={(formData.profileData as any)['admission_academic_year'] || ''}
+                  max={todayDate}
+                  value={
+                    (formData.profileData as any)["admission_academic_year"] ||
+                    ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
-
+                <div className="flex items-center space-x-2 mt-2">
+                  <input
+                    id="lateralEntry"
+                    name="lateralEntry"
+                    type="checkbox"
+                    checked={!!(formData.profileData as any).lateralEntry}
+                    onChange={(e) =>
+                      handleProfileDataChange({
+                        target: {
+                          name: "lateralEntry",
+                          value: e.target.checked,
+                        },
+                      } as unknown as React.ChangeEvent<HTMLInputElement>)
+                    }
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor="lateralEntry" className="mb-0">
+                    Lateral Entry
+                  </Label>
+                </div>
                 <Label htmlFor="year">Year</Label>
                 <Select
-                  value={(formData.profileData as any).year || ''}
+                  value={(formData.profileData as any).year || ""}
                   onValueChange={handleYearChange}
                 >
                   <SelectTrigger>
@@ -250,17 +322,21 @@ const RegisterForm = () => {
                   id="dateOfBirth"
                   name="dateOfBirth"
                   type="date"
-                  value={(formData.profileData as Partial<StudentProfile>).dateOfBirth || ''}
+                  max={todayDate}
+                  value={
+                    (formData.profileData as Partial<StudentProfile>)
+                      .dateOfBirth || ""
+                  }
                   onChange={handleProfileDataChange}
                   required
                 />
 
                 <Label htmlFor="semester">Semester</Label>
                 <Select
-                  value={(formData.profileData as any).semester || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).semester || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'semester', value }
+                      target: { name: "semester", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -269,17 +345,19 @@ const RegisterForm = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {allowedSemesters.map((sem) => (
-                      <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                      <SelectItem key={sem} value={sem}>
+                        {sem}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={(formData.profileData as any).department || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).department || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'department', value }
+                      target: { name: "department", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -299,10 +377,10 @@ const RegisterForm = () => {
                 {/* New Section select */}
                 <Label htmlFor="section">Section</Label>
                 <Select
-                  value={(formData.profileData as any).section || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).section || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'section', value }
+                      target: { name: "section", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -318,10 +396,10 @@ const RegisterForm = () => {
 
                 <Label htmlFor="transport">Transport</Label>
                 <Select
-                  value={(formData.profileData as any).transport || ''}
-                  onValueChange={value =>
+                  value={(formData.profileData as any).transport || ""}
+                  onValueChange={(value) =>
                     handleProfileDataChange({
-                      target: { name: 'transport', value }
+                      target: { name: "transport", value },
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
@@ -340,10 +418,10 @@ const RegisterForm = () => {
                   <>
                     <Label htmlFor="busRoute">Bus Route</Label>
                     <Select
-                      value={(formData.profileData as any).busRoute || ''}
-                      onValueChange={value =>
+                      value={(formData.profileData as any).busRoute || ""}
+                      onValueChange={(value) =>
                         handleProfileDataChange({
-                          target: { name: 'busRoute', value }
+                          target: { name: "busRoute", value },
                         } as React.ChangeEvent<HTMLInputElement>)
                       }
                     >
@@ -357,7 +435,9 @@ const RegisterForm = () => {
                         <SelectItem value="Chodawaram">Chodawaram</SelectItem>
                         <SelectItem value="Narsipatnam">Narsipatnam</SelectItem>
                         <SelectItem value="Tuni">Tuni</SelectItem>
-                        <SelectItem value="Yelamanchili">Yelamanchili</SelectItem>
+                        <SelectItem value="Yelamanchili">
+                          Yelamanchili
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </>
@@ -369,12 +449,10 @@ const RegisterForm = () => {
                   name="address"
                   type="text"
                   placeholder="residential address"
-                  value={(formData.profileData as any).address || ''}
+                  value={(formData.profileData as any).address || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
-
-            
 
                 <Label htmlFor="parentPhoneNumber">Parent Phone Number</Label>
                 <Input
@@ -382,128 +460,164 @@ const RegisterForm = () => {
                   name="parentPhoneNumber"
                   type="tel"
                   placeholder="Parent phone number"
-                  value={(formData.profileData as any).parentPhoneNumber || ''}
+                  value={(formData.profileData as any).parentPhoneNumber || ""}
                   onChange={handleProfileDataChange}
                   required
                 />
               </div>
             )}
 
-            {formData.role === 'FACULTY' && (
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone number</Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="tel"
-                  placeholder="Phone number"
-                  value={formData.profileData.phoneNumber || ''}
-                  onChange={handleProfileDataChange}
-                  required
-                />
-              </div>
+            {formData.role === "FACULTY" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone number</Label>
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    placeholder="Phone number"
+                    value={formData.profileData.phoneNumber || ""}
+                    onChange={handleProfileDataChange}
+                    required
+                  />
+                </div>
+                {!phoneNumberValid && (
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      Phone Number should be 10 digit and not leading zeroes
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </>
             )}
 
-            {formData.role === 'GUEST' && (
+            {formData.role === "GUEST" && (
               <div className="space-y-2">
                 {/* No additional fields for GUEST */}
               </div>
             )}
 
-            {formData.role === 'HOD' && (
+            {formData.role === "HOD" && (
               <div className="space-y-2">
                 {/* No additional fields for HOD */}
               </div>
             )}
-            
+
+            {!parentPhoneNumberValid && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  Phone Number should be 10 digit and not leading zeroes
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Create a strong password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-400" />
-                ) : (
-                <Eye className="h-4 w-4 text-gray-400" />
-                )}
-              </Button>
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a strong password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </Button>
               </div>
               {/* Enhanced Password requirements */}
               <div className="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 text-xs">
-              <div className="mb-2 font-semibold text-gray-800 dark:text-gray-200">
-                Your password must have:
-              </div>
-              <ul className="space-y-1 list-disc list-inside">
-                <li className={
-                formData.password
-                  ? formData.password.length >= 8
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                Minimum <span className="font-bold">8 characters</span>
-                </li>
-                <li className={
-                formData.password
-                  ? /[A-Z]/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one uppercase letter</span> (A–Z)
-                </li>
-                <li className={
-                formData.password
-                  ? /[a-z]/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one lowercase letter</span> (a–z)
-                </li>
-                <li className={
-                formData.password
-                  ? /\d/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one number</span> (0–9)
-                </li>
-                <li className={
-                formData.password
-                  ? /[!@#$%^&*(),.?":{}|<>_\-[\];'/`~+=]/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                At least <span className="font-bold">one special character</span> (e.g. @, #, $, %, !, &amp;, *)
-                </li>
-                <li className={
-                formData.password
-                  ? !/\s/.test(formData.password)
-                  ? "text-green-600 font-medium"
-                  : "text-red-600 font-medium"
-                  : "text-gray-600 dark:text-gray-400"
-                }>
-                <span className="font-bold">No spaces</span>
-                </li>
-              </ul>
+                <div className="mb-2 font-semibold text-gray-800 dark:text-gray-200">
+                  Your password must have:
+                </div>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li
+                    className={
+                      formData.password
+                        ? formData.password.length >= 8
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    Minimum <span className="font-bold">8 characters</span>
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /[A-Z]/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least{" "}
+                    <span className="font-bold">one uppercase letter</span>{" "}
+                    (A–Z)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /[a-z]/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least{" "}
+                    <span className="font-bold">one lowercase letter</span>{" "}
+                    (a–z)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /\d/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least <span className="font-bold">one number</span> (0–9)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? /[!@#$%^&*(),.?":{}|<>_\-[\];'/`~+=]/.test(
+                            formData.password
+                          )
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    At least{" "}
+                    <span className="font-bold">one special character</span>{" "}
+                    (e.g. @, #, $, %, !, &amp;, *)
+                  </li>
+                  <li
+                    className={
+                      formData.password
+                        ? !/\s/.test(formData.password)
+                          ? "text-green-600 font-medium"
+                          : "text-red-600 font-medium"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
+                  >
+                    <span className="font-bold">No spaces</span>
+                  </li>
+                </ul>
               </div>
             </div>
 
@@ -513,7 +627,7 @@ const RegisterForm = () => {
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
@@ -536,19 +650,26 @@ const RegisterForm = () => {
               </div>
             </div>
 
-            {formData.password !== formData.confirmPassword && formData.confirmPassword && (
-              <Alert variant="destructive">
-                <AlertDescription>Passwords do not match</AlertDescription>
-              </Alert>
-            )}
+            {formData.password !== formData.confirmPassword &&
+              formData.confirmPassword && (
+                <Alert variant="destructive">
+                  <AlertDescription>Passwords do not match</AlertDescription>
+                </Alert>
+              )}
 
             <Button
               type="submit"
               className="w-full border-2 border-green-600 text-green-600 bg-white hover:bg-green-600 hover:text-white transition duration-700 group"
-              style={{ boxShadow: '0 0 0 transparent' }}
-              disabled={isLoading || formData.password !== formData.confirmPassword}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 10px rgb(19, 197, 84)')}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 0 0 transparent')}
+              style={{ boxShadow: "0 0 0 transparent" }}
+              disabled={
+                isLoading || formData.password !== formData.confirmPassword
+              }
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.boxShadow = "0 0 10px rgb(19, 197, 84)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.boxShadow = "0 0 0 transparent")
+              }
             >
               {isLoading ? (
                 <>
@@ -563,16 +684,16 @@ const RegisterForm = () => {
               )}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              Already have an account?{" "}
             </span>
             <Button
               variant="link"
               size="sm"
               className="px-0 text-green-600 hover:text-green-800"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
             >
               Sign in here
             </Button>
