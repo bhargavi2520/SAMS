@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DashboardNav from '../../user-management1/components/dashboard/DashboardNav';
 import { toast } from "@/common/hooks/use-toast";
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
@@ -10,6 +12,8 @@ const subjects = ['Maths', 'Physics', 'Chemistry', 'English', 'Computer Science'
 const faculties = ['Dr. Smith', 'Prof. Wilson', 'Dr. Brown', 'Ms. Clark'];
 
 const TimetableDashboard = () => {
+  const navigate = useNavigate();
+  
   // Step 1: Setup form state
   const [setup, setSetup] = useState({
     branch: '',
@@ -188,6 +192,15 @@ const TimetableDashboard = () => {
       
       <main className="flex-1 flex flex-col p-4 md:p-8">
         <div className="max-w-7xl mx-auto w-full">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors mb-4 font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Admin Dashboard
+          </button>
+          
           <h1 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4 text-center md:text-left">Timetable Dashboard</h1>
           <p className="text-gray-600 mb-6 md:mb-8 text-center md:text-left text-sm md:text-base">Build and edit your class timetable below.</p>
           

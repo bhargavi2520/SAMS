@@ -95,7 +95,6 @@ const barData = {
 
 const sectionIds = [
   'overview',
-  'recent-activity',
   'user-management',
   'timetable-management',
   'reports',
@@ -215,7 +214,7 @@ const AdminDashboard = () => {
           </Card>
         </section>
 
-        {/* System Overview */}
+        {/* System Overview & Recent Activity */}
         <section id="overview" className="scroll-mt-24">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><LayoutDashboard className="w-6 h-6" /> System Overview</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -228,7 +227,7 @@ const AdminDashboard = () => {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <Card>
               <CardHeader>
                 <CardTitle>User Distribution</CardTitle>
@@ -244,22 +243,22 @@ const AdminDashboard = () => {
               <CardContent><Bar data={barData} /></CardContent>
             </Card>
           </div>
-        </section>
-
-        {/* Recent Activity */}
-        <section id="recent-activity" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><Activity className="w-6 h-6" /> Recent Activity</h2>
-          <div className="space-y-3">
-            {recentActivity.map((activity, index) => (
-              <div key={index} className={`flex items-start space-x-3 p-3 rounded-lg ${activity.bg}`}>
-                <div className="flex-shrink-0">{activity.icon}</div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{activity.title}</p>
-                  <p className="text-xs text-gray-600">{activity.description}</p>
+          
+          {/* Recent Activity */}
+          <div className="mt-8">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Activity className="w-5 h-5" /> Recent Activity</h3>
+            <div className="space-y-3">
+              {recentActivity.map((activity, index) => (
+                <div key={index} className={`flex items-start space-x-3 p-3 rounded-lg ${activity.bg}`}>
+                  <div className="flex-shrink-0">{activity.icon}</div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{activity.title}</p>
+                    <p className="text-xs text-gray-600">{activity.description}</p>
+                  </div>
+                  <Badge variant="outline" className="ml-auto flex-shrink-0">{activity.badge}</Badge>
                 </div>
-                <Badge variant="outline" className="ml-auto flex-shrink-0">{activity.badge}</Badge>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 

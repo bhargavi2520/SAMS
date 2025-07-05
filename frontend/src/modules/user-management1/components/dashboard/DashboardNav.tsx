@@ -23,7 +23,6 @@ const navConfig = {
   ],
   admin: [
     { label: 'System Overview', icon: <LayoutDashboard className="w-6 h-6" />, section: 'overview' },
-    { label: 'Recent Activity', icon: <Activity className="w-6 h-6" />, section: 'recent-activity' },
     { label: 'User Management', icon: <Users className="w-6 h-6" />, section: 'user-management' },
     { label: 'Timetable Management', icon: <CalendarDays className="w-6 h-6" />, section: 'timetable-management' },
     { label: 'Reports', icon: <BarChart2 className="w-6 h-6" />, section: 'reports' },
