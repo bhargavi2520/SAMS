@@ -68,37 +68,25 @@ ChartJS.register(
 );
 
 const sidebarItems = [
-  // { label: 'My Profile', path: '#my-profile', icon: <User className="w-5 h-5" /> },
   {
     label: "Dashboard",
     path: "#dashboard",
     icon: <Home className="w-5 h-5" />,
   },
   {
-    label: "Timetable",
+    label: "Exams & Performance",
+    path: "#exams",
+    icon: <FileText className="w-5 h-5" />,
+  },
+  {
+    label: "Timetable & Subjects",
     path: "#timetable",
     icon: <Calendar className="w-5 h-5" />,
-  }, // Moved Timetable up
-  {
-    label: "Subjects Faculty",
-    path: "#subjects-faculty",
-    icon: <BookOpen className="w-5 h-5" />,
-  }, // Moved Subjects Faculty below Timetable
-  { label: "Exams", path: "#exams", icon: <FileText className="w-5 h-5" /> },
-  {
-    label: "Performance",
-    path: "#performance",
-    icon: <BarChart2 className="w-5 h-5" />,
   },
   {
     label: "Attendance",
     path: "#attendance",
     icon: <CheckSquare className="w-5 h-5" />,
-  },
-  {
-    label: "Calendar",
-    path: "#calendar",
-    icon: <Calendar className="w-5 h-5" />,
   },
   {
     label: "Notifications",
@@ -682,27 +670,21 @@ const StudentDashboard = () => {
   const { user: studentProfile } = useAuthStore();
   const navigate = useNavigate();
 
-  const [activeSection, setActiveSection] = useState<string>("dashboard"); // Set initial active section to My Profile
+  const [activeSection, setActiveSection] = useState<string>("dashboard"); // Set initial active section to Dashboard
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar visibility
 
   // Section refs for scrolling
   const dashboardRef = useRef<HTMLDivElement>(null);
-  const myProfileRef = useRef<HTMLDivElement>(null);
-  const subjectsFacultyRef = useRef<HTMLDivElement>(null); // Renamed ref
   const timetableRef = useRef<HTMLDivElement>(null);
   const examsRef = useRef<HTMLDivElement>(null);
-  const performanceRef = useRef<HTMLDivElement>(null);
   const attendanceRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
 
   const sectionRefs = {
     dashboard: dashboardRef,
-    "my-profile": myProfileRef,
-    "subjects-faculty": subjectsFacultyRef,
     timetable: timetableRef,
     exams: examsRef,
-    performance: performanceRef,
     attendance: attendanceRef,
     notifications: notificationsRef,
     feedback: feedbackRef,
@@ -725,19 +707,16 @@ const StudentDashboard = () => {
   useEffect(() => {
     const handleScroll = () => {
       const sections = [
-        { section: "my-profile", ref: myProfileRef },
         { section: "dashboard", ref: dashboardRef },
-        { section: "timetable", ref: timetableRef },
-        { section: "subjects-faculty", ref: subjectsFacultyRef },
         { section: "exams", ref: examsRef },
-        { section: "performance", ref: performanceRef },
+        { section: "timetable", ref: timetableRef },
         { section: "attendance", ref: attendanceRef },
         { section: "notifications", ref: notificationsRef },
         { section: "feedback", ref: feedbackRef },
       ];
       const scrollPosition = window.scrollY + 120; // Offset for nav
 
-      let current = "my-profile";
+      let current = "dashboard";
       for (const s of sections) {
         if (s.ref.current) {
           const offsetTop = s.ref.current.offsetTop;
@@ -923,8 +902,9 @@ const StudentDashboard = () => {
       />
       <main className="flex-1 overflow-auto md:ml-20 pb-16 md:pb-0">
         <div className="p-2 sm:p-4 md:p-6 space-y-4 md:space-y-6">
-          {/* My Profile Section (now first) */}
-          <div ref={myProfileRef} className="space-y-4 md:space-y-6">
+          {/* Dashboard Section (merged with Profile) */}
+          <div ref={dashboardRef} className="space-y-4 md:space-y-6">
+            {/* Profile Card */}
             <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
                 <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -953,16 +933,14 @@ const StudentDashboard = () => {
                       onClick={() => navigate('/profile')}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
                     >
-                      View Profile
+                      View Full Profile
                     </Button>
                   </div>
                 </div>
               </div>
             </Card>
-          </div>
 
-          {/* Dashboard Section - Updated Content */}
-          <div ref={dashboardRef} className="pt-4 md:pt-8">
+            {/* Dashboard Overview Content */}
             <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 sm:p-4 md:p-6">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg font-semibold text-gray-900">
@@ -1095,7 +1073,7 @@ const StudentDashboard = () => {
                             <p className="text-xs md:text-sm text-gray-600">
                               Issued on:{" "}
                               {dayjs(certificate.date).format(
-                                "DD MMMM Букмекерлар"
+                                "DD MMMM YYYY"
                               )}
                             </p>
                           </div>
@@ -1113,155 +1091,19 @@ const StudentDashboard = () => {
             </Card>
           </div>
 
-          {/* Timetable Section */}
-          <div ref={timetableRef} className="pt-4 md:pt-8">
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-base md:text-lg">
-                  Class Timetable
-                </CardTitle>
-                <CardDescription className="text-xs md:text-sm">
-                  Weekly class schedule
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  {timetableSlots.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      Timetable is not available at the moment.
-                    </div>
-                  ) : (
-                    <table className="min-w-full text-xs md:text-sm">
-                      <thead>
-                        <tr>
-                          <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">
-                            Time
-                          </th>
-                          {presentDays.map((day) => (
-                            <th
-                              key={day}
-                              className="p-2 md:p-3 font-semibold text-center bg-gray-50"
-                            >
-                              {day}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {timetableGrid.length > 0 ? (
-                          timetableGrid.map((row, idx) => (
-                            <tr
-                              key={idx}
-                              className="border-b border-gray-100 last:border-b-0"
-                            >
-                              <td className="p-2 md:p-3 text-center font-medium bg-gray-50">
-                                {row.startTime} - {row.endTime}
-                              </td>
-                              {presentDays.map((day) => (
-                                <td
-                                  key={day}
-                                  className="p-2 md:p-3 text-center"
-                                >
-                                  {row[day] || ""}
-                                </td>
-                              ))}
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td
-                              colSpan={presentDays.length + 1}
-                              className="py-2 md:py-3 text-gray-600 text-center"
-                            >
-                              No Data Available at the moment.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Subjects Faculty Section (now below Timetable) */}
-          <div ref={subjectsFacultyRef} className="pt-4 md:pt-8">
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-base md:text-lg">
-                  Subjects Faculty Info
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm">
-                  Details about your subjects and their respective faculty.
-                </p>
-                <div className="overflow-x-auto mt-4">
-                  <table className="min-w-full text-xs md:text-sm">
-                    <thead>
-                      <tr className="text-left border-b border-gray-200">
-                        <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
-                          Faculty
-                        </th>
-                        <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
-                          Teacher
-                        </th>
-                        <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
-                          Recommended Book
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {subjectsFaculty.length > 0 ? (
-                        subjectsFaculty.map((detail, index) => (
-                          <tr
-                            key={index}
-                            className="border-b border-gray-100 last:border-b-0"
-                          >
-                            <td className="py-2 md:py-3 text-gray-600">
-                              {detail.subjectName}
-                            </td>
-                            <td className="py-2 md:py-3 text-gray-600">
-                              {detail.faculty}
-                            </td>
-                            <td className="py-2 md:py-3 text-gray-600">
-                              {detail.book}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr className="border-b border-gray-100 last:border-b-0">
-                          <td
-                            colSpan={2}
-                            className="py-2 md: py-3 text-gray-600 text-center"
-                          >
-                            No Data Available at the moment.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Exams Section */}
+          {/* Exams & Performance Section (merged) */}
           <div ref={examsRef} className="pt-4 md:pt-8">
             <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
               <CardHeader>
-                <CardTitle className="text-base md:text-lg">Exams</CardTitle>
+                <CardTitle className="text-base md:text-lg">Exams & Performance</CardTitle>
+                <CardDescription className="text-xs md:text-sm">
+                  Exam results and academic performance overview
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm">
-                  Upcoming exams and results.
-                </p>
+              <CardContent className="space-y-6">
                 {/* Mid Exams Marks Section */}
-                <div className="mt-6">
-                  <h4 className="text-md md:text-lg font-semibold mb-2">
-                    Mid Exams Marks (Current Semester)
-                  </h4>
+                <div>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">Mid Exams Marks (Current Semester)</h4>
                   <div className="overflow-x-auto">
                     <table className="min-w-full text-xs md:text-sm border border-gray-200 rounded-lg">
                       <thead>
@@ -1307,53 +1149,180 @@ const StudentDashboard = () => {
                     </table>
                   </div>
                 </div>
-                {/* ...existing announcement cards... */}
-                <div className="mt-3 md:mt-4 space-y-3 md:space-y-4">
-                  {announcements.map((announcement, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
-                    >
-                      <Megaphone className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold text-gray-900 text-sm md:text-base">
-                          {announcement.title}
-                        </h4>
-                        <p className="text-xs md:text-sm text-gray-600">
-                          {announcement.desc}
-                        </p>
+
+                {/* Performance Overview */}
+                <div className="border-t pt-6">
+                  <h4 className="text-md md:text-lg font-semibold mb-3">Performance Overview</h4>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Your academic performance trends over time.
+                  </p>
+                  <div className="h-48 md:h-64">
+                    <Line data={performanceData} options={performanceOptions} />
+                  </div>
+                </div>
+
+                {/* Mid Performance Bar Graph */}
+                <div className="border-t pt-6">
+                  <h4 className="text-md md:text-lg font-semibold mb-3">Mid Exams Performance</h4>
+                  <div className="h-64">
+                    <Bar
+                      data={midPerformanceChartData}
+                      options={midPerformanceChartOptions}
+                    />
+                  </div>
+                </div>
+
+                {/* Announcements */}
+                <div className="border-t pt-6">
+                  <h4 className="text-md md:text-lg font-semibold mb-3">Exam Announcements</h4>
+                  <div className="space-y-3 md:space-y-4">
+                    {announcements.map((announcement, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
+                      >
+                        <Megaphone className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-gray-900 text-sm md:text-base">
+                            {announcement.title}
+                          </h4>
+                          <p className="text-xs md:text-sm text-gray-600">
+                            {announcement.desc}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Performance Section */}
-          <div ref={performanceRef} className="pt-4 md:pt-8">
+          {/* Timetable & Subjects Section (merged) */}
+          <div ref={timetableRef} className="pt-4 md:pt-8">
             <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">
-                  Performance
+                  Timetable & Subjects
                 </CardTitle>
+                <CardDescription className="text-xs md:text-sm">
+                  Weekly class schedule and subject information
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm">
-                  Your academic performance overview.
-                </p>
-                <div className="h-48 md:h-64 mt-4">
-                  <Line data={performanceData} options={performanceOptions} />
+              <CardContent className="space-y-6">
+                {/* Timetable Section */}
+                <div>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">Class Timetable</h4>
+                  <div className="overflow-x-auto">
+                    {timetableSlots.length === 0 ? (
+                      <div className="text-center text-gray-500 py-8">
+                        Timetable is not available at the moment.
+                      </div>
+                    ) : (
+                      <table className="min-w-full text-xs md:text-sm">
+                        <thead>
+                          <tr>
+                            <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">
+                              Time
+                            </th>
+                            {presentDays.map((day) => (
+                              <th
+                                key={day}
+                                className="p-2 md:p-3 font-semibold text-center bg-gray-50"
+                              >
+                                {day}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {timetableGrid.length > 0 ? (
+                            timetableGrid.map((row, idx) => (
+                              <tr
+                                key={idx}
+                                className="border-b border-gray-100 last:border-b-0"
+                              >
+                                <td className="p-2 md:p-3 text-center font-medium bg-gray-50">
+                                  {row.startTime} - {row.endTime}
+                                </td>
+                                {presentDays.map((day) => (
+                                  <td
+                                    key={day}
+                                    className="p-2 md:p-3 text-center"
+                                  >
+                                    {row[day] || ""}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={presentDays.length + 1}
+                                className="py-2 md:py-3 text-gray-600 text-center"
+                              >
+                                No Data Available at the moment.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
                 </div>
-                {/* Mid Performance Bar Graph */}
-                <div className="h-64 mt-8">
-                  <h4 className="text-md md:text-lg font-semibold mb-2">
-                    Mid Exams Performance
-                  </h4>
-                  <Bar
-                    data={midPerformanceChartData}
-                    options={midPerformanceChartOptions}
-                  />
+
+                {/* Subjects Faculty Section */}
+                <div className="border-t pt-6">
+                  <h4 className="text-md md:text-lg font-semibold mb-3">Subjects & Faculty Information</h4>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Details about your subjects and their respective faculty.
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-xs md:text-sm">
+                      <thead>
+                        <tr className="text-left border-b border-gray-200">
+                          <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
+                            Subject
+                          </th>
+                          <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
+                            Faculty
+                          </th>
+                          <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
+                            Recommended Book
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subjectsFaculty.length > 0 ? (
+                          subjectsFaculty.map((detail, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-gray-100 last:border-b-0"
+                            >
+                              <td className="py-2 md:py-3 text-gray-600">
+                                {detail.subjectName}
+                              </td>
+                              <td className="py-2 md:py-3 text-gray-600">
+                                {detail.faculty}
+                              </td>
+                              <td className="py-2 md:py-3 text-gray-600">
+                                {detail.book}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr className="border-b border-gray-100 last:border-b-0">
+                            <td
+                              colSpan={3}
+                              className="py-2 md:py-3 text-gray-600 text-center"
+                            >
+                              No Data Available at the moment.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </CardContent>
             </Card>

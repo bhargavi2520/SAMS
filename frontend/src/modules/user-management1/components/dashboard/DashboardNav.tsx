@@ -7,10 +7,8 @@ import {
 const navConfig = {
   student: [
     { label: 'Dashboard', icon: <Home className="w-6 h-6" />, section: 'dashboard' },
-    { label: 'Timetable', icon: <Calendar className="w-6 h-6" />, section: 'timetable' },
-    { label: 'Subjects Faculty', icon: <BookOpen className="w-6 h-6" />, section: 'subjects-faculty' },
-    { label: 'Exams', icon: <FileText className="w-6 h-6" />, section: 'exams' },
-    { label: 'Performance', icon: <BarChart2 className="w-6 h-6" />, section: 'performance' },
+    { label: 'Exams & Performance', icon: <FileText className="w-6 h-6" />, section: 'exams' },
+    { label: 'Timetable & Subjects', icon: <Calendar className="w-6 h-6" />, section: 'timetable' },
     { label: 'Attendance', icon: <CheckSquare className="w-6 h-6" />, section: 'attendance' },
     { label: 'Notifications', icon: <Bell className="w-6 h-6" />, section: 'notifications' },
     { label: 'Feedback', icon: <MessageCircle className="w-6 h-6" />, section: 'feedback' },
