@@ -150,9 +150,10 @@ const generateTokenAndLogin = async (user, rememberMe, req, res) => {
 
     res.cookie("authToken", token, {
       httpOnly: true,
-      secure: true, 
-      sameSite: "strict",
-      maxAge: rememberMe ? 3 * 24 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000, 
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: rememberMe ? 3 * 24 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -173,7 +174,8 @@ const logout = async (req, res) => {
     res.clearCookie("authToken", {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "none",
+      path: "/",
     });
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {

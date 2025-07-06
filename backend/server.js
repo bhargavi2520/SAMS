@@ -17,6 +17,9 @@ const DepartmentAssignmentRouter = require("./Routes/departmentAssignRouter");
 
 const PORT = process.env.PORT || 5000;
 
+// Log environment for debugging
+console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode`);
+
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 50,
@@ -28,7 +31,7 @@ const limiter = rateLimit({
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://bhargavi2520.github.io",
+  "https://bhargavi2520.github.io/SAMS",
 ];
 
 const corsOptions = {
@@ -37,16 +40,16 @@ const corsOptions = {
       callback(null, true);
       return;
     }
-
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`CORS blocked origin: ${origin}`);
       callback(new Error("CORS policy blocks this origin"), false);
-      callback(null,false);
     }
   },
   credentials: true,
   optionsSuccessStatus: 200,
+  exposedHeaders: ['Set-Cookie'],
 };
 
 app.use(cors(corsOptions));

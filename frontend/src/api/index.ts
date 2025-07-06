@@ -41,7 +41,8 @@ apiClient.interceptors.response.use(
     else if (
       error.response &&
       error.response.status >= 400 &&
-      error.response.status !== 429
+      error.response.status !== 429 &&
+      error.response.status !== 401
     ) {
       const errorMessage =
         error.response.data?.message ||
@@ -72,7 +73,7 @@ apiClient.interceptors.response.use(
       });
     }
     // Handle other unexpected errors
-    else {
+    else if (error.response && error.response.status !== 401) {
       toast({
         title: "Unexpected Error",
         description: "An unexpected error occurred. Please try again.",
