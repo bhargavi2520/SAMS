@@ -1,14 +1,29 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { AuthState, BaseUserProfile, LoginCredentials, RegisterData, StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
-import { authService } from '@/modules/user-management1/services/auth.service';
-import apiClient from '@/api';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import {
+  AuthState,
+  BaseUserProfile,
+  LoginCredentials,
+  RegisterData,
+  StudentProfile,
+  FacultyProfile,
+  AdminProfile,
+  HODProfile,
+  GuestProfile,
+} from "@/modules/user-management1/types/auth.types";
+import { authService } from "@/modules/user-management1/services/auth.service";
+import apiClient from "@/api";
+import { toast } from "@/common/hooks/use-toast";
 interface AuthStore extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   clearError: () => void;
-  updateProfile: (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>) => Promise<void>;
+  updateProfile: (
+    profileData: Partial<
+      StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile
+    >
+  ) => Promise<void>;
   fetchProfile: () => Promise<void>;
   setLoading: (loading: boolean) => void;
 }
@@ -17,7 +32,6 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -26,20 +40,17 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ isLoading: true, error: null });
           // Call the actual service method
-          const mockResponse = await authService.login(credentials); // mockResponse name can be changed to apiResponse or similar
-          
+          const user = await authService.login(credentials); // mockResponse name can be changed to apiResponse or similar
+
           set({
-            user: mockResponse.user,
-            token: mockResponse.token,
+            user,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
           });
-          localStorage.setItem("authToken",mockResponse.token);
-          apiClient.defaults.headers.common['Authorization'] = `Bearer ${mockResponse.token}`;
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Login failed',
-            isLoading: false
+            error: error instanceof Error ? error.message : "Login failed",
+            isLoading: false,
           });
         }
       },
@@ -48,53 +59,63 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ isLoading: true, error: null });
           // Call the actual service method
-          const mockResponse = await authService.register(data); // mockResponse name can be changed to apiResponse or similar
-          
+          const user = await authService.register(data); // mockResponse name can be changed to apiResponse or similar
+
           set({
-            user: mockResponse.user,
-            token: mockResponse.token,
+            user,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
           });
-          localStorage.setItem("authToken",mockResponse.token);
-          apiClient.defaults.headers.common['Authorization'] = `Bearer ${mockResponse.token}`;
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Registration failed',
-            isLoading: false
+            error:
+              error instanceof Error ? error.message : "Registration failed",
+            isLoading: false,
           });
         }
       },
 
-      logout: () => {
-        authService.logout(); // Call service logout to clear token from localStorage
+      logout: async () => {
+        try {
+          await authService.logout();
+        } catch (e) {
+           console.log(e);
+           toast({title: "Logout failed", description: "Please try again later", variant: "destructive"});
+        }
         set({
           user: null,
-          token: null,
           isAuthenticated: false,
-          error: null
+          error: null,
         });
-        localStorage.removeItem("authToken");
       },
 
       clearError: () => {
         set({ error: null });
       },
 
-      updateProfile: async (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>) => {
+      updateProfile: async (
+        profileData: Partial<
+          | StudentProfile
+          | FacultyProfile
+          | AdminProfile
+          | HODProfile
+          | GuestProfile
+        >
+      ) => {
         try {
           set({ isLoading: true, error: null });
-          
+
           const updatedUser = await authService.updateProfile(profileData);
-          
+
           set({
             user: updatedUser,
-            isLoading: false
+            isLoading: false,
           });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Profile update failed',
-            isLoading: false
+            error:
+              error instanceof Error ? error.message : "Profile update failed",
+            isLoading: false,
           });
         }
       },
@@ -102,32 +123,34 @@ export const useAuthStore = create<AuthStore>()(
       fetchProfile: async () => {
         try {
           set({ isLoading: true, error: null });
-          
+
           const user = await authService.getProfile();
-          
+
           set({
             user,
-            isLoading: false
+            isLoading: false,
           });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to fetch profile',
-            isLoading: false
+            error:
+              error instanceof Error
+                ? error.message
+                : "Failed to fetch profile",
+            isLoading: false,
           });
         }
       },
 
       setLoading: (loading: boolean) => {
         set({ isLoading: loading });
-      }
+      },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
-        isAuthenticated: state.isAuthenticated
-      })
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );
