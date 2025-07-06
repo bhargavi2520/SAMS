@@ -801,10 +801,13 @@ const StudentDashboard = () => {
   const [feedbackSuccess, setFeedbackSuccess] = useState<boolean>(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
-  // Build recipient options: College + all teachers from subjectsFaculty
+  // Build recipient options: College + all teachers from subjectsFaculty with subject names
   const feedbackRecipients = [
     { label: "College", value: "College" },
-    ...subjectsFaculty.map((s) => ({ label: s.faculty, value: s.faculty })),
+    ...subjectsFaculty.map((s) => ({ 
+      label: `${s.faculty} (${s.subjectName})`, 
+      value: `${s.faculty} (${s.subjectName})` 
+    })),
   ];
 
   const handleFeedbackSubmit = (e: React.FormEvent) => {

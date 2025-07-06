@@ -177,9 +177,9 @@ const ProfilePage = () => {
     <div className="max-w-3xl mx-auto p-6 bg-white rounded shadow">
       <Button 
         onClick={() => navigate('/dashboard')}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium mb-4"
+        className="bg-white text-blue-600 border-blue-600 border-2 px-3 py-1 md:px-4 md:py-2 rounded-full text-sm font-medium mb-4 hover:bg-blue-600 hover:text-white hover:rounded-lg"
       >
-        ← Back to Dashboard
+         Back to Dashboard
       </Button>
       <h1 className="text-2xl font-bold mb-4">My Profile</h1>
       <form className="space-y-4">

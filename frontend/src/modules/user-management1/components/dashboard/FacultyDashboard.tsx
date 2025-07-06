@@ -50,6 +50,13 @@ type FacultyDataItem = {
   }[];
 };
 
+type AttendanceStudent = {
+  studentId: string;
+  name: string;
+  rollNumber?: string;
+  status?: string;
+};
+
 // Mock Attendance Data
 const attendanceData = [
   { label: "Class A", attended: 18, total: 20 },
@@ -104,16 +111,42 @@ const StudentPieChart = () => {
       {
         data: [45414, 40270],
         backgroundColor: ["#3b82f6", "#f472b6"],
-        borderWidth: 1,
+        borderWidth: 2,
+        borderColor: "#ffffff",
       },
     ],
   };
+  
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: "bottom" as const,
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: { label: string; parsed: number; dataset: { data: number[] } }) => {
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = ((context.parsed / total) * 100).toFixed(1);
+            return `${context.label}: ${context.parsed.toLocaleString()} (${percentage}%)`;
+          },
+        },
+      },
+    },
+  };
+  
   return (
-    <div className="h-40 flex items-center justify-center">
-      <Pie
-        data={data}
-        options={{ plugins: { legend: { display: true, position: "bottom" } } }}
-      />
+    <div className="h-48 flex items-center justify-center">
+      <Pie data={data} options={options} />
     </div>
   );
 };
@@ -305,27 +338,27 @@ const FacultyDashboard = () => {
 
   const isToday = (dateStr: string) => {
     const today = new Date();
-    const d = new Date(dateStr);
+    const selectedDate = new Date(dateStr);
     return (
-      today.getFullYear() <= d.getFullYear() &&
-      today.getMonth() <= d.getMonth() &&
-      today.getDate() <= d.getDate()
+      today.getFullYear() === selectedDate.getFullYear() &&
+      today.getMonth() === selectedDate.getMonth() &&
+      today.getDate() === selectedDate.getDate()
     );
   };
 
-  useEffect(() => {
-    if (!selectedClass || facultyData.length == 0) return;
+  const isFutureDate = (dateStr: string) => {
+    const today = new Date();
+    const selectedDate = new Date(dateStr);
+    return selectedDate > today;
+  };
 
-    if (isToday(attendanceDate)) {
-      setAttendance(
-        (studentsForSelectedClass || []).map((s) => ({
-          id: s.id,
-          name: s.name,
-          rollNumber: s.rollNumber,
-          present: false,
-        }))
-      );
-      setAttendanceEditable(true);
+  useEffect(() => {
+    if (!selectedClass || facultyData.length === 0) return;
+
+    // For future dates, show empty attendance and disable editing
+    if (isFutureDate(attendanceDate)) {
+      setAttendance([]);
+      setAttendanceEditable(false);
       return;
     }
 
@@ -335,13 +368,16 @@ const FacultyDashboard = () => {
           (item) => `${item.subject.id}-${item.section}` === selectedClass
         );
         if (!selected) return;
+        
         const response = await apiClient.get(
           `/attendance/byDate?department=${selected.subject.department}&year=${selected.subject.year}&section=${selected.section}&subjectId=${selected.subject.id}&date=${attendanceDate}`
         );
+        
         const att = response.data.attendance;
-        if (att && att.students) {
+        if (att && att.students && att.students.length > 0) {
+          // Attendance exists for this date
           setAttendance(
-            att.students.map((s: any) => ({
+            att.students.map((s: AttendanceStudent) => ({
               id: s.studentId,
               name: s.name,
               rollNumber: s.rollNumber,
@@ -350,12 +386,34 @@ const FacultyDashboard = () => {
           );
           setAttendanceEditable(false);
         } else {
-          setAttendance([]);
+          // No attendance found for this date, initialize with students
+          setAttendance(
+            (studentsForSelectedClass || []).map((s) => ({
+              id: s.id,
+              name: s.name,
+              rollNumber: s.rollNumber,
+              present: false,
+            }))
+          );
+          setAttendanceEditable(true);
         }
       } catch (err) {
-        setAttendance([]);
         console.error("Error fetching attendance:", err);
-        setAttendanceEditable(false);
+        // If there's an error, initialize with students for today's date
+        if (isToday(attendanceDate)) {
+          setAttendance(
+            (studentsForSelectedClass || []).map((s) => ({
+              id: s.id,
+              name: s.name,
+              rollNumber: s.rollNumber,
+              present: false,
+            }))
+          );
+          setAttendanceEditable(true);
+        } else {
+          setAttendance([]);
+          setAttendanceEditable(false);
+        }
       }
     };
 
@@ -556,34 +614,75 @@ const FacultyDashboard = () => {
         {
           label: "Attendance %",
           data: dataArr,
-          backgroundColor: "rgba(59, 130, 246, 0.5)",
+          backgroundColor: "rgba(59, 130, 246, 0.3)",
           borderColor: "#3b82f6",
           borderWidth: 2,
           fill: true,
           tension: 0.4,
-          pointRadius: 2,
+          pointRadius: 3,
+          pointBackgroundColor: "#3b82f6",
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
         },
       ],
     };
-    const options = {
+    const options: ChartOptions<"bar"> = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
-        legend: { display: false },
-        tooltip: { enabled: true },
+        legend: { 
+          display: true,
+          position: "top" as const,
+          labels: {
+            font: { size: 12 },
+            usePointStyle: true,
+          },
+        },
+        tooltip: { 
+          enabled: true,
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          titleColor: "#ffffff",
+          bodyColor: "#ffffff",
+          borderColor: "#3b82f6",
+          borderWidth: 1,
+          cornerRadius: 8,
+          displayColors: false,
+          callbacks: {
+            label: (context) => `Attendance: ${context.parsed}%`,
+          },
+        },
       },
       scales: {
         y: {
           beginAtZero: true,
           max: 100,
-          ticks: { callback: (v) => `${v}%` },
+          grid: {
+            color: "rgba(0, 0, 0, 0.1)",
+          },
+          ticks: { 
+            callback: (v) => `${v}%`,
+            font: { size: 11 },
+            color: "#6b7280",
+          },
         },
         x: {
-          ticks: { maxTicksLimit: 8 },
+          grid: {
+            display: false,
+          },
+          ticks: { 
+            maxTicksLimit: 8,
+            font: { size: 11 },
+            color: "#6b7280",
+          },
         },
+      },
+      interaction: {
+        intersect: false,
+        mode: "index" as const,
       },
     };
     return (
-      <div className="h-56 w-full">
+      <div className="h-64 w-full">
         <Bar data={data} options={options} />
       </div>
     );
@@ -827,6 +926,28 @@ const FacultyDashboard = () => {
     try {
       await apiClient.post("/attendance/mark", payload);
       toast({ title: "Attendance submitted successfully", variant: "default" });
+      
+      // After successful submission, refresh the attendance data
+      // This will show the submitted attendance as read-only
+      setAttendanceEditable(false);
+      
+      // Optionally, you can trigger a re-fetch of the attendance data
+      // by calling the fetchAttendance function again
+      const response = await apiClient.get(
+        `/attendance/byDate?department=${selected.subject.department}&year=${selected.subject.year}&section=${selected.section}&subjectId=${selected.subject.id}&date=${attendanceDate}`
+      );
+      
+      const att = response.data.attendance;
+      if (att && att.students && att.students.length > 0) {
+        setAttendance(
+          att.students.map((s: AttendanceStudent) => ({
+            id: s.studentId,
+            name: s.name,
+            rollNumber: s.rollNumber,
+            present: s.status?.toLowerCase() === "present",
+          }))
+        );
+      }
     } catch (error) {
       console.error("Error submitting attendance:", error);
       toast({
