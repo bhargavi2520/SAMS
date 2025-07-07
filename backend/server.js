@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -23,7 +22,7 @@ console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode`);
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 50,
-  message: "You are spamming, please try again after 5 minutes",
+  message: "Too many requests from this IP, please try again after 5 minutes",
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
@@ -56,7 +55,8 @@ app.use(cors(corsOptions));
 app.use(limiter);
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
   res.send(" Backend is LIVE! Welcome to SAMS");

@@ -132,7 +132,7 @@ const loginUser = async (req, res) => {
  */
 const generateTokenAndLogin = async (user, rememberMe, req, res) => {
   try {
-    const expiresIn = rememberMe ? "3d" : "12h";
+    const expiresIn = rememberMe ? "7d" : "24h";
     const token = jwt.sign(
       {
         id: user._id,
@@ -148,36 +148,12 @@ const generateTokenAndLogin = async (user, rememberMe, req, res) => {
     delete userObj.password;
     delete userObj.__v;
 
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-      maxAge: rememberMe ? 3 * 24 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000,
-    });
-
     return res.status(200).json({
       message: "Login successful",
       success: true,
       user: userObj,
+      token,
     });
-
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-
-const logout = async (req, res) => {
-  try {
-    res.clearCookie("authToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-    });
-    return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -187,5 +163,4 @@ const logout = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  logout,
 };

@@ -949,19 +949,12 @@ const HODDashboard = ({ isHOD = true }) => {
 
   // Fetch subjects after year & semester are selected and subject field is focused
   const handleSubjectFocus = async () => {
+    if(subjects.length > 0) return;
     if (selectedYear && selectedSemester) {
       const res = await apiClient.get(
         `/subjectData/subjects?department=CSE&year=${Number(selectedAssignmentYear)}&semester=${Number(selectedSemester)}`
       );
-      if (res.data.subjects && res.data.subjects.length > 0) {
       setSubjects(res.data.subjects);
-    } else {
-      setSubjects([]);
-      toast({
-        title: "No subject found for the selected class",
-        variant: "destructive",
-      });
-    }
     }
   };
 

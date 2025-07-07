@@ -6,16 +6,13 @@ const jwt = require('jsonwebtoken');
  */
 const ensureAuthenticated = (roles = []) => {
     return (req, res, next) => {
-        const token = req.cookies?.authToken;
-        if (!token) {
-            return res.status(401)
-                .json({ 
-                    message: 'No authentication token provided. Please login.', 
-                    success: false,
-                    code: 'NO_TOKEN'
-                });
+        const auth = req.headers['authorization'];
+        if (!auth) {
+            return res.status(403)
+                .json({ message: 'Unauthorized, Login and retry', success: false });
         }
         try {
+            const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = decoded; 
             if (roles.length && !roles.includes(decoded.role)) {

@@ -2,14 +2,14 @@ import apiClient from '@/api';
 import { LoginCredentials, RegisterData,BaseUserProfile, StudentProfile, FacultyProfile, AdminProfile, HODProfile, GuestProfile } from '@/modules/user-management1/types/auth.types';
 
 class AuthService {
-  async login(credentials: LoginCredentials): Promise< BaseUserProfile> {
+  async login(credentials: LoginCredentials): Promise<{ user: BaseUserProfile; token: string }> {
     try {
       // Send a POST request to your backend's /auth/login endpoint
       const response = await apiClient.post('/auth/login', credentials);
       
-      const {  user } = response.data;
+      const { token, user } = response.data;
 
-      return  user ;
+      return { user, token };
     } catch (error: unknown) {
       // Re-throw the error message from the backend
       if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response) {
@@ -20,16 +20,16 @@ class AuthService {
     }
   }
   
-  async register(data: RegisterData): Promise<BaseUserProfile> {
+  async register(data: RegisterData): Promise<{ user: BaseUserProfile; token: string }> {
     try {
       // Send a POST request to your backend's /auth/register endpoint
       // Note: Ensure your backend expects data in this format
       console.log('Sending registration data:', data);
       const response = await apiClient.post('/auth/register', data);
       console.log('Registration response:', response);
-      const {  user } = response.data;
+      const { token, user } = response.data;
       
-      return user;
+      return { user, token };
 
     } catch (error: unknown) {
       // Re-throw the error message from the backend
@@ -43,12 +43,7 @@ class AuthService {
     }
   }
 
-  async logout(): Promise<void> {
-    try {
-      await apiClient.post("/auth/logout");
-    } catch (error) {
-      console.log("Logout error:", error);
-    }
+  logout(): void {
   }
 
   async updateProfile(profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>): Promise<BaseUserProfile> {

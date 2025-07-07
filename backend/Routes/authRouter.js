@@ -5,11 +5,7 @@ const {
   registerValidation,
   loginValidation,
 } = require("../Middlewares/AuthValidation.js");
-const {
-  registerUser,
-  loginUser,
-  logout,
-} = require("../Controllers/AuthController.js");
+const { registerUser, loginUser } = require("../Controllers/AuthController.js");
 const ensureAuthenticated = require("../Middlewares/Authentication.js");
 
 AuthRouter.get("/", (req, res) => {
@@ -18,7 +14,6 @@ AuthRouter.get("/", (req, res) => {
 
 AuthRouter.post("/login", loginValidation, loginUser);
 AuthRouter.post("/register", registerValidation, registerUser);
-AuthRouter.post("/logout", logout);
 
 AuthRouter.get("/me", ensureAuthenticated(), async (req, res) => {
   try {
