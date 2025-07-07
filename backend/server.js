@@ -30,7 +30,7 @@ const limiter = rateLimit({
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://bhargavi2520.github.io/SAMS",
+  "https://bhargavi2520.github.io",
 ];
 
 const corsOptions = {
@@ -48,7 +48,6 @@ const corsOptions = {
   },
   credentials: true,
   optionsSuccessStatus: 200,
-  exposedHeaders: ['Set-Cookie'],
 };
 
 app.use(cors(corsOptions));

@@ -12,14 +12,7 @@ interface ImportMeta {
 
 // Helper function to get the API base URL
 const getApiBaseUrl = () => {
-    const isProduction = window.location.protocol === 'https:' && 
-                        window.location.hostname !== 'localhost';
-    
-    // if (isProduction) {
         return 'https://sams-5crs.onrender.com/';
-    // }
-    
-    // return 'http://localhost:5000/';
 };
 
 export const apiConfig = {

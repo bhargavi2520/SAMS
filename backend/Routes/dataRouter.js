@@ -6,6 +6,7 @@ const {
   getFaculties,
   createTimeTable,
   checkTimetableExists,
+  getAssignedSubjectsAndFaculties,
 } = require("../Controllers/DataController.js");
 const {
   createTimeTableValidation,
@@ -33,6 +34,12 @@ DataRouter.get(
   "/checkTimetable",
   ensureAuthenticated(["ADMIN", "HOD"]),
   checkTimetableExists
+);
+
+DataRouter.get(
+  "/assignedSubjectsAndFaculties",
+  ensureAuthenticated(["ADMIN", "HOD"]),
+  getAssignedSubjectsAndFaculties
 );
 
 module.exports = DataRouter;

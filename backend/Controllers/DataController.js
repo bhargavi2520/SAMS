@@ -1,6 +1,7 @@
 const { User } = require("../Models/User");
 const classInfo = require("../Models/Class");
 const TimeTable = require("../Models/TimeTable");
+const departmentAssignment = require("../Models/AssignedDepartments");
 
 /**
  * function to get students by the department ,year, semester and section
@@ -76,10 +77,9 @@ const getFaculties = async (req, res) => {
   }
 };
 
-
 /**
  * logic for the creating timetable
- * where we checks if timetable is already not created for the same class 
+ * where we checks if timetable is already not created for the same class
  * also checks that faculty is not busy with another class for the same day - time.
  * creates new timetable for the given class without overlapping of lectures.
  */
@@ -104,7 +104,7 @@ const createTimeTable = async (req, res) => {
         section: classDetails.section,
       })
       .select("_id")
-      .lean(); 
+      .lean();
 
     if (!classId) {
       return res.status(404).json({
@@ -113,9 +113,8 @@ const createTimeTable = async (req, res) => {
       });
     }
 
-    
     const allTimeSlots = [];
-    const facultyTimeMap = new Map(); 
+    const facultyTimeMap = new Map();
 
     for (let dayIndex = 0; dayIndex < timeTable.length; dayIndex++) {
       const day = dayMap[dayIndex];
@@ -153,10 +152,10 @@ const createTimeTable = async (req, res) => {
         });
       }
     }
-    
+
     const facultyIds = [...new Set(allTimeSlots.map((slot) => slot.faculty))];
     const days = [...new Set(allTimeSlots.map((slot) => slot.day))];
-    
+
     const existingSchedules = await TimeTable.find({
       class: { $ne: classId._id },
       "timeSlots.faculty": { $in: facultyIds },
@@ -185,7 +184,7 @@ const createTimeTable = async (req, res) => {
         }
       }
     }
-    
+
     const existing = await TimeTable.findOne({ class: classId._id });
     if (existing) {
       existing.timeSlots = allTimeSlots;
@@ -221,9 +220,13 @@ const createTimeTable = async (req, res) => {
 const checkTimetableExists = async (req, res) => {
   const { department, year, section } = req.query;
   try {
-    const classDoc = await classInfo.findOne({ department, year, section }).select('_id');
+    const classDoc = await classInfo
+      .findOne({ department, year, section })
+      .select("_id");
     if (!classDoc) {
-      return res.status(404).json({ exists: false, message: 'Class not found' });
+      return res
+        .status(404)
+        .json({ exists: false, message: "Class not found" });
     }
     const timetable = await TimeTable.findOne({ class: classDoc._id });
     if (timetable) {
@@ -232,8 +235,144 @@ const checkTimetableExists = async (req, res) => {
       return res.status(200).json({ exists: false });
     }
   } catch (err) {
-    console.error('Error checking timetable existence:', err);
-    return res.status(500).json({ exists: false, message: 'Internal server error' });
+    console.error("Error checking timetable existence:", err);
+    return res
+      .status(500)
+      .json({ exists: false, message: "Internal server error" });
+  }
+};
+
+/**
+ * function to get faculties and currently assigned subjects
+ * return faculty name , subject assigned ,year , semester , section, assignment date
+ */
+
+const getAssignedSubjectsAndFaculties = async (req, res) => {
+  const user = req.user;
+
+  try {
+    let department;
+    let years;
+    if (user.role === "ADMIN") {
+      if (!req.query.department) {
+        return res.status(400).json({
+          message: "Department is required for admin",
+          success: false,
+        });
+      }
+
+      department = req.query.department;
+
+      if (req.query.years) {
+        years = req.query.years.split(",").map(Number);
+      } else {
+        years = [1, 2, 3, 4]; 
+      }
+    } else {
+      const assignedDepartment = await departmentAssignment
+        .findOne({ hod: user.id })
+        .select("department departmentYears")
+        .lean();
+
+      if (!assignedDepartment) {
+        return res.status(400).json({
+          message: "You are not assigned to any department",
+          success: false,
+        });
+      }
+
+      department = assignedDepartment.department;
+      years = assignedDepartment.departmentYears;
+    }
+
+    const result = await classInfo.aggregate([
+      {
+        $match: {
+          department: department,
+          year: { $in: years },
+        },
+      },
+      {
+        $unwind: "$subjects",
+      },
+      {
+        $lookup: {
+          from: "assignedsubjects",
+          localField: "subjects.subject",
+          foreignField: "subject",
+          as: "assigned",
+        },
+      },
+      {
+        $unwind: "$assigned",
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ["$assigned.section", "$section"],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "assigned.faculty",
+          foreignField: "_id",
+          as: "faculty",
+        },
+      },
+      {
+        $unwind: {
+          path: "$faculty",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "subjects",
+          localField: "subjects.subject",
+          foreignField: "_id",
+          as: "subject_details",
+        },
+      },
+      {
+        $unwind: {
+          path: "$subject_details",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          faculty_name: {
+            $concat: ["$faculty.firstName", " ", "$faculty.lastName"],
+          },
+          subject_id: "$subjects._id",
+          subject_name: "$subject_details.name",
+          year: "$year",
+          department: "$department",
+          section: "$section",
+        },
+      },
+    ]);
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "No assigned subjects found for the given criteria",
+        success: false,
+      });
+    }
+    res.status(200).json({
+      message: "Assigned subjects and faculties fetched successfully",
+      assignedSubjects: result,
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
   }
 };
 
@@ -242,4 +381,5 @@ module.exports = {
   getFaculties,
   createTimeTable,
   checkTimetableExists,
+  getAssignedSubjectsAndFaculties,
 };
