@@ -349,9 +349,11 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
           },
           subject_id: "$subjects._id",
           subject_name: "$subject_details.name",
+          semester: "$subject_details.semester",
           year: "$year",
           department: "$department",
           section: "$section",
+          assignment_date: "$assigned.createdAt",
         },
       },
     ]);

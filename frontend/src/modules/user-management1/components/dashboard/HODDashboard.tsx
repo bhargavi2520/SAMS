@@ -30,6 +30,7 @@ import {
   FileBarChart2,
   Bell,
   UserCog,
+  Loader2,
 } from "lucide-react";
 import apiClient from "@/api";
 import { toast } from "@/common/hooks/use-toast";
@@ -215,38 +216,41 @@ const HODDashboard = ({ isHOD = true }) => {
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [isClassTeacher, setIsClassTeacher] = useState(false);
-  const [assignments, setAssignments] = useState([
-    {
-      id: 1,
-      faculty: "Dr. Michael Smith",
-      subject: "Data Structures",
-      year: "2",
-      semester: "4",
-      section: "1",
-      isClassTeacher: true,
-      assignedDate: "2024-01-15",
-    },
-    {
-      id: 2,
-      faculty: "Prof. Lisa Wilson",
-      subject: "Advanced Algorithms",
-      year: "3",
-      semester: "4",
-      section: "2",
-      isClassTeacher: false,
-      assignedDate: "2024-01-14",
-    },
-    {
-      id: 3,
-      faculty: "Dr. Robert Brown",
-      subject: "Database Systems",
-      year: "2",
-      semester: "4",
-      section: "3",
-      isClassTeacher: true,
-      assignedDate: "2024-01-13",
-    },
-  ]);
+  const [assignments, setAssignments] = useState([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(false);
+
+  /**
+   * use effect for fetching assignments
+   */
+  const fetchAssignments = async () => {
+    try {
+      setLoadingAssignments(true);
+      const response = await apiClient.get("/userData/assignedSubjectsAndFaculties")
+      if (response.data.success) {
+        setAssignments(response.data.assignedSubjects);
+      } else {
+        toast({
+          title: "Hey check this !!",
+          description: response.data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+      toast({
+        title: "Failed to fetch assignments",
+        description: error.response.data.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAssignments(false);
+    }
+  }
+  useEffect(() => {
+    fetchAssignments();
+  }, [])
+
+
 
   // Mock data for dropdowns
   const facultyList = [
@@ -863,18 +867,6 @@ const HODDashboard = ({ isHOD = true }) => {
       selectedSemester &&
       selectedSection
     ) {
-      const newAssignment = {
-        id: Date.now(),
-        faculty: selectedFaculty,
-        subject: selectedSubject,
-        year: selectedAssignmentYear,
-        semester: selectedSemester,
-        section: selectedSection,
-        isClassTeacher: isClassTeacher,
-        assignedDate: new Date().toISOString().split("T")[0],
-      };
-      setAssignments([...assignments, newAssignment]);
-
       // Reset form
       setSelectedFaculty("");
       setSelectedSubject("");
@@ -908,9 +900,9 @@ const HODDashboard = ({ isHOD = true }) => {
       prev.map((act, i) =>
         i === idx
           ? {
-              ...act,
-              status: act.status === "pending" ? "completed" : "pending",
-            }
+            ...act,
+            status: act.status === "pending" ? "completed" : "pending",
+          }
           : act
       )
     );
@@ -942,14 +934,14 @@ const HODDashboard = ({ isHOD = true }) => {
    */
 
   const handleFacultyFocus = async () => {
-    if(faculties.length > 0) return;
+    if (faculties.length > 0) return;
     const res = await apiClient.get("/userData/faculties");
     setFaculties(res.data.facultyNames);
   };
 
   // Fetch subjects after year & semester are selected and subject field is focused
   const handleSubjectFocus = async () => {
-    if(subjects.length > 0) return;
+    if (subjects.length > 0) return;
     if (selectedYear && selectedSemester) {
       const res = await apiClient.get(
         `/subjectData/subjects?department=CSE&year=${Number(selectedAssignmentYear)}&semester=${Number(selectedSemester)}`
@@ -960,29 +952,30 @@ const HODDashboard = ({ isHOD = true }) => {
 
   // Assign subject to faculty
   const handleAssign = async () => {
-  try {
-    const res = await apiClient.post("/subjectData/assignSubject", {
-      subjectId: selectedSubject,
-      facultyId: selectedFaculty,
-      section: Number(selectedSection),
-    });
+    try {
+      const res = await apiClient.post("/subjectData/assignSubject", {
+        subjectId: selectedSubject,
+        facultyId: selectedFaculty,
+        section: Number(selectedSection),
+      });
 
-    if (res.data.success) {
-      toast({ title: "Subject assigned successfully", variant: "default" });
-    } else {
-      toast({ title: res.data.message || "Assignment failed", variant: "destructive" });
+      if (res.data.success) {
+        toast({ title: "Subject assigned successfully", variant: "default" });
+        fetchAssignments();
+      } else {
+        toast({ title: res.data.message || "Assignment failed", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({
+        title: "Assignment failed",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An error occurred",
+        variant: "destructive",
+      });
     }
-  } catch (error) {
-    toast({
-      title: "Assignment failed",
-      description:
-        error?.response?.data?.message ||
-        error.message ||
-        "An error occurred",
-      variant: "destructive",
-    });
-  }
-};
+  };
 
   return (
     <div className="w-4/4 mx-auto sm:w-full sm:max-w-7xl py-6 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900 min-h-screen transition-colors flex">
@@ -1036,7 +1029,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <Button 
+                    <Button
                       onClick={() => navigate('/profile')}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
                     >
@@ -1624,120 +1617,127 @@ const HODDashboard = ({ isHOD = true }) => {
 
                 {/* Assignments Table */}
                 <div className="overflow-x-auto">
-                  <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                    <thead className="bg-gray-100 dark:bg-neutral-800">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Faculty
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Subject
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Year
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Semester
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Section
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Class Teacher
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Assigned Date
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 sm:px-4 sm:py-3 text-center font-bold text-primary text-xs sm:text-sm"
-                        >
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
-                      {assignments.map((assignment) => (
-                        <tr
-                          key={assignment.id}
-                          className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
-                        >
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                            {assignment.faculty}
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                            {assignment.subject}
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                            {assignment.year}
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                            {assignment.semester}
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                            {assignment.section}
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm">
-                            {assignment.isClassTeacher ? (
-                              <Badge className="bg-green-600 text-white text-xs">
-                                Yes
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-gray-400 text-white text-xs">
-                                No
-                              </Badge>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                            {assignment.assignedDate}
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3 text-center">
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditAssignment(assignment)}
-                                className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  handleDeleteAssignment(assignment.id)
-                                }
-                                className="hover:bg-red-100 dark:hover:bg-red-900 border-red-300 dark:border-red-600 text-red-700 dark:text-red-200"
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </td>
+                  {loadingAssignments ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    </div>
+                  ) : (
+
+                    <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                      <thead className="bg-gray-100 dark:bg-neutral-800">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Faculty
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Subject
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Year
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Semester
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Section
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Class Teacher
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Assigned Date
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-center font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Actions
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                      </thead>
+                      <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                        {assignments.map((assignment) => (
+                          <tr
+                            key={assignment.id}
+                            className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                          >
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.faculty_name}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.subject_name}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.year}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.semester}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.section}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm">
+                              {assignment.isClassTeacher ? (
+                                <Badge className="bg-green-600 text-white text-xs">
+                                  Yes
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-gray-400 text-white text-xs">
+                                  No
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.assignment_date.split("T")[0]}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-center">
+                              <div className="flex gap-2 justify-center">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  // onClick={() => handleEditAssignment(assignment)}
+                                  className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  // onClick={() =>
+                                  //   handleDeleteAssignment(assignment.id)
+                                  // }
+                                  className="hover:bg-red-100 dark:hover:bg-red-900 border-red-300 dark:border-red-600 text-red-700 dark:text-red-200"
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  )}
                 </div>
               </CardContent>
             </Card>
