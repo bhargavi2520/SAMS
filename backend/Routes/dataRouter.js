@@ -24,7 +24,7 @@ DataRouter.get(
 );
 
 DataRouter.post(
-  "/newSchedule",
+  "/createTimeTable",
   ensureAuthenticated(["HOD", "ADMIN"]),
   createTimeTableValidation,
   createTimeTable

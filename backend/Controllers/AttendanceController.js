@@ -193,7 +193,7 @@ const getAttendanceByDate = async (req, res) => {
     }).lean();
 
     if (!attendance || attendance.length === 0) {
-      return res.status(404).json({
+      return res.status(204).json({
         success: false,
         message: "No Attendance Record found for the Subject on this date",
       });

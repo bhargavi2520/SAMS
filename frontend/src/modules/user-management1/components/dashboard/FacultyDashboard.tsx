@@ -1249,7 +1249,7 @@ const FacultyDashboard = () => {
                       <div className="grid grid-cols-1 gap-2">
                         {attendance.length === 0 ? (
                           <div className="col-span-3 text-center text-gray-500 py-4">
-                            No students found for this class.
+                            No students found.
                           </div>
                         ) : (
                           attendance.map((item, idx) => (

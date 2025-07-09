@@ -3,17 +3,34 @@ import DashboardNav from '../../user-management1/components/dashboard/DashboardN
 import { toast } from "@/common/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import apiClient from '@/api';
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
 const years = ['1', '2', '3', '4'];
 const sections = ['1', '2', '3'];
-const subjects = ['Maths', 'Physics', 'Chemistry', 'English', 'Computer Science'];
-const faculties = ['Dr. Smith', 'Prof. Wilson', 'Dr. Brown', 'Ms. Clark'];
+// Replace const subjects = []; with state
+
+// TypeScript interfaces
+interface Subject {
+  subject_id: string;
+  subject_name: string;
+  faculty_id?: string;
+  faculty_name?: string;
+}
+
+interface TimetableCell {
+  subject: string;
+  faculty: string;
+  facultyName: string;
+  startTime: string;
+  endTime: string;
+}
 
 const TimetableDashboard = () => {
   const navigate = useNavigate();
   
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   // Step 1: Setup form state
   const [setup, setSetup] = useState({
     branch: '',
@@ -24,97 +41,123 @@ const TimetableDashboard = () => {
   const [step, setStep] = useState(1);
 
   // Step 2: Timetable grid state
-  const [timetable, setTimetable] = useState([]); // 2D array: days x periods
-  const [error, setError] = useState('');
-  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [timetable, setTimetable] = useState<TimetableCell[][]>([]); // 2D array: days x periods
 
-  // Auto-dismiss error popup after 5 seconds
-  useEffect(() => {
-    if (showErrorPopup) {
-      const timer = setTimeout(() => {
-        setShowErrorPopup(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showErrorPopup]);
+  // Add these state variables at the top of the component:
+  const [loading, setLoading] = useState(false);
+  const [showConfirmOverwrite, setShowConfirmOverwrite] = useState(false);
+  const [pendingTimetableData, setPendingTimetableData] = useState<any>(null);
+
 
   // Handle setup form changes
-  const handleSetupChange = (e) => {
+  const handleSetupChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setSetup(prev => ({ ...prev, [name]: value }));
   };
 
+  const fillExistingTimetable = (timetableData: any, periods: number, subjectsList: Subject[]) => {
+    const grid = days.map(day =>
+      Array.from({ length: Number(periods) }, (_, periodIdx) => {
+        const slotsForDay = timetableData.timeSlots.filter((s: any) => s.day === day);
+        const slot = slotsForDay[periodIdx];
+        if (slot) {
+          const subjectObj = subjectsList.find(
+            s => s.subject_name === slot.subject
+          );
+          return {
+            subject: subjectObj ? subjectObj.subject_id : '', // <-- store subject_id
+            faculty: slot.faculty,
+            facultyName: subjectObj ? subjectObj.faculty_name : 'Unassigned',
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          };
+        }
+        return { subject: '', faculty: '', facultyName: 'Unassigned', startTime: '', endTime: '' };
+      })
+    );
+    setTimetable(grid);
+    setStep(2);
+  };
+
+
   // On setup submit, create empty timetable grid
-  const handleSetupSubmit = (e) => {
+  const handleSetupSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await apiClient.get(`/userData/checkTimetable?department=${setup.branch}&year=${setup.year}&section=${setup.section}`);
+      if (response.data.subjects) {
+        setSubjects(response.data.subjects);
+      }
+      if (response.data.exists) {
+        setShowConfirmOverwrite(true);
+        setPendingTimetableData({ timetable: response.data.timetable, periods: setup.periods, subjects: response.data.subjects });
+        setLoading(false);
+        return;
+      }
+    } catch (error: any) {
+      setLoading(false);
+      toast({ title: 'Error', description: error.response?.data?.message || error.message || 'Unknown error', variant: 'destructive' });
+      return;
+    }
+
+
     if (setup.branch && setup.year && setup.section && setup.periods > 0) {
       const emptyGrid = days.map(() =>
-        Array.from({ length: Number(setup.periods) }, () => ({ subject: '', faculty: '', startTime: '', endTime: '', isBreak: false, breakLabel: '' }))
+        Array.from({ length: Number(setup.periods) }, () => ({ subject: '', faculty: '', facultyName: 'Unassigned', startTime: '', endTime: '' }))
       );
       setTimetable(emptyGrid);
       setStep(2);
-      setError('');
     }
+    setLoading(false);
+  };
+
+  const handleConfirmOverwrite = () => {
+    if (pendingTimetableData) {
+      fillExistingTimetable(pendingTimetableData.timetable, pendingTimetableData.periods, pendingTimetableData.subjects);
+      setShowConfirmOverwrite(false);
+      setPendingTimetableData(null);
+    }
+  };
+  const handleCancelOverwrite = () => {
+    setShowConfirmOverwrite(false);
+    setPendingTimetableData(null);
   };
 
   // Check if Monday has timings filled
   const isMondayFilled = () => {
     if (!timetable[0]) return false;
-    return timetable[0].some(cell => 
-      cell.isBreak ? cell.breakLabel : (cell.startTime && cell.endTime)
-    );
+    // Check if all periods on Monday have start and end times
+    return timetable[0].every(cell => cell.startTime && cell.endTime);
   };
 
   // Copy Monday's time layout to other days
   const copyMondayLayout = () => {
     if (!timetable[0]) return;
-    
     setTimetable(prev => {
-      const updated = prev.map((day, dayIdx) => {
+      return prev.map((day, dayIdx) => {
         if (dayIdx === 0) return day; // Keep Monday as is
-        
-        return day.map((cell, periodIdx) => {
-          const mondayCell = prev[0][periodIdx];
-          return {
-            ...cell,
-            startTime: mondayCell.startTime,
-            endTime: mondayCell.endTime,
-            isBreak: mondayCell.isBreak,
-            breakLabel: mondayCell.breakLabel
-          };
-        });
+        return day.map((cell, periodIdx) => ({
+          ...cell,
+          startTime: prev[0][periodIdx].startTime,
+          endTime: prev[0][periodIdx].endTime,
+        }));
       });
-      return updated;
     });
-    setError('');
   };
 
   // Handle cell edit
-  const handleCellChange = (dayIdx, periodIdx, field, value) => {
+  const handleCellChange = (dayIdx: number, periodIdx: number, field: string, value: string) => {
     setTimetable(prev => {
       const updated = prev.map(row => row.map(cell => ({ ...cell })));
-      if (field === 'startTime' && periodIdx > 0 && !updated[dayIdx][periodIdx].isBreak) {
-        const prevCell = updated[dayIdx][periodIdx - 1];
-        if (!prevCell.isBreak && prevCell.endTime && value < prevCell.endTime) {
-          const errorMessage = `The time is already assigned to Period ${periodIdx} (ends at ${prevCell.endTime}). Please choose a valid start time.`;
-          setError(errorMessage);
-          setShowErrorPopup(true);
-          updated[dayIdx][periodIdx][field] = '';
-          return updated;
-        }
+      if (field === 'subject') {
+        const subjectObj = subjects.find(s => s.subject_id === value);
+        updated[dayIdx][periodIdx].subject = value;
+        updated[dayIdx][periodIdx].faculty = subjectObj ? subjectObj.faculty_id || '' : '';
+        updated[dayIdx][periodIdx].facultyName = subjectObj ? subjectObj.faculty_name || 'Unassigned' : 'Unassigned';
+      } else {
+        updated[dayIdx][periodIdx][field] = value;
       }
-      updated[dayIdx][periodIdx][field] = value;
-      // If marking as break, clear other fields
-      if (field === 'isBreak' && value) {
-        updated[dayIdx][periodIdx].subject = '';
-        updated[dayIdx][periodIdx].faculty = '';
-        updated[dayIdx][periodIdx].startTime = '';
-        updated[dayIdx][periodIdx].endTime = '';
-      }
-      if (field === 'isBreak' && !value) {
-        updated[dayIdx][periodIdx].breakLabel = '';
-      }
-      setError('');
       return updated;
     });
   };
@@ -123,69 +166,75 @@ const TimetableDashboard = () => {
   const validateTimetable = () => {
     for (let dayIdx = 0; dayIdx < timetable.length; dayIdx++) {
       const periods = timetable[dayIdx];
-      // Check for empty fields (skip breaks)
       for (let periodIdx = 0; periodIdx < periods.length; periodIdx++) {
         const cell = periods[periodIdx];
-        if (!cell.isBreak) {
-          if (!cell.subject || !cell.faculty || !cell.startTime || !cell.endTime) {
-            setError(`All fields must be filled. Missing at Day: ${days[dayIdx]}, Period: ${periodIdx + 1}`);
+          if (!cell.subject || !cell.startTime || !cell.endTime) {
+            toast({ title: 'Error', description: `All fields must be filled. Missing at Day: ${days[dayIdx]}, Period: ${periodIdx + 1}`, variant: 'destructive' });
             return false;
           }
-          // Check valid time order
           if (cell.startTime >= cell.endTime) {
-            setError(`Start time must be before end time at Day: ${days[dayIdx]}, Period: ${periodIdx + 1}`);
+            toast({ title: 'Error', description: `Start time must be before end time at Day: ${days[dayIdx]}, Period: ${periodIdx + 1}`, variant: 'destructive' });
             return false;
           }
-        }
       }
-      // Check for overlapping times within the same day (skip breaks)
       const sortedPeriods = periods
         .map((cell, idx) => ({ ...cell, idx }))
-        .filter(cell => !cell.isBreak)
         .sort((a, b) => a.startTime.localeCompare(b.startTime));
       for (let i = 1; i < sortedPeriods.length; i++) {
         if (sortedPeriods[i].startTime < sortedPeriods[i - 1].endTime) {
-          setError(`Period ${sortedPeriods[i].idx + 1} on ${days[dayIdx]} starts before the previous period ends (Period ${sortedPeriods[i - 1].idx + 1} ends at ${sortedPeriods[i - 1].endTime}). Please fix the timings.`);
+          toast({ title: 'Error', description: `Period ${sortedPeriods[i].idx + 1} on ${days[dayIdx]} starts before the previous period ends (Period ${sortedPeriods[i - 1].idx + 1} ends at ${sortedPeriods[i - 1].endTime}). Please fix the timings.`, variant: 'destructive' });
           return false;
         }
       }
     }
-    setError('');
     return true;
   };
 
   // Handle timetable submit
-  const handleTimetableSubmit = () => {
-    if (validateTimetable()) {
-      toast({ title: "Timetable Data", description: JSON.stringify(timetable, null, 2), variant: "default" });
+  const handleTimetableSubmit = async () => {
+    if (!validateTimetable()) {
+      toast({ title: 'Error', description: 'Please fix the errors in the timetable.', variant: 'destructive' });
+      return;
     }
+    setLoading(true);
+    const payload = {
+      timeTable: timetable.map(dayArr =>
+        dayArr.map(cell => ({
+          subject: subjects.find(s => s.subject_id === cell.subject)?.subject_name || '', // send subject_name
+          faculty: cell.faculty,
+          startTime: cell.startTime,
+          endTime: cell.endTime,
+        }))
+      ),
+      classDetails: {
+        department: setup.branch,
+        year: setup.year,
+        section: setup.section,
+      }
+    };
+    try {
+      const response = await apiClient.post('/userData/createTimeTable', payload);
+      toast({ title: 'Success', description: response.data.message, variant: 'success' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.response?.data?.message || error.message || 'Submission failed', variant: 'destructive' });
+    }
+    setLoading(false);
   };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <DashboardNav activeSection={"Timetable"} onNavClick={() => {}} dashboardType="timetable" />
       
-      {/* Error Popup Notification */}
-      {showErrorPopup && error && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <span className="font-medium">Time Conflict Error</span>
-              </div>
-              <p className="mt-1 text-sm">{error}</p>
+      {/* Confirmation Dialog for Overwrite */}
+      {showConfirmOverwrite && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50 bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-2">Timetable Exists</h3>
+            <p className="mb-4">A timetable for this branch, year, and section already exists. Do you want to overwrite it?</p>
+            <div className="flex justify-end gap-2">
+              <button className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300" onClick={handleCancelOverwrite}>Cancel</button>
+              <button className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={handleConfirmOverwrite}>Overwrite</button>
             </div>
-            <button
-              onClick={() => setShowErrorPopup(false)}
-              className="ml-4 text-red-500 hover:text-red-700 flex-shrink-0"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
           </div>
         </div>
       )}
@@ -234,7 +283,13 @@ const TimetableDashboard = () => {
                     required
                   />
                 </div>
-                <button type="submit" className="w-full bg-blue-600 text-white rounded px-4 py-3 hover:bg-blue-700 transition font-medium text-base">Create Timetable</button>
+                <button 
+                type="submit"
+                 className="w-full bg-blue-600 text-white rounded px-4 py-3 hover:bg-blue-700 transition font-medium text-base"
+                 disabled={loading}
+                 >
+                  {loading ? 'Loading...' : 'Create Timetable'}
+                </button>
               </form>
             </section>
           )}
@@ -250,15 +305,23 @@ const TimetableDashboard = () => {
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
                       <p className="text-blue-800 font-medium text-sm md:text-base">Monday timings are set!</p>
-                      <p className="text-blue-600 text-xs md:text-sm">Copy Monday's time layout to all other days to save time.</p>
+                      <p className="text-blue-600 text-xs md:text-sm">Copy Monday's <span title="Only start and end times will be copied, not subjects or faculty.">time layout</span> to all other days to save time.</p>
                     </div>
                     <button
                       onClick={copyMondayLayout}
                       className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-medium text-sm md:text-base whitespace-nowrap"
+                      title="Only start and end times will be copied, not subjects or faculty."
                     >
                       Copy Monday Layout to All Days
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* No subjects available message */}
+              {subjects.length === 0 && (
+                <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-center">
+                  No subjects available for this class. Please assign subjects first.
                 </div>
               )}
 
@@ -271,48 +334,29 @@ const TimetableDashboard = () => {
                     </div>
                     <div className="p-4 space-y-4">
                       {Array.from({ length: Number(setup.periods) }, (_, periodIdx) => {
-                        const cell = timetable[dayIdx]?.[periodIdx] || {};
+                        const cell = timetable[dayIdx]?.[periodIdx] || { subject: '', faculty: '', facultyName: 'Unassigned', startTime: '', endTime: '' };
                         return (
-                          <div key={periodIdx} className={`p-3 border rounded-lg ${cell.isBreak ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div key={periodIdx} className={`p-3 border rounded-lg bg-gray-50 border-gray-200`}>
                             <div className="flex items-center justify-between mb-3">
                               <span className="font-medium text-sm text-gray-700">Period {periodIdx + 1}</span>
-                              <label className="flex items-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  checked={!!cell.isBreak}
-                                  onChange={e => handleCellChange(dayIdx, periodIdx, 'isBreak', e.target.checked)}
-                                  className="w-4 h-4"
-                                />
-                                <span className="text-sm text-gray-600">Break</span>
-                              </label>
                             </div>
-                            
-                            {cell.isBreak ? (
-                              <input
-                                type="text"
-                                value={cell.breakLabel || ''}
-                                onChange={e => handleCellChange(dayIdx, periodIdx, 'breakLabel', e.target.value)}
-                                className="w-full border rounded p-2 text-sm"
-                                placeholder="Break label (e.g. Lunch Break)"
-                              />
-                            ) : (
                               <div className="space-y-3">
                                 <select
                                   value={cell.subject || ''}
                                   onChange={e => handleCellChange(dayIdx, periodIdx, 'subject', e.target.value)}
                                   className="w-full border rounded p-2 text-sm"
+                                  disabled={subjects.length === 0}
                                 >
                                   <option value="">Select Subject</option>
-                                  {subjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                                  {subjects.map(sub => <option key={sub.subject_id} value={sub.subject_id}>{sub.subject_name}</option>)}
                                 </select>
-                                <select
-                                  value={cell.faculty || ''}
-                                  onChange={e => handleCellChange(dayIdx, periodIdx, 'faculty', e.target.value)}
-                                  className="w-full border rounded p-2 text-sm"
-                                >
-                                  <option value="">Select Teacher</option>
-                                  {faculties.map(fac => <option key={fac} value={fac}>{fac}</option>)}
-                                </select>
+                                <input
+                                  type="text"
+                                  value={cell.facultyName || 'Unassigned'}
+                                  className="w-full border rounded p-2 text-sm bg-gray-100 cursor-not-allowed"
+                                  placeholder="Teacher"
+                                  disabled
+                                />
                                 <div className="grid grid-cols-2 gap-2">
                                   <input
                                     type="time"
@@ -320,6 +364,7 @@ const TimetableDashboard = () => {
                                     onChange={e => handleCellChange(dayIdx, periodIdx, 'startTime', e.target.value)}
                                     className="border rounded p-2 text-sm"
                                     placeholder="Start Time"
+                                    disabled={subjects.length === 0}
                                   />
                                   <input
                                     type="time"
@@ -327,10 +372,10 @@ const TimetableDashboard = () => {
                                     onChange={e => handleCellChange(dayIdx, periodIdx, 'endTime', e.target.value)}
                                     className="border rounded p-2 text-sm"
                                     placeholder="End Time"
+                                    disabled={subjects.length === 0}
                                   />
                                 </div>
                               </div>
-                            )}
                           </div>
                         );
                       })}
@@ -355,44 +400,27 @@ const TimetableDashboard = () => {
                       <tr key={day}>
                         <td className="p-2 border font-semibold bg-gray-50">{day}</td>
                         {Array.from({ length: Number(setup.periods) }, (_, periodIdx) => {
-                          const cell = timetable[dayIdx]?.[periodIdx] || {};
+                          const cell = timetable[dayIdx]?.[periodIdx] || { subject: '', faculty: '', facultyName: 'Unassigned', startTime: '', endTime: '' };
                           return (
-                            <td key={periodIdx} className={`p-2 border min-w-[240px] ${cell.isBreak ? 'bg-yellow-100' : ''}`}>
+                            <td key={periodIdx} className={`p-2 border min-w-[240px]`}>
                               <div className="flex flex-col gap-1">
-                                <label className="flex items-center gap-2 mb-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={!!cell.isBreak}
-                                    onChange={e => handleCellChange(dayIdx, periodIdx, 'isBreak', e.target.checked)}
-                                  />
-                                  <span className="text-sm">Break</span>
-                                </label>
-                                {cell.isBreak ? (
-                                  <input
-                                    type="text"
-                                    value={cell.breakLabel || ''}
-                                    onChange={e => handleCellChange(dayIdx, periodIdx, 'breakLabel', e.target.value)}
-                                    className="border rounded p-1"
-                                    placeholder="Break label (e.g. Lunch Break)"
-                                  />
-                                ) : (
                                   <>
                                     <select
                                       value={cell.subject || ''}
                                       onChange={e => handleCellChange(dayIdx, periodIdx, 'subject', e.target.value)}
                                       className="border rounded p-1 mb-1"
+                                      disabled={subjects.length === 0}
                                     >
                                       <option value="">Subject</option>
-                                      {subjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                                      {subjects.map(sub => <option key={sub.subject_id} value={sub.subject_id}>{sub.subject_name}</option>)}
                                     </select>
-                                    <select
-                                      value={cell.faculty || ''}
-                                      onChange={e => handleCellChange(dayIdx, periodIdx, 'faculty', e.target.value)}
-                                      className="border rounded p-1 mb-1"
-                                    >
-                                      <option value="">Teacher</option>
-                                      {faculties.map(fac => <option key={fac} value={fac}>{fac}</option>)}
-                                    </select>
+                                    <input
+                                      type="text"
+                                      value={cell.facultyName || 'Unassigned'}
+                                      className="border rounded p-1 mb-1 bg-gray-100 cursor-not-allowed"
+                                      placeholder="Teacher"
+                                      disabled
+                                    />
                                     <div className="flex gap-1">
                                       <input
                                         type="time"
@@ -400,6 +428,7 @@ const TimetableDashboard = () => {
                                         onChange={e => handleCellChange(dayIdx, periodIdx, 'startTime', e.target.value)}
                                         className="border rounded p-1 w-1/2"
                                         placeholder="Start Time"
+                                        disabled={subjects.length === 0}
                                       />
                                       <input
                                         type="time"
@@ -407,10 +436,10 @@ const TimetableDashboard = () => {
                                         onChange={e => handleCellChange(dayIdx, periodIdx, 'endTime', e.target.value)}
                                         className="border rounded p-1 w-1/2"
                                         placeholder="End Time"
+                                        disabled={subjects.length === 0}
                                       />
                                     </div>
                                   </>
-                                )}
                               </div>
                             </td>
                           );
@@ -425,8 +454,9 @@ const TimetableDashboard = () => {
                 <button
                   className="w-full md:w-auto bg-green-600 text-white rounded px-6 py-3 font-semibold hover:bg-green-700 transition text-base"
                   onClick={handleTimetableSubmit}
+                  disabled={loading || subjects.length === 0}
                 >
-                  Submit Timetable
+                  {loading ? 'Submitting...' : 'Submit Timetable'}
                 </button>
               </div>
             </section>

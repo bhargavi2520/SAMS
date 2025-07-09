@@ -114,7 +114,6 @@ const createTimeTable = async (req, res) => {
     }
 
     const allTimeSlots = [];
-    const facultyTimeMap = new Map();
 
     for (let dayIndex = 0; dayIndex < timeTable.length; dayIndex++) {
       const day = dayMap[dayIndex];
@@ -140,48 +139,6 @@ const createTimeTable = async (req, res) => {
       for (const slot of slots) {
         const slotWithDay = { ...slot, day };
         allTimeSlots.push(slotWithDay);
-
-        const facultyKey = `${slot.faculty}_${day}`;
-        if (!facultyTimeMap.has(facultyKey)) {
-          facultyTimeMap.set(facultyKey, []);
-        }
-        facultyTimeMap.get(facultyKey).push({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          day,
-        });
-      }
-    }
-
-    const facultyIds = [...new Set(allTimeSlots.map((slot) => slot.faculty))];
-    const days = [...new Set(allTimeSlots.map((slot) => slot.day))];
-
-    const existingSchedules = await TimeTable.find({
-      class: { $ne: classId._id },
-      "timeSlots.faculty": { $in: facultyIds },
-      "timeSlots.day": { $in: days },
-    })
-      .select("timeSlots")
-      .lean();
-
-    for (const schedule of existingSchedules) {
-      for (const existingSlot of schedule.timeSlots) {
-        const facultyKey = `${existingSlot.faculty}_${existingSlot.day}`;
-        const newSlots = facultyTimeMap.get(facultyKey);
-
-        if (newSlots) {
-          for (const newSlot of newSlots) {
-            if (
-              existingSlot.startTime < newSlot.endTime &&
-              existingSlot.endTime > newSlot.startTime
-            ) {
-              return res.status(400).json({
-                success: false,
-                message: `Faculty is already assigned to another class on ${existingSlot.day} at overlapping time (${newSlot.startTime} - ${newSlot.endTime})`,
-              });
-            }
-          }
-        }
       }
     }
 
@@ -216,24 +173,119 @@ const createTimeTable = async (req, res) => {
 /**
  * Check if a timetable exists for a class
  * GET /userData/checkTimetable?department=...&year=...&section=...
+ * return subject to corresponding class
  */
 const checkTimetableExists = async (req, res) => {
   const { department, year, section } = req.query;
   try {
     const classDoc = await classInfo
       .findOne({ department, year, section })
-      .select("_id");
+      .select("_id")
+      .lean();
     if (!classDoc) {
       return res
         .status(404)
         .json({ exists: false, message: "Class not found" });
     }
-    const timetable = await TimeTable.findOne({ class: classDoc._id });
-    if (timetable) {
-      return res.status(200).json({ exists: true, timetable });
-    } else {
-      return res.status(200).json({ exists: false });
+    const subjectsInfo = await classInfo.aggregate([
+      {
+        $match: {
+          _id: classDoc._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "subjects",
+          localField: "subjects.subject",
+          foreignField: "_id",
+          as: "subjects_info",
+        },
+      },
+      {
+        $unwind: {
+          path: "$subjects_info",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          subjects_info: {
+            $ne: null,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "assignedsubjects",
+          localField: "subjects_info._id",
+          foreignField: "subject",
+          as: "subject_faculty",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "subject_faculty.faculty",
+          foreignField: "_id",
+          as: "facultyInfo",
+        },
+      },
+      {
+        $unwind: {
+          path: "$facultyInfo",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          faculty_name: {
+            $cond: [
+              {
+                $and: [
+                  {
+                    $ifNull: ["$facultyInfo.firstName", false],
+                  },
+                  {
+                    $ifNull: ["$facultyInfo.lastName", false],
+                  },
+                ],
+              },
+              {
+                $concat: [
+                  "$facultyInfo.firstName",
+                  " ",
+                  "$facultyInfo.lastName",
+                ],
+              },
+              "Unassigned",
+            ],
+          },
+          faculty_id: "$facultyInfo._id",
+          subject_name: "$subjects_info.name",
+          subject_id: "$subjects_info._id",
+        },
+      },
+    ]);
+    if (!subjectsInfo || subjectsInfo.length === 0) {
+      return res.status(404).json({
+        exists: false,
+        message: "No subjects found for this class",
+      });
     }
+    const timetable = await TimeTable.findOne({ class: classDoc._id })
+      .select("-_id")
+      .lean();
+
+    let isExist = false;
+    if (timetable) isExist = true;
+
+    return res.status(200).json({
+      exists: isExist,
+      subjects: subjectsInfo,
+      ...(timetable && { timetable }),
+    });
+
   } catch (err) {
     console.error("Error checking timetable existence:", err);
     return res
@@ -266,7 +318,7 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
       if (req.query.years) {
         years = req.query.years.split(",").map(Number);
       } else {
-        years = [1, 2, 3, 4]; 
+        years = [1, 2, 3, 4];
       }
     } else {
       const assignedDepartment = await departmentAssignment
