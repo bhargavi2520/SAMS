@@ -12,6 +12,7 @@ const addSubjectValidation = (req, res, next) => {
     department: joi.string().required(),
     year: joi.number().required(),
     semester: joi.number().required(),
+    batch : joi.string().required(),
   });
   const { error } = schema.validate(req.body);
 

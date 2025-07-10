@@ -225,7 +225,9 @@ const HODDashboard = ({ isHOD = true }) => {
   const fetchAssignments = async () => {
     try {
       setLoadingAssignments(true);
-      const response = await apiClient.get("/userData/assignedSubjectsAndFaculties")
+      const response = await apiClient.get(
+        "/userData/assignedSubjectsAndFaculties"
+      );
       if (response.data.success) {
         setAssignments(response.data.assignedSubjects);
       } else {
@@ -245,12 +247,10 @@ const HODDashboard = ({ isHOD = true }) => {
     } finally {
       setLoadingAssignments(false);
     }
-  }
+  };
   useEffect(() => {
     fetchAssignments();
-  }, [])
-
-
+  }, []);
 
   // Mock data for dropdowns
   const facultyList = [
@@ -900,9 +900,9 @@ const HODDashboard = ({ isHOD = true }) => {
       prev.map((act, i) =>
         i === idx
           ? {
-            ...act,
-            status: act.status === "pending" ? "completed" : "pending",
-          }
+              ...act,
+              status: act.status === "pending" ? "completed" : "pending",
+            }
           : act
       )
     );
@@ -944,7 +944,9 @@ const HODDashboard = ({ isHOD = true }) => {
     if (subjects.length > 0) return;
     if (selectedYear && selectedSemester) {
       const res = await apiClient.get(
-        `/subjectData/subjects?department=CSE&year=${Number(selectedAssignmentYear)}&semester=${Number(selectedSemester)}`
+        `/subjectData/subjects?department=CSE&year=${Number(
+          selectedAssignmentYear
+        )}&semester=${Number(selectedSemester)}`
       );
       setSubjects(res.data.subjects);
     }
@@ -963,7 +965,10 @@ const HODDashboard = ({ isHOD = true }) => {
         toast({ title: "Subject assigned successfully", variant: "default" });
         fetchAssignments();
       } else {
-        toast({ title: res.data.message || "Assignment failed", variant: "destructive" });
+        toast({
+          title: res.data.message || "Assignment failed",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({
@@ -976,6 +981,19 @@ const HODDashboard = ({ isHOD = true }) => {
       });
     }
   };
+// add subject 
+
+const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [newSubjectCode, setNewSubjectCode] = useState("");
+  const [newSubjectYear, setNewSubjectYear] = useState("");
+  const [newSubjectSemester, setNewSubjectSemester] = useState("");
+
+
+
+
+
+
 
   return (
     <div className="w-4/4 mx-auto sm:w-full sm:max-w-7xl py-6 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900 min-h-screen transition-colors flex">
@@ -1030,7 +1048,7 @@ const HODDashboard = ({ isHOD = true }) => {
                   </div>
                   <div className="mt-4">
                     <Button
-                      onClick={() => navigate('/profile')}
+                      onClick={() => navigate("/profile")}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
                     >
                       View Profile
@@ -1446,7 +1464,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     <BookOpen className="w-5 h-5" /> Subject Assignments
                   </h3>
                   <Button
-                    onClick={() => setShowAssignmentForm(true)}
+                    onClick={() => setShowAssignmentForm(!showAssignmentForm)}
                     className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
                   >
                     Assign Teacher
@@ -1622,7 +1640,6 @@ const HODDashboard = ({ isHOD = true }) => {
                       <Loader2 className="w-6 h-6 animate-spin" />
                     </div>
                   ) : (
-
                     <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                       <thead className="bg-gray-100 dark:bg-neutral-800">
                         <tr>
@@ -1730,6 +1747,211 @@ const HODDashboard = ({ isHOD = true }) => {
                                   className="hover:bg-red-100 dark:hover:bg-red-900 border-red-300 dark:border-red-600 text-red-700 dark:text-red-200"
                                 >
                                   Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/*Subjects section*/}
+          <section
+            ref={teacherAssignmentRef}
+            id="teacher-assignment"
+            className="scroll-mt-24 space-y-6"
+          >
+            <Card className="bg-white dark:bg-neutral-800">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" /> Subjects
+                  </h3>
+                  <Button
+                    onClick={() => setShowAddSubjectForm(!showAddSubjectForm)}
+                    className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                  >
+                    New Subject
+                  </Button>
+                </div>
+
+                {/* Assignment Form */}
+                {showAddSubjectForm && (
+                  <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-6 border border-primary/30">
+                    <h4 className="text-base font-semibold mb-4">
+                      New Subject
+                    </h4>
+                    <form
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    >
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                          Subject Code
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          placeholder="Enter Subject Code"
+                          value = {newSubjectCode}
+                          onChange={(e) => setNewSubjectCode(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                          Subject
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          placeholder="Enter Subject Name"
+                          value={newSubjectName}
+                          onChange={(e) => setNewSubjectName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                          Year
+                        </label>
+                        <select
+                          value={newSubjectYear}
+                          onChange={(e) =>
+                            setNewSubjectYear(e.target.value)
+                          }
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          required
+                        >
+                          <option value="">Select Year</option>
+                          {yearsList.map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                          Semester
+                        </label>
+                        <select
+                          value={newSubjectSemester}
+                          onChange={(e) => setNewSubjectSemester(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          required
+                        >
+                          <option value="">Select Semester</option>
+                          {semesterList.map((semester) => (
+                            <option key={semester} value={semester}>
+                              {semester}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="md:col-span-2 lg:col-span-3 flex gap-2 justify-end">
+                        <Button
+                          type="submit"
+                          onClick={handleAssign}
+                          className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                        >
+                          Add Subject
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Subjects Table */}
+                <div className="overflow-x-auto">
+                  {loadingAssignments ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    </div>
+                  ) : (
+                    <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                      <thead className="bg-gray-100 dark:bg-neutral-800">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Subject Code
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Subject
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Year
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Semester
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-left font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Added Date
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-2 sm:px-4 sm:py-3 text-center font-bold text-primary text-xs sm:text-sm"
+                          >
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                        {assignments.map((assignment) => (
+                          <tr
+                            key={assignment.id}
+                            className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                          >
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.faculty_name}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.subject_name}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.year}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.semester}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                              {assignment.assignment_date.split("T")[0]}
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-center">
+                              <div className="flex gap-2 justify-center">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  // onClick={() => handleEditAssignment(assignment)}
+                                  className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
+                                >
+                                  Edit
                                 </Button>
                               </div>
                             </td>
