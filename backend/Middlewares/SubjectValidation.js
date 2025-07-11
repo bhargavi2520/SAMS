@@ -12,7 +12,6 @@ const addSubjectValidation = (req, res, next) => {
     department: joi.string().required(),
     year: joi.number().required(),
     semester: joi.number().required(),
-    batch : joi.string().required(),
   });
   const { error } = schema.validate(req.body);
 
@@ -50,9 +49,9 @@ const assignSubjectValidation = (req, res, next) => {
  */
 const getSubjectsValidation = (req, res, next) => {
   const schema = joi.object({
-    department: joi.string().required(),
-    year: joi.number().required(),
-    semester: joi.number().required(),
+    department: joi.string(),
+    year: joi.number(),
+    semester: joi.number(),
   });
   const { error } = schema.validate(req.query, { convert: true });
 

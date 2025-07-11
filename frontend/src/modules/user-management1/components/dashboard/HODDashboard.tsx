@@ -981,17 +981,32 @@ const HODDashboard = ({ isHOD = true }) => {
       });
     }
   };
-// add subject 
+  // add subject
 
-const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
+  const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newSubjectCode, setNewSubjectCode] = useState("");
   const [newSubjectYear, setNewSubjectYear] = useState("");
   const [newSubjectSemester, setNewSubjectSemester] = useState("");
 
+  const [subjectsInfo,setSubjectsInfo] = useState([]);
+
+  useEffect(()=>{
+    const fetchSubjectDetails = async ()=>{
+      const response = await apiClient.get("/subjectData/subjects?year=4");
+      if(response.data.success){
+        setSubjectsInfo(response.data.subjects);
+      }
+    }
+
+    fetchSubjectDetails();
+  },[]);
 
 
 
+  const handleNewSubject = async()=>{
+    
+  }
 
 
 
@@ -1786,9 +1801,7 @@ const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
                     <h4 className="text-base font-semibold mb-4">
                       New Subject
                     </h4>
-                    <form
-                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                    >
+                    <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Subject Code
@@ -1797,7 +1810,7 @@ const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
                           type="text"
                           className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           placeholder="Enter Subject Code"
-                          value = {newSubjectCode}
+                          value={newSubjectCode}
                           onChange={(e) => setNewSubjectCode(e.target.value)}
                         />
                       </div>
@@ -1820,9 +1833,7 @@ const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
                         </label>
                         <select
                           value={newSubjectYear}
-                          onChange={(e) =>
-                            setNewSubjectYear(e.target.value)
-                          }
+                          onChange={(e) => setNewSubjectYear(e.target.value)}
                           className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
@@ -1841,7 +1852,9 @@ const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
                         </label>
                         <select
                           value={newSubjectSemester}
-                          onChange={(e) => setNewSubjectSemester(e.target.value)}
+                          onChange={(e) =>
+                            setNewSubjectSemester(e.target.value)
+                          }
                           className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
@@ -1857,8 +1870,9 @@ const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
                       <div className="md:col-span-2 lg:col-span-3 flex gap-2 justify-end">
                         <Button
                           type="submit"
-                          onClick={handleAssign}
+                          onClick={handleNewSubject}
                           className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                          disabled={!newSubjectCode || !newSubjectName || !newSubjectYear || !newSubjectSemester}
                         >
                           Add Subject
                         </Button>
@@ -1923,25 +1937,25 @@ const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
-                        {assignments.map((assignment) => (
+                        {subjectsInfo.map((subject) => (
                           <tr
-                            key={assignment.id}
+                            key={subject.id}
                             className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
                           >
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {assignment.faculty_name}
+                              {subject.code}
                             </td>
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {assignment.subject_name}
+                              {subject.name}
                             </td>
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {assignment.year}
+                              {subject.year}
                             </td>
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {assignment.semester}
+                              {subject.semester}
                             </td>
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {assignment.assignment_date.split("T")[0]}
+                              {subject.createdAt.split("T")[0]}
                             </td>
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-center">
                               <div className="flex gap-2 justify-center">

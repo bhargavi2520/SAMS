@@ -20,7 +20,6 @@ SubjectRouter.get("/", (req, res) => {
 SubjectRouter.get(
   "/subjects",
   ensureAuthenticated([]),
-  getSubjectsValidation,
   getSubjectsbyCriteria
 );
 
