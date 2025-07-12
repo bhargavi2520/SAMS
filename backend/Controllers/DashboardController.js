@@ -4,6 +4,7 @@ const classInfo = require("../Models/Class");
 const TimeTable = require("../Models/TimeTable");
 const { User } = require("../Models/User");
 const Subject = require("../Models/Subject.js");
+const departmentAssignment = require("../Models/AssignedDepartments.js");
 /**
  * student dashboard function
  * currently returns time table and the subject, faculty info and student attendance for each subject
@@ -220,7 +221,53 @@ const getFacultyDashboard = async (req, res) => {
     });
   }
 };
+
+
+
+/**
+ * hod dashboard function
+ * returns department and year assigned to hod
+ * and return hod details.
+ */
+
+const getHodDashboard = async(req,res)=>{
+  const userId = req.user.id;
+  try{
+    const user = User.findById(userId).select("-password -_id -__v").lean();
+    if(!user){
+      return res.status(404).json({
+        message : "User not found",
+        success : false,
+      });
+    }
+    const assigned = await departmentAssignment.findOne({hod : userId}).lean();
+    if(!assigned){
+      return res.status(204).json({
+        message : "No department is assigned to You",
+        success : true,
+        department : "",
+        years : [],
+      })
+    }
+    const {departmentYears , department} = assigned;
+    return res.status(200).json({
+      message : "Dashboard fetched successfully",
+      success : true,
+      department,
+      years : departmentYears,
+    })
+  }catch(err){
+    console.log("error in hod dashboard : ",err);
+    return res.status(500).json({
+      message : "Service unavailable right now",
+      success : false,
+    })
+  }
+}
+
+
 module.exports = {
   getStudentDashboard,
   getFacultyDashboard,
+  getHodDashboard,
 };

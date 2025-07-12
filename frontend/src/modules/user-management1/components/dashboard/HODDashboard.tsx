@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import apiClient from "@/api";
 import { toast } from "@/common/hooks/use-toast";
+import { addYears, setYear } from "date-fns";
 
 // Mock Data
 const summaryCards = [
@@ -219,6 +220,10 @@ const HODDashboard = ({ isHOD = true }) => {
   const [assignments, setAssignments] = useState([]);
   const [loadingAssignments, setLoadingAssignments] = useState(false);
 
+
+  const [dashboardLoaded,setDashboardLoaded] = useState(false);
+  const [department,setDepartment] = useState("");
+  const [error, setError] = useState(null);
   /**
    * use effect for fetching assignments
    */
@@ -249,8 +254,27 @@ const HODDashboard = ({ isHOD = true }) => {
     }
   };
   useEffect(() => {
+    if(!dashboardLoaded) return;
     fetchAssignments();
-  }, []);
+  }, [dashboardLoaded]);
+
+const [loading,setLoading] = useState(false);
+  useEffect(()=>{
+    setLoading(true);
+    const fetchDashboard = async()=>{
+      const response = await apiClient.get("/dashboard/hod");
+      const data = response.data;
+      setYearsList(data.years);
+      setDepartment(data.department);
+      if(data.department != "" && data.years.length != 0){
+        setDashboardLoaded(true);
+      }else{
+        setError(data.message || "You are not authorized.")
+      }
+    }
+    fetchDashboard();
+    setLoading(false);
+  },[]);
 
   // Mock data for dropdowns
   const facultyList = [
@@ -275,7 +299,7 @@ const HODDashboard = ({ isHOD = true }) => {
 
   const semesterList = ["1", "2", "3", "4", "5", "6", "7", "8"];
   const sectionsList = ["1", "2", "3"];
-  const yearsList = ["1", "2", "3", "4"];
+  const [yearsList,setYearsList] = useState([]); 
 
   const handleAnnouncementSubmit = (e) => {
     e.preventDefault();
@@ -830,6 +854,7 @@ const HODDashboard = ({ isHOD = true }) => {
 
   // Update active section on scroll
   useEffect(() => {
+    if(!dashboardLoaded) return ;
     const handleScroll = () => {
       const sections = [
         { section: "dashboard", ref: dashboardRef },
@@ -855,7 +880,7 @@ const HODDashboard = ({ isHOD = true }) => {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [dashboardLoaded]);
 
   // Teacher Assignment Handlers
   const handleAssignmentSubmit = (e) => {
@@ -989,27 +1014,53 @@ const HODDashboard = ({ isHOD = true }) => {
   const [newSubjectYear, setNewSubjectYear] = useState("");
   const [newSubjectSemester, setNewSubjectSemester] = useState("");
 
-  const [subjectsInfo,setSubjectsInfo] = useState([]);
+  const [subjectsInfo, setSubjectsInfo] = useState([]);
+  const [subjectSelectedYear, setSubjectSelectedYear] = useState(1);
 
-  useEffect(()=>{
-    const fetchSubjectDetails = async ()=>{
-      const response = await apiClient.get("/subjectData/subjects?year=4");
-      if(response.data.success){
+  useEffect(() => {
+    if(!dashboardLoaded) return;
+    const fetchSubjectDetails = async () => {
+      const response = await apiClient.get(
+        `/subjectData/subjects?year=${subjectSelectedYear}`
+      );
+      if (response.data.success) {
         setSubjectsInfo(response.data.subjects);
       }
-    }
+    };
 
     fetchSubjectDetails();
-  },[]);
-
-
-
-  const handleNewSubject = async()=>{
-    
+  }, [subjectSelectedYear,dashboardLoaded]);
+  
+  const handleNewSubject = async () => {};
+  if(loading) return <div>Loading...</div>
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
+          <svg
+            className="w-16 h-16 text-red-400 mb-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
+            />
+          </svg>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800">{error || "You are not assigned to any department"}</h2>
+          <button
+            className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
+            onClick={() => window.open("mailto:support@college.edu")}
+          >
+            Contact Support ?
+          </button>
+        </div>
+      </div>
+    );
   }
-
-
-
   return (
     <div className="w-4/4 mx-auto sm:w-full sm:max-w-7xl py-6 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900 min-h-screen transition-colors flex">
       <DashboardNav
@@ -1787,12 +1838,32 @@ const HODDashboard = ({ isHOD = true }) => {
                   <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
                     <BookOpen className="w-5 h-5" /> Subjects
                   </h3>
-                  <Button
-                    onClick={() => setShowAddSubjectForm(!showAddSubjectForm)}
-                    className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
-                  >
-                    New Subject
-                  </Button>
+                  <div>
+                    <select
+                      id="year-select"
+                      className="mr-2 border border-gray-300 dark:border-neutral-600 rounded px-2 py-1 text-xs sm:text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                      value={subjectSelectedYear}
+                      onChange={(e) =>
+                        setSubjectSelectedYear(Number(e.target.value))
+                      }
+                    >
+                      {yearOptions.map((year) => (
+                        <option
+                          key={year}
+                          value={year}
+                          className="text-xs sm:text-sm"
+                        >
+                          {year} Year
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      onClick={() => setShowAddSubjectForm(!showAddSubjectForm)}
+                      className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                    >
+                      New Subject
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Assignment Form */}
@@ -1872,7 +1943,12 @@ const HODDashboard = ({ isHOD = true }) => {
                           type="submit"
                           onClick={handleNewSubject}
                           className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
-                          disabled={!newSubjectCode || !newSubjectName || !newSubjectYear || !newSubjectSemester}
+                          disabled={
+                            !newSubjectCode ||
+                            !newSubjectName ||
+                            !newSubjectYear ||
+                            !newSubjectSemester
+                          }
                         >
                           Add Subject
                         </Button>
@@ -1937,40 +2013,51 @@ const HODDashboard = ({ isHOD = true }) => {
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
-                        {subjectsInfo.map((subject) => (
-                          <tr
-                            key={subject.id}
-                            className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
-                          >
-                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {subject.code}
-                            </td>
-                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {subject.name}
-                            </td>
-                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {subject.year}
-                            </td>
-                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {subject.semester}
-                            </td>
-                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
-                              {subject.createdAt.split("T")[0]}
-                            </td>
-                            <td className="px-3 py-2 sm:px-4 sm:py-3 text-center">
-                              <div className="flex gap-2 justify-center">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  // onClick={() => handleEditAssignment(assignment)}
-                                  className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
-                                >
-                                  Edit
-                                </Button>
-                              </div>
+                        {subjectsInfo.length > 0 ? (
+                          subjectsInfo.map((subject) => (
+                            <tr
+                              key={subject.id}
+                              className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                            >
+                              <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                                {subject.code}
+                              </td>
+                              <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                                {subject.name}
+                              </td>
+                              <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                                {subject.year}
+                              </td>
+                              <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                                {subject.semester}
+                              </td>
+                              <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                                {subject.createdAt.split("T")[0]}
+                              </td>
+                              <td className="px-3 py-2 sm:px-4 sm:py-3 text-center">
+                                <div className="flex gap-2 justify-center">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    // onClick={() => handleEditAssignment(assignment)}
+                                    className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
+                                  >
+                                    Edit
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">
+                            <td
+                              colSpan={6}
+                              className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100 text-center"
+                            >
+                              No subjects found for the selected year.
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </Table>
                   )}
