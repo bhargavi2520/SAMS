@@ -1,15 +1,15 @@
 // frontend/src/api/index.ts
 import axios from "axios";
-import { apiConfig } from "../config/api.config"; 
+import { apiConfig } from "../config/api.config";
 import { toast } from "../common/components/ui/use-toast";
 
 const apiClient = axios.create({
   baseURL: apiConfig.baseURL,
-  headers: apiConfig.headers, 
+  headers: apiConfig.headers,
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("authToken"); 
+  const token = localStorage.getItem("authToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -37,6 +37,14 @@ apiClient.interceptors.response.use(
         description: "Something went wrong on our end. Please try again later.",
         variant: "destructive",
       });
+    } else if (error.response && error.response.status === 401) {
+      toast({
+        title: "Login Expired",
+        description: "Your session has expired. Please login again.",
+        variant: "destructive",
+      });
+      localStorage.removeItem("authToken");
+      window.location.href = "/login";
     } else if (
       error.response &&
       error.response.status >= 400 &&

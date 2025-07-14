@@ -38,7 +38,16 @@ const markAttendanceValidation = (req, res, next) => {
   });
 
   const studentsAttendanceSchema = joi.object({
-    date: joi.string().required(),
+    date: joi.string().required().custom((value, helpers) => {
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0]; 
+
+      if (value !== todayStr) {
+        return helpers.message("`date` must be today's date (YYYY-MM-DD)");
+      }
+
+      return value;
+    }, "Validate date is today"),
     students: joi.array().items(studentSchema).min(1).required(),
   });
 

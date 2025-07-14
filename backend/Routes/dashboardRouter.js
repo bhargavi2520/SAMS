@@ -5,22 +5,27 @@ const {
   getFacultyDashboard,
   getHodDashboard,
 } = require("../Controllers/DashboardController");
+const tokenRefresher = require("../Models/TokenRefresher");
 const DashboardRouter = express.Router();
 
 DashboardRouter.get(
   "/student",
   ensureAuthenticated(["STUDENT"]),
+  tokenRefresher,
   getStudentDashboard
 );
 
 DashboardRouter.get(
   "/faculty",
   ensureAuthenticated(["FACULTY"]),
+  tokenRefresher,
   getFacultyDashboard
 );
 
-DashboardRouter.get("/hod",
+DashboardRouter.get(
+  "/hod",
   ensureAuthenticated(["HOD"]),
+  tokenRefresher,
   getHodDashboard
 );
 

@@ -271,6 +271,8 @@ const FacultyDashboard = () => {
       .then((res) => {
         setFacultyData(res.data.data || []);
         setLoading(false);
+        const newToken = res.headers['refreshedtoken'];
+        localStorage.setItem("authToken",newToken);
       })
       .catch((err) => {
         setLoading(false);
@@ -385,7 +387,7 @@ const FacultyDashboard = () => {
             }))
           );
           setAttendanceEditable(false);
-        } else {
+        } else if(isToday(attendanceDate)) {
           // No attendance found for this date, initialize with students
           setAttendance(
             (studentsForSelectedClass || []).map((s) => ({
@@ -396,24 +398,14 @@ const FacultyDashboard = () => {
             }))
           );
           setAttendanceEditable(true);
-        }
-      } catch (err) {
-        console.error("Error fetching attendance:", err);
-        // If there's an error, initialize with students for today's date
-        if (isToday(attendanceDate)) {
-          setAttendance(
-            (studentsForSelectedClass || []).map((s) => ({
-              id: s.id,
-              name: s.name,
-              rollNumber: s.rollNumber,
-              present: false,
-            }))
-          );
-          setAttendanceEditable(true);
-        } else {
+        }else{
           setAttendance([]);
           setAttendanceEditable(false);
         }
+      } catch (err) {
+        console.error("Error fetching attendance:", err);
+          setAttendance([]);
+          setAttendanceEditable(false);
       }
     };
 

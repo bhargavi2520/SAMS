@@ -123,7 +123,6 @@ const getStudentDashboard = async (req, res) => {
 
 const getFacultyDashboard = async (req, res) => {
   const facultyId = req.user.id;
-
   try {
     const assignedSubjects = await AssignedSubject.find({
       faculty: facultyId,

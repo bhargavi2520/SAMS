@@ -264,6 +264,8 @@ const [loading,setLoading] = useState(false);
     const fetchDashboard = async()=>{
       const response = await apiClient.get("/dashboard/hod");
       const data = response.data;
+      const newToken = response.headers['refreshedtoken'];
+      localStorage.setItem("authToken",newToken);
       setYearsList(data.years);
       setDepartment(data.department);
       if(data.department != "" && data.years.length != 0){

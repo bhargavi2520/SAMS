@@ -804,9 +804,9 @@ const StudentDashboard = () => {
   // Build recipient options: College + all teachers from subjectsFaculty with subject names
   const feedbackRecipients = [
     { label: "College", value: "College" },
-    ...subjectsFaculty.map((s) => ({ 
-      label: `${s.faculty} (${s.subjectName})`, 
-      value: `${s.faculty} (${s.subjectName})` 
+    ...subjectsFaculty.map((s) => ({
+      label: `${s.faculty} (${s.subjectName})`,
+      value: `${s.faculty} (${s.subjectName})`,
     })),
   ];
 
@@ -839,6 +839,8 @@ const StudentDashboard = () => {
         const res = await apiClient.get("/dashboard/student");
         if (res.data && res.data.success) {
           setDashboardData(res.data.data);
+          const newToken = res.headers["refreshedtoken"];
+          localStorage.setItem("authToken", newToken);
         } else {
           setError(res.data?.message || "Failed to fetch dashboard data");
         }
@@ -932,8 +934,8 @@ const StudentDashboard = () => {
                     </div>
                   </div>
                   <div className="mt-4 md:mt-6">
-                    <Button 
-                      onClick={() => navigate('/profile')}
+                    <Button
+                      onClick={() => navigate("/profile")}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
                     >
                       View Full Profile
@@ -1075,9 +1077,7 @@ const StudentDashboard = () => {
                             </h4>
                             <p className="text-xs md:text-sm text-gray-600">
                               Issued on:{" "}
-                              {dayjs(certificate.date).format(
-                                "DD MMMM YYYY"
-                              )}
+                              {dayjs(certificate.date).format("DD MMMM YYYY")}
                             </p>
                           </div>
                         </div>
@@ -1098,7 +1098,9 @@ const StudentDashboard = () => {
           <div ref={examsRef} className="pt-4 md:pt-8">
             <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
               <CardHeader>
-                <CardTitle className="text-base md:text-lg">Exams & Performance</CardTitle>
+                <CardTitle className="text-base md:text-lg">
+                  Exams & Performance
+                </CardTitle>
                 <CardDescription className="text-xs md:text-sm">
                   Exam results and academic performance overview
                 </CardDescription>
@@ -1106,7 +1108,9 @@ const StudentDashboard = () => {
               <CardContent className="space-y-6">
                 {/* Mid Exams Marks Section */}
                 <div>
-                  <h4 className="text-md md:text-lg font-semibold mb-3">Mid Exams Marks (Current Semester)</h4>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">
+                    Mid Exams Marks (Current Semester)
+                  </h4>
                   <div className="overflow-x-auto">
                     <table className="min-w-full text-xs md:text-sm border border-gray-200 rounded-lg">
                       <thead>
@@ -1155,7 +1159,9 @@ const StudentDashboard = () => {
 
                 {/* Performance Overview */}
                 <div className="border-t pt-6">
-                  <h4 className="text-md md:text-lg font-semibold mb-3">Performance Overview</h4>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">
+                    Performance Overview
+                  </h4>
                   <p className="text-gray-600 text-sm mb-4">
                     Your academic performance trends over time.
                   </p>
@@ -1166,7 +1172,9 @@ const StudentDashboard = () => {
 
                 {/* Mid Performance Bar Graph */}
                 <div className="border-t pt-6">
-                  <h4 className="text-md md:text-lg font-semibold mb-3">Mid Exams Performance</h4>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">
+                    Mid Exams Performance
+                  </h4>
                   <div className="h-64">
                     <Bar
                       data={midPerformanceChartData}
@@ -1177,7 +1185,9 @@ const StudentDashboard = () => {
 
                 {/* Announcements */}
                 <div className="border-t pt-6">
-                  <h4 className="text-md md:text-lg font-semibold mb-3">Exam Announcements</h4>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">
+                    Exam Announcements
+                  </h4>
                   <div className="space-y-3 md:space-y-4">
                     {announcements.map((announcement, index) => (
                       <div
@@ -1215,7 +1225,9 @@ const StudentDashboard = () => {
               <CardContent className="space-y-6">
                 {/* Timetable Section */}
                 <div>
-                  <h4 className="text-md md:text-lg font-semibold mb-3">Class Timetable</h4>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">
+                    Class Timetable
+                  </h4>
                   <div className="overflow-x-auto">
                     {timetableSlots.length === 0 ? (
                       <div className="text-center text-gray-500 py-8">
@@ -1276,7 +1288,9 @@ const StudentDashboard = () => {
 
                 {/* Subjects Faculty Section */}
                 <div className="border-t pt-6">
-                  <h4 className="text-md md:text-lg font-semibold mb-3">Subjects & Faculty Information</h4>
+                  <h4 className="text-md md:text-lg font-semibold mb-3">
+                    Subjects & Faculty Information
+                  </h4>
                   <p className="text-gray-600 text-sm mb-4">
                     Details about your subjects and their respective faculty.
                   </p>
