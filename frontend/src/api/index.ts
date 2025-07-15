@@ -37,14 +37,6 @@ apiClient.interceptors.response.use(
         description: "Something went wrong on our end. Please try again later.",
         variant: "destructive",
       });
-    } else if (error.response && error.response.status === 401) {
-      toast({
-        title: "Login Expired",
-        description: "Your session has expired. Please login again.",
-        variant: "destructive",
-      });
-      localStorage.removeItem("authToken");
-      window.location.href = "/login";
     } else if (
       error.response &&
       error.response.status >= 400 &&

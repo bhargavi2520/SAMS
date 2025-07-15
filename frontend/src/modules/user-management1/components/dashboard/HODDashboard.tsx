@@ -220,9 +220,8 @@ const HODDashboard = ({ isHOD = true }) => {
   const [assignments, setAssignments] = useState([]);
   const [loadingAssignments, setLoadingAssignments] = useState(false);
 
-
-  const [dashboardLoaded,setDashboardLoaded] = useState(false);
-  const [department,setDepartment] = useState("");
+  const [dashboardLoaded, setDashboardLoaded] = useState(false);
+  const [department, setDepartment] = useState("");
   const [error, setError] = useState(null);
   /**
    * use effect for fetching assignments
@@ -254,29 +253,29 @@ const HODDashboard = ({ isHOD = true }) => {
     }
   };
   useEffect(() => {
-    if(!dashboardLoaded) return;
+    if (!dashboardLoaded) return;
     fetchAssignments();
   }, [dashboardLoaded]);
 
-const [loading,setLoading] = useState(false);
-  useEffect(()=>{
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
     setLoading(true);
-    const fetchDashboard = async()=>{
+    const fetchDashboard = async () => {
       const response = await apiClient.get("/dashboard/hod");
       const data = response.data;
-      const newToken = response.headers['refreshedtoken'];
-      localStorage.setItem("authToken",newToken);
+      const newToken = response.headers["refreshedtoken"];
+      localStorage.setItem("authToken", newToken);
       setYearsList(data.years);
       setDepartment(data.department);
-      if(data.department != "" && data.years.length != 0){
+      if (data.department != "" && data.years.length != 0) {
         setDashboardLoaded(true);
-      }else{
-        setError(data.message || "You are not authorized.")
+      } else {
+        setError(data.message || "You are not authorized.");
       }
-    }
+    };
     fetchDashboard();
     setLoading(false);
-  },[]);
+  }, []);
 
   // Mock data for dropdowns
   const facultyList = [
@@ -301,7 +300,7 @@ const [loading,setLoading] = useState(false);
 
   const semesterList = ["1", "2", "3", "4", "5", "6", "7", "8"];
   const sectionsList = ["1", "2", "3"];
-  const [yearsList,setYearsList] = useState([]); 
+  const [yearsList, setYearsList] = useState([]);
 
   const handleAnnouncementSubmit = (e) => {
     e.preventDefault();
@@ -856,7 +855,7 @@ const [loading,setLoading] = useState(false);
 
   // Update active section on scroll
   useEffect(() => {
-    if(!dashboardLoaded) return ;
+    if (!dashboardLoaded) return;
     const handleScroll = () => {
       const sections = [
         { section: "dashboard", ref: dashboardRef },
@@ -905,8 +904,15 @@ const [loading,setLoading] = useState(false);
     }
   };
 
-  const handleDeleteAssignment = (id) => {
-    setAssignments(assignments.filter((assignment) => assignment.id !== id));
+  const deleteAssignment = async (id: any) => {
+    const confirm = window.confirm("Proceed with deletion ?");
+    if (confirm) {
+      const response = await apiClient.delete(
+        `/subjectData/assignments/delete?assignmentId=${id}`
+      );
+      toast({ title: response.data.message, variant: "default" });
+      fetchAssignments();
+    }
   };
 
   const handleEditAssignment = (assignment) => {
@@ -968,7 +974,6 @@ const [loading,setLoading] = useState(false);
 
   // Fetch subjects after year & semester are selected and subject field is focused
   const handleSubjectFocus = async () => {
-    if (subjects.length > 0) return;
     if (selectedYear && selectedSemester) {
       const res = await apiClient.get(
         `/subjectData/subjects?department=CSE&year=${Number(
@@ -982,7 +987,7 @@ const [loading,setLoading] = useState(false);
   // Assign subject to faculty
   const handleAssign = async () => {
     try {
-      const res = await apiClient.post("/subjectData/assignSubject", {
+      const res = await apiClient.post("/subjectData/assignments/add", {
         subjectId: selectedSubject,
         facultyId: selectedFaculty,
         section: Number(selectedSection),
@@ -1008,6 +1013,7 @@ const [loading,setLoading] = useState(false);
       });
     }
   };
+
   // add subject
 
   const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
@@ -1020,7 +1026,7 @@ const [loading,setLoading] = useState(false);
   const [subjectSelectedYear, setSubjectSelectedYear] = useState(1);
 
   useEffect(() => {
-    if(!dashboardLoaded) return;
+    if (!dashboardLoaded) return;
     const fetchSubjectDetails = async () => {
       const response = await apiClient.get(
         `/subjectData/subjects?year=${subjectSelectedYear}`
@@ -1031,33 +1037,20 @@ const [loading,setLoading] = useState(false);
     };
 
     fetchSubjectDetails();
-  }, [subjectSelectedYear,dashboardLoaded]);
-  
+  }, [subjectSelectedYear, dashboardLoaded]);
+
   const handleNewSubject = async () => {};
-  if(loading) return <div>Loading...</div>
-  if (error) {
+  if (loading) return <div>Loading...</div>;
+   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
-          <svg
-            className="w-16 h-16 text-red-400 mb-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
-            />
-          </svg>
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">{error || "You are not assigned to any department"}</h2>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 font-semibold mb-2">{error}</div>
           <button
-            className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
-            onClick={() => window.open("mailto:support@college.edu")}
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Contact Support ?
+            Login Page
           </button>
         </div>
       </div>
@@ -1764,7 +1757,7 @@ const [loading,setLoading] = useState(false);
                       <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
                         {assignments.map((assignment) => (
                           <tr
-                            key={assignment.id}
+                            key={assignment.assignmentId}
                             className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
                           >
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
@@ -1809,9 +1802,9 @@ const [loading,setLoading] = useState(false);
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  // onClick={() =>
-                                  //   handleDeleteAssignment(assignment.id)
-                                  // }
+                                  onClick={() =>
+                                    deleteAssignment(assignment.assignmentId)
+                                  }
                                   className="hover:bg-red-100 dark:hover:bg-red-900 border-red-300 dark:border-red-600 text-red-700 dark:text-red-200"
                                 >
                                   Delete

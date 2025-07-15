@@ -396,6 +396,7 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
       {
         $project: {
           _id: 0,
+          assignmentId: "$assigned._id",
           faculty_name: {
             $concat: ["$faculty.firstName", " ", "$faculty.lastName"],
           },

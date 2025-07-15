@@ -166,8 +166,37 @@ const assignSubject = async (req, res) => {
   }
 };
 
+/**
+ * function for deleting subject assignment
+ * delete a subject assignment if exists
+ */
+
+const deleteSubjectAssignment = async (req, res) => {
+  const assignmentId = req.query.assignmentId;
+  try {
+    const assignment = await AssignedSubject.findByIdAndDelete(assignmentId);
+    if (assignment) {
+      return res.status(200).json({
+        success: true,
+        message: "Assignment Deleted",
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: "Assignment Not Found",
+      });
+    }
+  } catch (err) {
+    console.log("Assignment Deletion error", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server occurred",
+    });
+  }
+};
 module.exports = {
   getSubjectsbyCriteria,
   addSubject,
   assignSubject,
+  deleteSubjectAssignment
 };
