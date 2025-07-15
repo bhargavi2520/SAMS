@@ -8,6 +8,8 @@ import { Bar, Pie } from 'react-chartjs-2';
 import { Users, UserCheck, Activity, Database, LayoutDashboard, CalendarDays, Home, User, Settings, HelpCircle, BookOpen, Menu, Bell, ClipboardList, FileText, BarChart2, CheckSquare, Award, Megaphone } from 'lucide-react';
 import { useAuthStore } from '@/modules/user-management1/store/authStore';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/common/components/ui/carousel';
+import { authService } from '@/modules/user-management1/services/auth.service';
+import { UserRole, StudentProfile, FacultyProfile, AdminProfile, HODProfile } from '@/modules/user-management1/types/auth.types';
 
 // --- Mock Data ---
 const systemStats = [
@@ -111,6 +113,20 @@ const AdminDashboard = () => {
   const [selectedYear, setSelectedYear] = useState('1');
   const navigate = useNavigate();
   const authStore = useAuthStore();
+
+  // User Management State
+  const [userType, setUserType] = useState<UserRole>('STUDENT');
+  const [users, setUsers] = useState<(
+    StudentProfile | FacultyProfile | AdminProfile | HODProfile | { [key: string]: unknown }
+  )[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  useEffect(() => {
+    setLoadingUsers(true);
+    authService.fetchUsersByRole(userType)
+      .then(setUsers)
+      .finally(() => setLoadingUsers(false));
+  }, [userType]);
 
   const timetablesByBranch = useMemo(() => {
     const filtered = timetableTable.filter(row => row.year === selectedYear);
@@ -265,57 +281,62 @@ const AdminDashboard = () => {
         {/* User Management */}
         <section id="user-management" className="scroll-mt-24">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> User Management</h2>
-          
-          {/* Mobile View: Cards */}
-          <div className="md:hidden space-y-3">
-            {usersTable.map((user, idx) => (
-              <Card key={idx} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-bold">{user.name}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                    <p className="text-sm text-gray-500 capitalize">{user.role.toLowerCase()}</p>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.status}</span>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button variant="outline" size="sm" className="w-full">Edit</Button>
-                  <Button variant="destructive" size="sm" className="w-full">Delete</Button>
-                </div>
-              </Card>
-            ))}
+          <div className="mb-4 flex gap-2 items-center">
+            <label htmlFor="userType" className="font-semibold">User Type:</label>
+            <select
+              id="userType"
+              value={userType}
+              onChange={e => setUserType(e.target.value as UserRole)}
+              className="border rounded px-2 py-1"
+            >
+              <option value="STUDENT">Student</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="HOD">HOD</option>
+              <option value="ADMIN">Admin</option>
+            </select>
           </div>
-
-          {/* Desktop View: Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="py-2 px-3 text-left">Name</th>
-                  <th className="py-2 px-3 text-left">Email</th>
-                  <th className="py-2 px-3 text-left">Role</th>
-                  <th className="py-2 px-3 text-left">Status</th>
-                  <th className="py-2 px-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usersTable.map((user, idx) => (
-                  <tr key={idx} className="border-b last:border-b-0">
-                    <td className="py-2 px-3">{user.name}</td>
-                    <td className="py-2 px-3">{user.email}</td>
-                    <td className="py-2 px-3">{user.role}</td>
-                    <td className="py-2 px-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.status}</span>
-                    </td>
-                    <td className="py-2 px-3 flex gap-2">
-                      <button className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200" title="Edit"><span role="img" aria-label="Edit">✏️</span></button>
-                      <button className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200" title="Delete"><span role="img" aria-label="Delete">🗑️</span></button>
-                    </td>
+          {loadingUsers ? (
+            <div>Loading...</div>
+          ) : (
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-2 px-3 text-left">Name</th>
+                    <th className="py-2 px-3 text-left">Email</th>
+                    <th className="py-2 px-3 text-left">Role</th>
+                    <th className="py-2 px-3 text-left">Status</th>
+                    <th className="py-2 px-3 text-left">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {users.map((user, idx) => {
+                    // Type guards for user fields
+                    const name = (user as any).firstName && (user as any).lastName
+                      ? `${(user as any).firstName} ${(user as any).lastName}`
+                      : (user as any).name || '';
+                    const email = (user as any).email || '';
+                    const role = (user as any).role || userType;
+                    const status = (user as any).status || 'Active';
+                    return (
+                      <tr key={idx} className="border-b last:border-b-0">
+                        <td className="py-2 px-3">{name}</td>
+                        <td className="py-2 px-3">{email}</td>
+                        <td className="py-2 px-3">{role}</td>
+                        <td className="py-2 px-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{status}</span>
+                        </td>
+                        <td className="py-2 px-3 flex gap-2">
+                          <button className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200" title="Edit"><span role="img" aria-label="Edit">✏️</span></button>
+                          <button className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200" title="Delete"><span role="img" aria-label="Delete">🗑️</span></button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         {/* Timetable Management */}
