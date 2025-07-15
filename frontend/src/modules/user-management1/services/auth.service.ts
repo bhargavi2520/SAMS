@@ -78,6 +78,28 @@ class AuthService {
       throw new Error('Session expired or invalid.');
     }
   }
+
+  // Fetch users by role (student, faculty, hod, admin)
+  async fetchUsersByRole(role: string): Promise<any[]> {
+    let endpoint = '';
+    if (role === 'STUDENT') {
+      endpoint = '/data/students';
+    } else if (role === 'FACULTY') {
+      endpoint = '/data/faculties';
+    } else {
+      // fallback: try to fetch all users of a role (requires backend support)
+      endpoint = `/users?role=${role}`;
+    }
+    const response = await apiClient.get(endpoint);
+    if (role === 'STUDENT') {
+      return response.data.students || [];
+    } else if (role === 'FACULTY') {
+      // The backend returns facultyNames array
+      return response.data.facultyNames || [];
+    } else {
+      return response.data.users || [];
+    }
+  }
 }
 
 export const authService = new AuthService();
