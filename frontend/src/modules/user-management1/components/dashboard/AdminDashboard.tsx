@@ -10,6 +10,7 @@ import { useAuthStore } from '@/modules/user-management1/store/authStore';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/common/components/ui/carousel';
 import { authService } from '@/modules/user-management1/services/auth.service';
 import { UserRole, StudentProfile, FacultyProfile, AdminProfile, HODProfile } from '@/modules/user-management1/types/auth.types';
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/common/components/ui/dialog';
 
 // --- Mock Data ---
 const systemStats = [
@@ -120,6 +121,16 @@ const AdminDashboard = () => {
     StudentProfile | FacultyProfile | AdminProfile | HODProfile | { [key: string]: unknown }
   )[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  // Add state for student year, branch, section
+  const [studentYear, setStudentYear] = useState('1');
+  const [studentBranch, setStudentBranch] = useState('CSE');
+  const [studentSection, setStudentSection] = useState('A');
+
+  // Modal state
+  const [editUserModal, setEditUserModal] = useState<{ open: boolean; user: StudentProfile | FacultyProfile | AdminProfile | HODProfile | { [key: string]: unknown } | null }>({ open: false, user: null });
+  const [deleteUserModal, setDeleteUserModal] = useState<{ open: boolean; user: StudentProfile | FacultyProfile | AdminProfile | HODProfile | { [key: string]: unknown } | null }>({ open: false, user: null });
+  const [assignDeptModal, setAssignDeptModal] = useState<{ open: boolean; user: StudentProfile | FacultyProfile | AdminProfile | HODProfile | { [key: string]: unknown } | null }>({ open: false, user: null });
+  const [assignTeacherModal, setAssignTeacherModal] = useState<{ open: boolean; user: StudentProfile | FacultyProfile | AdminProfile | HODProfile | { [key: string]: unknown } | null }>({ open: false, user: null });
 
   useEffect(() => {
     setLoadingUsers(true);
@@ -140,7 +151,7 @@ const AdminDashboard = () => {
     }, {});
   }, [selectedYear]);
 
-  const branches = Object.keys(timetablesByBranch);
+  const branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
 
   const handleNavClick = (section) => {
     setActiveSection(section);
@@ -294,6 +305,34 @@ const AdminDashboard = () => {
               <option value="HOD">HOD</option>
               <option value="ADMIN">Admin</option>
             </select>
+            {/* Show year, branch, section if Student is selected */}
+            {userType === 'STUDENT' && (
+              <>
+                <label className="font-semibold ml-2">Year:</label>
+                <select value={studentYear} onChange={e => setStudentYear(e.target.value)} className="border rounded px-2 py-1">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+                <label className="font-semibold ml-2">Branch:</label>
+                <select value={studentBranch} onChange={e => setStudentBranch(e.target.value)} className="border rounded px-2 py-1">
+                  <option value="CSE">CSE</option>
+                  <option value="ECE">ECE</option>
+                  <option value="EEE">EEE</option>
+                  <option value="MECH">MECH</option>
+                  <option value="CSD">CSD</option>
+                  <option value="CSM">CSM</option>
+                </select>
+                <label className="font-semibold ml-2">Section:</label>
+                <select value={studentSection} onChange={e => setStudentSection(e.target.value)} className="border rounded px-2 py-1">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  {/* Add more sections as needed */}
+                </select>
+              </>
+            )}
           </div>
           {loadingUsers ? (
             <div>Loading...</div>
@@ -312,12 +351,15 @@ const AdminDashboard = () => {
                 <tbody>
                   {users.map((user, idx) => {
                     // Type guards for user fields
-                    const name = (user as any).firstName && (user as any).lastName
-                      ? `${(user as any).firstName} ${(user as any).lastName}`
-                      : (user as any).name || '';
-                    const email = (user as any).email || '';
-                    const role = (user as any).role || userType;
-                    const status = (user as any).status || 'Active';
+                    const name =
+                      'firstName' in user && 'lastName' in user
+                        ? `${(user as StudentProfile | FacultyProfile | HODProfile).firstName} ${(user as StudentProfile | FacultyProfile | HODProfile).lastName}`
+                        : 'name' in user
+                          ? (user as { name: string }).name
+                          : '';
+                    const email = 'email' in user ? (user.email as string) : '';
+                    const role = 'role' in user ? (user.role as string) : userType;
+                    const status = 'status' in user ? (user.status as string) : 'Active';
                     return (
                       <tr key={idx} className="border-b last:border-b-0">
                         <td className="py-2 px-3">{name}</td>
@@ -327,8 +369,14 @@ const AdminDashboard = () => {
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{status}</span>
                         </td>
                         <td className="py-2 px-3 flex gap-2">
-                          <button className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200" title="Edit"><span role="img" aria-label="Edit">✏️</span></button>
-                          <button className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200" title="Delete"><span role="img" aria-label="Delete">🗑️</span></button>
+                          <button className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200" title="Edit" onClick={() => setEditUserModal({ open: true, user })}><span role="img" aria-label="Edit">✏️</span></button>
+                          <button className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200" title="Delete" onClick={() => setDeleteUserModal({ open: true, user })}><span role="img" aria-label="Delete">🗑️</span></button>
+                          {role === 'HOD' && (
+                            <>
+                              <button className="bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200" title="Assign Department" onClick={() => setAssignDeptModal({ open: true, user })}>Assign Dept</button>
+                              <button className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200" title="Assign Teacher" onClick={() => setAssignTeacherModal({ open: true, user })}>Assign Teacher</button>
+                            </>
+                          )}
                         </td>
                       </tr>
                     );
@@ -553,6 +601,51 @@ const AdminDashboard = () => {
           </Card>
         </section>
       </div>
+
+      {/* Edit User Modal */}
+      <Dialog open={editUserModal.open} onOpenChange={open => setEditUserModal({ open, user: open ? editUserModal.user : null })}>
+        <DialogContent>
+          <DialogTitle>Edit User</DialogTitle>
+          {/* TODO: Add edit user form here */}
+          <DialogFooter>
+            <button onClick={() => setEditUserModal({ open: false, user: null })}>Cancel</button>
+            <button>Save</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Delete User Modal */}
+      <Dialog open={deleteUserModal.open} onOpenChange={open => setDeleteUserModal({ open, user: open ? deleteUserModal.user : null })}>
+        <DialogContent>
+          <DialogTitle>Delete User</DialogTitle>
+          <p>Are you sure you want to delete this user?</p>
+          <DialogFooter>
+            <button onClick={() => setDeleteUserModal({ open: false, user: null })}>Cancel</button>
+            <button>Delete</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Assign Department Modal (for HOD) */}
+      <Dialog open={assignDeptModal.open} onOpenChange={open => setAssignDeptModal({ open, user: open ? assignDeptModal.user : null })}>
+        <DialogContent>
+          <DialogTitle>Assign Department to HOD</DialogTitle>
+          {/* TODO: Add department dropdown here */}
+          <DialogFooter>
+            <button onClick={() => setAssignDeptModal({ open: false, user: null })}>Cancel</button>
+            <button>Assign</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Assign Teacher Modal (for HOD) */}
+      <Dialog open={assignTeacherModal.open} onOpenChange={open => setAssignTeacherModal({ open, user: open ? assignTeacherModal.user : null })}>
+        <DialogContent>
+          <DialogTitle>Assign Teacher to Class/Subject</DialogTitle>
+          {/* TODO: Add teacher, class, subject dropdowns here */}
+          <DialogFooter>
+            <button onClick={() => setAssignTeacherModal({ open: false, user: null })}>Cancel</button>
+            <button>Assign</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
