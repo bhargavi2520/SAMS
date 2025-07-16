@@ -11,6 +11,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { authService } from '@/modules/user-management1/services/auth.service';
 import { UserRole, StudentProfile, FacultyProfile, AdminProfile, HODProfile } from '@/modules/user-management1/types/auth.types';
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/common/components/ui/dialog';
+import apiClient from '@/api';
 
 // --- Mock Data ---
 const systemStats = [
@@ -112,6 +113,11 @@ const timeSlots = ['08:00-09:00', '09:00-10:00', '10:00-11:00', '11:00-12:00', '
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState(sectionIds[0]);
   const [selectedYear, setSelectedYear] = useState('1');
+  const [selectedBranch, setSelectedBranch] = useState('CSE');
+  const [selectedSection, setSelectedSection] = useState('1');
+  const [timetableData, setTimetableData] = useState([]); // fetched timetable
+  const [timetableLoading, setTimetableLoading] = useState(false);
+  const [timetableError, setTimetableError] = useState('');
   const navigate = useNavigate();
   const authStore = useAuthStore();
 
@@ -139,6 +145,31 @@ const AdminDashboard = () => {
       .finally(() => setLoadingUsers(false));
   }, [userType]);
 
+  // Fetch timetable from backend when year, branch, or section changes
+  useEffect(() => {
+    async function fetchTimetable() {
+      setTimetableLoading(true);
+      setTimetableError('');
+      setTimetableData([]);
+      try {
+        const res = await apiClient.get(
+          `/userData/checkTimetable?department=${selectedBranch}&year=${selectedYear}&section=${selectedSection}`
+        );
+        if (res.data && res.data.exists && res.data.timetable && res.data.timetable.timeSlots) {
+          setTimetableData(res.data.timetable.timeSlots);
+        } else {
+          setTimetableData([]);
+        }
+      } catch (err) {
+        setTimetableError('Failed to fetch timetable.');
+        setTimetableData([]);
+      } finally {
+        setTimetableLoading(false);
+      }
+    }
+    fetchTimetable();
+  }, [selectedYear, selectedBranch, selectedSection]);
+
   const timetablesByBranch = useMemo(() => {
     const filtered = timetableTable.filter(row => row.year === selectedYear);
     return filtered.reduce((acc, row) => {
@@ -152,6 +183,7 @@ const AdminDashboard = () => {
   }, [selectedYear]);
 
   const branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
+  const sections = ['1', '2', '3']; // You can adjust this as needed
 
   const handleNavClick = (section) => {
     setActiveSection(section);
@@ -198,6 +230,24 @@ const AdminDashboard = () => {
     });
     return () => observer.disconnect();
   }, []);
+
+  // Dynamically extract unique time slots from timetableData
+  const dynamicTimeSlots = useMemo(() => {
+    const slots = timetableData.map(slot => `${slot.startTime}-${slot.endTime}`);
+    // Remove duplicates and sort by start time
+    const unique = Array.from(new Set(slots));
+    // Sort by start time (in minutes)
+    unique.sort((a, b) => {
+      const [aStart] = a.split('-');
+      const [bStart] = b.split('-');
+      const parse = (str) => {
+        const [h, m] = str.split(':').map(Number);
+        return h * 60 + m;
+      };
+      return parse(aStart) - parse(bStart);
+    });
+    return unique;
+  }, [timetableData]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -388,121 +438,117 @@ const AdminDashboard = () => {
         </section>
 
         {/* Timetable Management */}
-        <section id="timetable-management" className="scroll-mt-24">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2"><CalendarDays className="w-6 h-6" /> Timetable</h2>
-              <div className="flex items-center gap-2 bg-white p-1 rounded-lg border">
-                <Button onClick={() => handleYearChange('prev')} size="icon" variant="ghost">
-                  &lt;
-                </Button>
-                <select 
-                  value={selectedYear} 
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className="font-semibold border-0 focus:ring-0"
+        <div id="timetable-management" className="scroll-mt-24">
+          <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold">Timetable</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {/* Redesigned Controls Row */}
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <div className="flex flex-wrap items-center gap-3 md:gap-4 w-full md:w-auto">
+                  <div className="flex items-center gap-2">
+                    <label className="font-semibold" htmlFor="year-select">Year:</label>
+                    <select
+                      id="year-select"
+                      value={selectedYear}
+                      onChange={e => setSelectedYear(e.target.value)}
+                      className="border rounded px-3 py-1 min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                    >
+                      <option value="1">Year 1</option>
+                      <option value="2">Year 2</option>
+                      <option value="3">Year 3</option>
+                      <option value="4">Year 4</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="font-semibold" htmlFor="branch-select">Branch:</label>
+                    <select
+                      id="branch-select"
+                      value={selectedBranch}
+                      onChange={e => setSelectedBranch(e.target.value)}
+                      className="border rounded px-3 py-1 min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                    >
+                      {branches.map(branch => (
+                        <option key={branch} value={branch}>{branch}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="font-semibold" htmlFor="section-select">Section:</label>
+                    <select
+                      id="section-select"
+                      value={selectedSection}
+                      onChange={e => setSelectedSection(e.target.value)}
+                      className="border rounded px-3 py-1 min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                    >
+                      {sections.map(section => (
+                        <option key={section} value={section}>{section}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleTimetableEdit}
+                  className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2"
                 >
-                  <option value="1">Year 1</option>
-                  <option value="2">Year 2</option>
-                  <option value="3">Year 3</option>
-                  <option value="4">Year 4</option>
-                </select>
-                <Button onClick={() => handleYearChange('next')} size="icon" variant="ghost">
-                  &gt;
+                  <CalendarDays className="w-5 h-5" />
+                  Create/Edit Timetable
                 </Button>
               </div>
-            </div>
-            <Button onClick={handleTimetableEdit} className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto">
-              <CalendarDays className="w-4 h-4 mr-2" />
-              Create/Edit Timetable
-            </Button>
-          </div>
-          
-          {branches.length > 0 ? (
-            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
-              <CarouselContent>
-                {branches.map((branch, index) => (
-                  <CarouselItem key={index} className="basis-full">
-                    <div className="p-1">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-center">{branch} - Year {selectedYear}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2">
-                          {/* Desktop: Grid View */}
-                          <div className="hidden md:block overflow-x-auto">
-                            <table className="min-w-full bg-white rounded-lg text-sm border">
-                              <thead>
-                                <tr className="bg-gray-100">
-                                  <th className="py-2 px-3 text-left border">Day</th>
-                                  {timeSlots.map(slot => (
-                                    <th key={slot} className="py-2 px-3 text-center border">{slot}</th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {daysOfWeek.map(day => (
-                                  <tr key={day} className="border-b last:border-b-0">
-                                    <td className="py-2 px-3 font-semibold border bg-gray-50">{day}</td>
-                                    {timeSlots.map(slot => {
-                                      const entry = timetablesByBranch[branch]?.find(
-                                        e => e.day === day && e.time === slot
-                                      );
-                                      return (
-                                        <td key={slot} className="py-2 px-3 text-center border h-20">
-                                          {entry ? (
-                                            <div>
-                                              <p className="font-semibold">{entry.subject}</p>
-                                              <p className="text-xs text-gray-500">{entry.faculty}</p>
-                                            </div>
-                                          ) : (
-                                            <span className="text-gray-400">-</span>
-                                          )}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          {/* Mobile: List View */}
-                          <div className="md:hidden space-y-4">
-                            {daysOfWeek.map(day => (
-                              <div key={day}>
-                                <h3 className="font-bold mb-2">{day}</h3>
-                                <div className="space-y-2">
-                                  {timetablesByBranch[branch]?.filter(e => e.day === day).length > 0 ? (
-                                    timetablesByBranch[branch]
-                                      .filter(e => e.day === day)
-                                      .map((entry, idx) => (
-                                        <div key={idx} className="p-3 rounded-lg bg-gray-50 border">
-                                          <p className="font-semibold">{entry.subject}</p>
-                                          <p className="text-sm text-gray-600">{entry.faculty}</p>
-                                          <p className="text-sm text-gray-500 mt-1">{entry.time}</p>
-                                        </div>
-                                      ))
-                                  ) : (
-                                    <p className="text-sm text-gray-400">No classes scheduled.</p>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
-            </Carousel>
-          ) : (
-            <div className="text-center py-10 bg-white rounded-lg shadow-sm">
-              <p className="text-gray-500">No timetables found for Year {selectedYear}.</p>
-            </div>
-          )}
-        </section>
+              {/* Timetable Table */}
+              <div className="w-full">
+                {timetableLoading ? (
+                  <div className="text-center py-10 text-gray-500">Loading timetable...</div>
+                ) : timetableError ? (
+                  <div className="text-center py-10 text-red-500">{timetableError}</div>
+                ) : timetableData.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500">No timetable found for {selectedBranch} Year {selectedYear} Section {selectedSection}.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white rounded-lg text-sm border">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="py-2 px-5 text-left border min-w-[120px] w-[140px]">Time</th>
+                          {daysOfWeek.map(day => (
+                            <th key={day} className="py-2 px-3 text-center border min-w-[120px]">{day}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dynamicTimeSlots.map(slot => {
+                          const [start, end] = slot.split('-');
+                          return (
+                            <tr key={slot}>
+                              <td className="py-2 px-5 font-semibold border bg-gray-50 min-w-[120px] w-[140px]">{start} - {end}</td>
+                              {daysOfWeek.map(day => {
+                                const entry = timetableData.find(e => e.day === day && e.startTime === start && e.endTime === end);
+                                return (
+                                  <td key={day} className="py-2 px-3 text-center border h-20 align-top">
+                                    {entry ? (
+                                      <div>
+                                        <p className="font-semibold text-base">{entry.subject}</p>
+                                        {typeof entry.facultyName === 'string' && entry.facultyName.length > 0 && !/^[0-9a-fA-F]{24}$/.test(entry.facultyName) ? (
+                                          <p className="text-xs text-gray-500 mt-1">{entry.facultyName}</p>
+                                        ) : null}
+                                      </div>
+                                    ) : (
+                                      <span className="text-gray-400">-</span>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Reports */}
         <section id="reports" className="scroll-mt-24">
