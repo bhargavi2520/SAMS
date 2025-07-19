@@ -79,7 +79,7 @@ const sidebarItems = [
     icon: <FileText className="w-5 h-5" />,
   },
   {
-    label: "Timetable & Subjects",
+    label: "Timetable",
     path: "#timetable",
     icon: <Calendar className="w-5 h-5" />,
   },
@@ -1211,12 +1211,12 @@ const StudentDashboard = () => {
             </Card>
           </div>
 
-          {/* Timetable & Subjects Section (merged) */}
+          {/* Timetable Section (merged) */}
           <div ref={timetableRef} className="pt-4 md:pt-8">
             <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">
-                  Timetable & Subjects
+                  Timetable
                 </CardTitle>
                 <CardDescription className="text-xs md:text-sm">
                   Weekly class schedule and subject information
