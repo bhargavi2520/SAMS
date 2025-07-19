@@ -127,16 +127,16 @@ const HODAssignmentManager: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h4 className="text-base font-medium text-gray-900">
+          <h4 className="text-lg font-semibold text-gray-900">
             HOD Department Assignments
           </h4>
           <p className="text-sm text-gray-600 mt-1">Manage Head of Department assignments to departments and years</p>
         </div>
-        <Button onClick={() => setShowAssignmentModal(true)} className="flex items-center gap-2">
+        <Button onClick={() => setShowAssignmentModal(true)} size="sm" className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
           Assign HOD
         </Button>
@@ -160,33 +160,33 @@ const HODAssignmentManager: React.FC = () => {
       {/* Assignments Grid */}
       {assignments.length === 0 ? (
         <Card>
-          <CardContent className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No HOD Assignments</h3>
-            <p className="text-gray-600 mb-4">No HODs have been assigned to departments yet.</p>
-            <Button onClick={() => setShowAssignmentModal(true)}>
+          <CardContent className="text-center py-8">
+            <Users className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+            <h3 className="text-base font-medium text-gray-900 mb-2">No HOD Assignments</h3>
+            <p className="text-sm text-gray-600 mb-4">No HODs have been assigned to departments yet.</p>
+            <Button size="sm" onClick={() => setShowAssignmentModal(true)}>
               Create First Assignment
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {assignments.map((assignment) => (
             <Card key={assignment._id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle className="text-lg">
+                    <CardTitle className="text-base">
                       {assignment.hod.firstName} {assignment.hod.lastName}
                     </CardTitle>
-                    <p className="text-sm text-gray-600">{assignment.hod.email}</p>
+                    <p className="text-xs text-gray-600">{assignment.hod.email}</p>
                   </div>
                   <div className="flex gap-1">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => openEditModal(assignment)}
-                      className="h-8 w-8 p-0"
+                      className="h-7 w-7 p-0"
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -194,14 +194,14 @@ const HODAssignmentManager: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => openDeleteModal(assignment)}
-                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Badge className={getDepartmentColor(assignment.department)}>

@@ -55,6 +55,34 @@ interface DashboardNavProps {
 
 const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, dashboardType }) => {
   const navItems = navConfig[dashboardType] || navConfig.student;
+  
+  // Simple text formatter for multi-word labels
+  const formatLabel = (text: string) => {
+    if (text.includes('&')) {
+      const parts = text.split(' & ');
+      if (parts.length === 2) {
+        return (
+          <div className="text-left">
+            <div>{parts[0]} &</div>
+            <div>{parts[1]}</div>
+          </div>
+        );
+      }
+    }
+    
+    const words = text.split(' ');
+    if (words.length > 1) {
+      return (
+        <div className="text-left">
+          <div>{words[0]}</div>
+          <div>{words.slice(1).join(' ')}</div>
+        </div>
+      );
+    }
+    
+    return <div>{text}</div>;
+  };
+  
   // Scroll to top if Home is clicked
   const handleNav = (section: string) => {
     if (section === 'dashboard' || section === 'Dashboard' || section === 'Timetable' || section === 'overview') {
@@ -91,19 +119,40 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between px-2 py-2 z-50 h-16 items-center">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() => handleNav(item.section)}
-            className={`flex flex-col items-center flex-1 ${activeSection === item.section ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
-            style={{ minWidth: 0 }}
-          >
-            {item.icon}
-            {/* Remove section name/label for mobile nav */}
-          </button>
-        ))}
+      <nav className="fixed md:hidden bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-100 rounded-full px-4 py-3 z-50 shadow-lg max-w-[85vw]">
+        <div className="flex items-center space-x-4">
+          {navItems.map((item, index) => {
+            const isActive = activeSection === item.section;
+            const isMultiWord = item.label.includes(' ') || item.label.includes('&');
+            
+            return (
+              <button
+                key={item.label}
+                onClick={() => handleNav(item.section)}
+                className={`relative flex items-center transition-all duration-300 ${
+                  isActive 
+                    ? 'bg-blue-600 text-white rounded-full px-3 py-2 shadow-md' 
+                    : 'text-gray-600 hover:text-blue-600 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200'
+                }`}
+                aria-label={item.label}
+              >
+                {React.cloneElement(item.icon, { 
+                  className: "w-5 h-5" 
+                })}
+                
+                {/* Text label for active item */}
+                {isActive && (
+                  <div className="ml-2 text-xs font-medium">
+                    {formatLabel(item.label)}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </nav>
+      
+
     </>
   );
 };

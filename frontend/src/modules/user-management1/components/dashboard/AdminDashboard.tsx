@@ -348,15 +348,12 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> User Management</h2>
           
           <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold">User Management</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="p-6">
               {/* Tab Navigation */}
-              <div className="flex border-b border-gray-200 mb-6">
+              <div className="flex border-b border-gray-200 mb-4">
                 <button
                   onClick={() => setUserManagementTab('users')}
-                  className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                  className={`px-3 py-2 font-medium text-sm border-b-2 transition-colors ${
                     userManagementTab === 'users'
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -366,7 +363,7 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   onClick={() => setUserManagementTab('hod-assignments')}
-                  className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                  className={`px-3 py-2 font-medium text-sm border-b-2 transition-colors ${
                     userManagementTab === 'hod-assignments'
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
