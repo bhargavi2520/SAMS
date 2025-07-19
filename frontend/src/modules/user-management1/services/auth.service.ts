@@ -86,6 +86,8 @@ class AuthService {
       endpoint = '/data/students';
     } else if (role === 'FACULTY') {
       endpoint = '/data/faculties';
+    } else if (role === 'HOD') {
+      endpoint = '/department/hods';
     } else {
       // fallback: try to fetch all users of a role (requires backend support)
       endpoint = `/users?role=${role}`;
@@ -96,6 +98,8 @@ class AuthService {
     } else if (role === 'FACULTY') {
       // The backend returns facultyNames array
       return response.data.facultyNames || [];
+    } else if (role === 'HOD') {
+      return response.data.hods || [];
     } else {
       return response.data.users || [];
     }

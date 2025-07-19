@@ -12,6 +12,7 @@ import { authService } from '@/modules/user-management1/services/auth.service';
 import { UserRole, StudentProfile, FacultyProfile, AdminProfile, HODProfile } from '@/modules/user-management1/types/auth.types';
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/common/components/ui/dialog';
 import apiClient from '@/api';
+import HODAssignmentManager from './HODAssignmentManager';
 
 // --- Mock Data ---
 const systemStats = [
@@ -131,6 +132,9 @@ const AdminDashboard = () => {
   const [studentYear, setStudentYear] = useState('1');
   const [studentBranch, setStudentBranch] = useState('CSE');
   const [studentSection, setStudentSection] = useState('A');
+  
+  // User Management Tab State
+  const [userManagementTab, setUserManagementTab] = useState<'users' | 'hod-assignments'>('users');
 
   // Modal state
   const [editUserModal, setEditUserModal] = useState<{ open: boolean; user: StudentProfile | FacultyProfile | AdminProfile | HODProfile | { [key: string]: unknown } | null }>({ open: false, user: null });
@@ -342,99 +346,140 @@ const AdminDashboard = () => {
         {/* User Management */}
         <section id="user-management" className="scroll-mt-24">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><Users className="w-6 h-6" /> User Management</h2>
-          <div className="mb-4 flex gap-2 items-center">
-            <label htmlFor="userType" className="font-semibold">User Type:</label>
-            <select
-              id="userType"
-              value={userType}
-              onChange={e => setUserType(e.target.value as UserRole)}
-              className="border rounded px-2 py-1"
-            >
-              <option value="STUDENT">Student</option>
-              <option value="FACULTY">Faculty</option>
-              <option value="HOD">HOD</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-            {/* Show year, branch, section if Student is selected */}
-            {userType === 'STUDENT' && (
-              <>
-                <label className="font-semibold ml-2">Year:</label>
-                <select value={studentYear} onChange={e => setStudentYear(e.target.value)} className="border rounded px-2 py-1">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-                <label className="font-semibold ml-2">Branch:</label>
-                <select value={studentBranch} onChange={e => setStudentBranch(e.target.value)} className="border rounded px-2 py-1">
-                  <option value="CSE">CSE</option>
-                  <option value="ECE">ECE</option>
-                  <option value="EEE">EEE</option>
-                  <option value="MECH">MECH</option>
-                  <option value="CSD">CSD</option>
-                  <option value="CSM">CSM</option>
-                </select>
-                <label className="font-semibold ml-2">Section:</label>
-                <select value={studentSection} onChange={e => setStudentSection(e.target.value)} className="border rounded px-2 py-1">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  {/* Add more sections as needed */}
-                </select>
-              </>
-            )}
-          </div>
-          {loadingUsers ? (
-            <div>Loading...</div>
-          ) : (
-            <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-3 text-left">Name</th>
-                    <th className="py-2 px-3 text-left">Email</th>
-                    <th className="py-2 px-3 text-left">Role</th>
-                    <th className="py-2 px-3 text-left">Status</th>
-                    <th className="py-2 px-3 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user, idx) => {
-                    // Type guards for user fields
-                    const name =
-                      'firstName' in user && 'lastName' in user
-                        ? `${(user as StudentProfile | FacultyProfile | HODProfile).firstName} ${(user as StudentProfile | FacultyProfile | HODProfile).lastName}`
-                        : 'name' in user
-                          ? (user as { name: string }).name
-                          : '';
-                    const email = 'email' in user ? (user.email as string) : '';
-                    const role = 'role' in user ? (user.role as string) : userType;
-                    const status = 'status' in user ? (user.status as string) : 'Active';
-                    return (
-                      <tr key={idx} className="border-b last:border-b-0">
-                        <td className="py-2 px-3">{name}</td>
-                        <td className="py-2 px-3">{email}</td>
-                        <td className="py-2 px-3">{role}</td>
-                        <td className="py-2 px-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{status}</span>
-                        </td>
-                        <td className="py-2 px-3 flex gap-2">
-                          <button className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200" title="Edit" onClick={() => setEditUserModal({ open: true, user })}><span role="img" aria-label="Edit">✏️</span></button>
-                          <button className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200" title="Delete" onClick={() => setDeleteUserModal({ open: true, user })}><span role="img" aria-label="Delete">🗑️</span></button>
-                          {role === 'HOD' && (
-                            <>
-                              <button className="bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200" title="Assign Department" onClick={() => setAssignDeptModal({ open: true, user })}>Assign Dept</button>
-                              <button className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200" title="Assign Teacher" onClick={() => setAssignTeacherModal({ open: true, user })}>Assign Teacher</button>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          
+          <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold">User Management</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {/* Tab Navigation */}
+              <div className="flex border-b border-gray-200 mb-6">
+                <button
+                  onClick={() => setUserManagementTab('users')}
+                  className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                    userManagementTab === 'users'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Users
+                </button>
+                <button
+                  onClick={() => setUserManagementTab('hod-assignments')}
+                  className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                    userManagementTab === 'hod-assignments'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  HOD Assignments
+                </button>
+              </div>
+
+              {/* Users Tab */}
+              {userManagementTab === 'users' && (
+                <div>
+                  <div className="mb-4 flex gap-2 items-center">
+                    <label htmlFor="userType" className="font-semibold">User Type:</label>
+                    <select
+                      id="userType"
+                      value={userType}
+                      onChange={e => setUserType(e.target.value as UserRole)}
+                      className="border rounded px-2 py-1"
+                    >
+                      <option value="STUDENT">Student</option>
+                      <option value="FACULTY">Faculty</option>
+                      <option value="HOD">HOD</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                    {/* Show year, branch, section if Student is selected */}
+                    {userType === 'STUDENT' && (
+                      <>
+                        <label className="font-semibold ml-2">Year:</label>
+                        <select value={studentYear} onChange={e => setStudentYear(e.target.value)} className="border rounded px-2 py-1">
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                        </select>
+                        <label className="font-semibold ml-2">Branch:</label>
+                        <select value={studentBranch} onChange={e => setStudentBranch(e.target.value)} className="border rounded px-2 py-1">
+                          <option value="CSE">CSE</option>
+                          <option value="ECE">ECE</option>
+                          <option value="EEE">EEE</option>
+                          <option value="MECH">MECH</option>
+                          <option value="CSD">CSD</option>
+                          <option value="CSM">CSM</option>
+                        </select>
+                        <label className="font-semibold ml-2">Section:</label>
+                        <select value={studentSection} onChange={e => setStudentSection(e.target.value)} className="border rounded px-2 py-1">
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          {/* Add more sections as needed */}
+                        </select>
+                      </>
+                    )}
+                  </div>
+                  {loadingUsers ? (
+                    <div>Loading...</div>
+                  ) : (
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="py-2 px-3 text-left">Name</th>
+                            <th className="py-2 px-3 text-left">Email</th>
+                            <th className="py-2 px-3 text-left">Role</th>
+                            <th className="py-2 px-3 text-left">Status</th>
+                            <th className="py-2 px-3 text-left">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {users.map((user, idx) => {
+                            // Type guards for user fields
+                            const name =
+                              'firstName' in user && 'lastName' in user
+                                ? `${(user as StudentProfile | FacultyProfile | HODProfile).firstName} ${(user as StudentProfile | FacultyProfile | HODProfile).lastName}`
+                                : 'name' in user
+                                  ? (user as { name: string }).name
+                                  : '';
+                            const email = 'email' in user ? (user.email as string) : '';
+                            const role = 'role' in user ? (user.role as string) : userType;
+                            const status = 'status' in user ? (user.status as string) : 'Active';
+                            return (
+                              <tr key={idx} className="border-b last:border-b-0">
+                                <td className="py-2 px-3">{name}</td>
+                                <td className="py-2 px-3">{email}</td>
+                                <td className="py-2 px-3">{role}</td>
+                                <td className="py-2 px-3">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{status}</span>
+                                </td>
+                                <td className="py-2 px-3 flex gap-2">
+                                  <button className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200" title="Edit" onClick={() => setEditUserModal({ open: true, user })}><span role="img" aria-label="Edit">✏️</span></button>
+                                  <button className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200" title="Delete" onClick={() => setDeleteUserModal({ open: true, user })}><span role="img" aria-label="Delete">🗑️</span></button>
+                                  {role === 'HOD' && (
+                                    <button className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200" title="Assign Teacher" onClick={() => setAssignTeacherModal({ open: true, user })}>Assign Teacher</button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* HOD Assignments Tab */}
+              {userManagementTab === 'hod-assignments' && (
+                <div>
+                  <HODAssignmentManager />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </section>
 
         {/* Timetable Management */}
@@ -565,6 +610,8 @@ const AdminDashboard = () => {
           </div>
         </section>
 
+
+
         {/* Department Management */}
         <section id="department-management" className="scroll-mt-24">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2"><BookOpen className="w-6 h-6" /> Department Management</h2>
@@ -674,10 +721,11 @@ const AdminDashboard = () => {
       <Dialog open={assignDeptModal.open} onOpenChange={open => setAssignDeptModal({ open, user: open ? assignDeptModal.user : null })}>
         <DialogContent>
           <DialogTitle>Assign Department to HOD</DialogTitle>
-          {/* TODO: Add department dropdown here */}
+          <p className="text-gray-600 mb-4">
+            Use the dedicated HOD Management section above for assigning departments to HODs.
+          </p>
           <DialogFooter>
-            <button onClick={() => setAssignDeptModal({ open: false, user: null })}>Cancel</button>
-            <button>Assign</button>
+            <button onClick={() => setAssignDeptModal({ open: false, user: null })}>Close</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
