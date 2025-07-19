@@ -23,6 +23,10 @@ const subjectSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    batch:{
+      type: String,
+      required: true,
+    }
   },
   { timestamps: true }
 );

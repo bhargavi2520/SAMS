@@ -34,13 +34,6 @@ const HODAssignmentManager: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      // First test backend health
-      const isHealthy = await hodService.testBackendHealth();
-      if (!isHealthy) {
-        setError('Backend server is not responding. Please check if the server is running.');
-        return;
-      }
-      
       const data = await hodService.getDepartmentAssignments();
       setAssignments(data);
     } catch (err: any) {

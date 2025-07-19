@@ -80,23 +80,21 @@ class AuthService {
   }
 
   // Fetch users by role (student, faculty, hod, admin)
-  async fetchUsersByRole(role: string): Promise<any[]> {
-    let endpoint = '';
-    if (role === 'STUDENT') {
-      endpoint = '/data/students';
-    } else if (role === 'FACULTY') {
-      endpoint = '/data/faculties';
+  async fetchUsersByRole(role: string, data : any): Promise<any[]> {
+    let endpoint = ''; 
+    if(role == "STUDENT"){
+      const response = await apiClient.get(`/userData/students?year=${data.year}&department=${data.department}&section=${data.section}`);
+      return response.data.students || [];
+    }
+    else if (role === 'FACULTY') {
+      endpoint = '/userData/faculties';
     } else if (role === 'HOD') {
       endpoint = '/department/hods';
     } else {
-      // fallback: try to fetch all users of a role (requires backend support)
       endpoint = `/users?role=${role}`;
     }
     const response = await apiClient.get(endpoint);
-    if (role === 'STUDENT') {
-      return response.data.students || [];
-    } else if (role === 'FACULTY') {
-      // The backend returns facultyNames array
+     if (role === 'FACULTY') {
       return response.data.facultyNames || [];
     } else if (role === 'HOD') {
       return response.data.hods || [];

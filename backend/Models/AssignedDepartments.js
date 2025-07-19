@@ -6,6 +6,10 @@ const departmentAssignmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    batch : {
+      type : String,
+      required : true,
+    },
     department: {
       type: String,
       required: true,

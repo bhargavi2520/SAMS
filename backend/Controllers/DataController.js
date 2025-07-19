@@ -22,7 +22,7 @@ const getStudentDataByCriteria = async (req, res) => {
       .equals("STUDENT")
       .select("-password -__v");
     if (students.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "No students found matching the criteria",
         success: false,
       });
@@ -50,7 +50,7 @@ const getFaculties = async (req, res) => {
   try {
     const faculties = await User.find({ role: "FACULTY" }).select(
       "-password -__v "
-    );
+    ).lean();
     if (faculties.length === 0) {
       return res.status(404).json({
         message: "No faculty members found",
@@ -103,6 +103,8 @@ const createTimeTable = async (req, res) => {
         year: classDetails.year,
         section: classDetails.section,
       })
+      .sort({ batch: -1 })
+      .limit(1)
       .select("_id")
       .lean();
 
@@ -176,15 +178,17 @@ const createTimeTable = async (req, res) => {
  * return subject to corresponding class
  */
 const checkTimetableExists = async (req, res) => {
-  const { department, year, section } = req.query;
+  const { department, year, section} = req.query;
   try {
     const classDoc = await classInfo
       .findOne({ department, year, section })
+      .sort({ batch: -1 })
+      .limit(1)
       .select("_id")
       .lean();
     if (!classDoc) {
       return res
-        .status(404)
+        .status(200)
         .json({ exists: false, message: "Class not found" });
     }
     const subjectsInfo = await classInfo.aggregate([
@@ -268,7 +272,7 @@ const checkTimetableExists = async (req, res) => {
       },
     ]);
     if (!subjectsInfo || subjectsInfo.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         exists: false,
         message: "No subjects found for this class",
       });
@@ -285,7 +289,6 @@ const checkTimetableExists = async (req, res) => {
       subjects: subjectsInfo,
       ...(timetable && { timetable }),
     });
-
   } catch (err) {
     console.error("Error checking timetable existence:", err);
     return res
@@ -305,6 +308,7 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
   try {
     let department;
     let years;
+    let batch;
     if (user.role === "ADMIN") {
       if (!req.query.department) {
         return res.status(400).json({
@@ -314,6 +318,7 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
       }
 
       department = req.query.department;
+      batch = req.query.batch;
 
       if (req.query.years) {
         years = req.query.years.split(",").map(Number);
@@ -323,7 +328,7 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
     } else {
       const assignedDepartment = await departmentAssignment
         .findOne({ hod: user.id })
-        .select("department departmentYears")
+        .select("department departmentYears batch")
         .lean();
 
       if (!assignedDepartment) {
@@ -335,12 +340,13 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
 
       department = assignedDepartment.department;
       years = assignedDepartment.departmentYears;
+      batch = assignedDepartment.batch;
     }
-
     const result = await classInfo.aggregate([
       {
         $match: {
           department: department,
+          batch: batch,
           year: { $in: years },
         },
       },
@@ -430,6 +436,8 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
     });
   }
 };
+
+
 
 module.exports = {
   getStudentDataByCriteria,

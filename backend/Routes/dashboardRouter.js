@@ -5,7 +5,7 @@ const {
   getFacultyDashboard,
   getHodDashboard,
 } = require("../Controllers/DashboardController");
-const tokenRefresher = require("../Models/TokenRefresher");
+const tokenRefresher = require("../Middlewares/TokenRefresher");
 const DashboardRouter = express.Router();
 
 DashboardRouter.get(

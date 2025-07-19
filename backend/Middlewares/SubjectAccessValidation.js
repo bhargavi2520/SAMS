@@ -59,7 +59,7 @@ const checkAccess = async (req, res, next) => {
       });
     }
 
-    if (!departmentYears.includes(year)) {
+    if (!departmentYears.includes(parseInt(year))) {
       return res.status(403).json({
         message:
           "You are not authorized to make changes in this department/year",

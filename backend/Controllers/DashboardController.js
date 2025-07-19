@@ -22,9 +22,9 @@ const getStudentDashboard = async (req, res) => {
       });
     }
     //finding class
-    const { department, year, section } = student;
+    const { department, year, section, batch } = student;
     const classDoc = await classInfo
-      .findOne({ department, year, section })
+      .findOne({ department, year, section, batch })
       .populate({ path: "subjects.subject", select: "name code" })
       .select("-students");
     if (!classDoc) {
@@ -239,9 +239,9 @@ const getHodDashboard = async(req,res)=>{
         success : false,
       });
     }
-    const assigned = await departmentAssignment.findOne({hod : userId}).lean();
+    const assigned = await departmentAssignment.findOne({hod : userId}).sort({createdAt: -1}).lean();
     if(!assigned){
-      return res.status(204).json({
+      return res.status(204).json({ 
         message : "No department is assigned to You",
         success : true,
         department : "",
@@ -249,6 +249,7 @@ const getHodDashboard = async(req,res)=>{
       })
     }
     const {departmentYears , department} = assigned;
+    
     return res.status(200).json({
       message : "Dashboard fetched successfully",
       success : true,

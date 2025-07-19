@@ -1039,9 +1039,19 @@ const HODDashboard = ({ isHOD = true }) => {
     fetchSubjectDetails();
   }, [subjectSelectedYear, dashboardLoaded]);
 
-  const handleNewSubject = async () => {};
+  const handleNewSubject = async ( e : any ) => {
+    e.preventDefault();
+    const response = await apiClient.post("/subjectData/addSubject", {
+      code: newSubjectCode,
+      year: newSubjectYear,
+      semester: newSubjectSemester,
+      name: newSubjectName,
+      department: department,
+    });
+    toast({ title: response.data.message, variant: "default" });
+  };
   if (loading) return <div>Loading...</div>;
-   if (error) {
+  if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

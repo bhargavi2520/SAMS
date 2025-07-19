@@ -37,9 +37,7 @@ class HODService {
   // Get all HODs
   async getAllHODs(): Promise<HODProfile[]> {
     try {
-      console.log('Fetching HODs from:', '/department/hods');
       const response = await apiClient.get('/department/hods');
-      console.log('HODs response:', response.data);
       return response.data.hods || [];
     } catch (error: any) {
       console.error('Error fetching HODs:', error);
@@ -54,9 +52,7 @@ class HODService {
   // Get all department assignments
   async getDepartmentAssignments(): Promise<HODAssignment[]> {
     try {
-      console.log('Fetching assignments from:', '/department/assignments');
       const response = await apiClient.get('/department/assignments');
-      console.log('Assignments response:', response.data);
       return response.data.assignments || [];
     } catch (error: any) {
       console.error('Error fetching department assignments:', error);
@@ -71,7 +67,6 @@ class HODService {
   // Get assignments by HOD ID
   async getAssignmentsByHOD(hodId: string): Promise<HODAssignment[]> {
     try {
-      console.log('Fetching assignments for HOD:', hodId);
       const response = await apiClient.get(`/department/assignments/hod/${hodId}`);
       return response.data.assignments || [];
     } catch (error: any) {
@@ -86,7 +81,6 @@ class HODService {
   // Create new assignment
   async createAssignment(data: CreateAssignmentData): Promise<{ message: string; success: boolean }> {
     try {
-      console.log('Creating assignment:', data);
       const response = await apiClient.post('/department/assign', data);
       return response.data;
     } catch (error: any) {
@@ -101,7 +95,6 @@ class HODService {
   // Update assignment
   async updateAssignment(assignmentId: string, data: UpdateAssignmentData): Promise<{ message: string; success: boolean }> {
     try {
-      console.log('Updating assignment:', assignmentId, data);
       const response = await apiClient.put(`/department/assignments/${assignmentId}`, data);
       return response.data;
     } catch (error: any) {
@@ -116,7 +109,6 @@ class HODService {
   // Remove assignment
   async removeAssignment(assignmentId: string): Promise<{ message: string; success: boolean }> {
     try {
-      console.log('Removing assignment:', assignmentId);
       const response = await apiClient.delete(`/department/assignments/${assignmentId}`);
       return response.data;
     } catch (error: any) {

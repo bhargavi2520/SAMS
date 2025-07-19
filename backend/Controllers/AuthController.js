@@ -66,7 +66,7 @@ const registerUser = async (req, res) => {
       if (lateralEntry) {
         admissionYear -= 1;
       }
-      batch = `${admissionYear}-${admissionYear + 4}`;
+      batch = admissionYear;
     }
 
     const userData = {

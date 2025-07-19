@@ -3,7 +3,16 @@ const classInfo = require("../Models/Class.js");
 const { User, HOD } = require("../Models/User.js");
 
 const newAssignment = async (req, res) => {
-  const { hodId, department, year } = req.body;
+  const { hodId, department, years, batch } = req.body;
+
+  const currentYear = new Date().getFullYear();
+  if (parseInt(batch) + 4 < currentYear) {
+    return res.status(400).json({
+      success: false,
+      message: "Can't modify completed batch records",
+    });
+  }
+
   try {
     const hod = await User.findById(hodId).select("-__v -password").lean();
     if (!hod) {
@@ -14,26 +23,36 @@ const newAssignment = async (req, res) => {
     }
 
     const doExist = await classInfo
-      .find({ department, year })
-      .select("-subjects -students -__v")
+      .find({ department, year: { $in: years }, batch })
+      .select("_id year")
       .lean();
-    if (doExist.length == 0) {
+
+    if (doExist.length === 0) {
       return res.status(404).json({
-        message: "Requested department and year doesn't exist",
+        message: "Requested department and years do not exist for this batch.",
         success: false,
       });
     }
 
-    // Check if HOD is already assigned to this department and year
-    const existingAssignment = await departmentAssignment.findOne({
-      hod: hodId,
-      department,
-      departmentYears: year,
+    const existingAssignments = await departmentAssignment
+      .find({
+        hod: hodId,
+        department,
+        batch,
+      })
+      .lean();
+
+    const alreadyAssignedYears = new Set();
+    existingAssignments.forEach((assignment) => {
+      assignment.departmentYears.forEach((y) => alreadyAssignedYears.add(y));
     });
 
-    if (existingAssignment) {
+    const newYears = years.filter((year) => !alreadyAssignedYears.has(year));
+
+    if (newYears.length === 0) {
       return res.status(400).json({
-        message: "HOD is already assigned to this department and year",
+        message:
+          "All requested years are already assigned to this HOD for the selected batch.",
         success: false,
       });
     }
@@ -41,18 +60,22 @@ const newAssignment = async (req, res) => {
     const assignment = new departmentAssignment({
       hod: hodId,
       department,
-      departmentYears: year,
+      departmentYears: newYears,
+      batch,
     });
 
     await assignment.save();
+
     return res.status(201).json({
-      message: "Department Assigned Successfully",
+      message: `Department assigned successfully for years: ${newYears.join(
+        ", "
+      )}`,
       success: true,
     });
   } catch (err) {
-    console.log(err);
+    console.error("Error assigning department:", err);
     return res.status(500).json({
-      message: "Internal Server Occurred while assigning department",
+      message: "Internal server error while assigning department.",
       success: false,
     });
   }
@@ -81,7 +104,11 @@ const getDepartmentAssignments = async (req, res) => {
   try {
     const assignments = await departmentAssignment
       .find()
-      .populate("hod", "firstName lastName email")
+      .populate({
+        path: "hod",
+        select: "firstName lastName email batch",
+      })
+      .sort({ batch: -1 })
       .lean();
 
     return res.status(200).json({
@@ -105,6 +132,7 @@ const getAssignmentsByHOD = async (req, res) => {
     const assignments = await departmentAssignment
       .find({ hod: hodId })
       .populate("hod", "firstName lastName email")
+      .sort({ batch: -1 })
       .lean();
 
     return res.status(200).json({
@@ -150,7 +178,8 @@ const removeAssignment = async (req, res) => {
 // Update department assignment
 const updateAssignment = async (req, res) => {
   const { assignmentId } = req.params;
-  const { department, year } = req.body;
+  const { department, year, batch } = req.body;
+
   try {
     const assignment = await departmentAssignment.findById(assignmentId);
     if (!assignment) {
@@ -159,36 +188,49 @@ const updateAssignment = async (req, res) => {
         success: false,
       });
     }
-
-    // Check if the new department and year combination exists
-    const doExist = await classInfo
-      .find({ department, year })
-      .select("-subjects -students -__v")
+    const classExists = await classInfo
+      .findOne({
+        department,
+        year,
+        batch,
+      })
       .lean();
-    if (doExist.length == 0) {
+
+    if (!classExists) {
       return res.status(404).json({
-        message: "Requested department and year doesn't exist",
+        message: "Requested class (department, year, batch) does not exist",
         success: false,
       });
     }
 
-    // Check if HOD is already assigned to this department and year (excluding current assignment)
-    const existingAssignment = await departmentAssignment.findOne({
-      hod: assignment.hod,
-      department,
-      departmentYears: year,
-      _id: { $ne: assignmentId },
-    });
-
-    if (existingAssignment) {
-      return res.status(400).json({
-        message: "HOD is already assigned to this department and year",
-        success: false,
+    if (assignment.department === department && assignment.batch === batch) {
+      if (assignment.departmentYears.includes(year)) {
+        return res.status(400).json({
+          message: "This year is already assigned in this assignment",
+          success: false,
+        });
+      }
+    } else {
+      const duplicate = await departmentAssignment.findOne({
+        hod: assignment.hod,
+        department,
+        batch,
+        departmentYears: year,
+        _id: { $ne: assignmentId },
       });
+
+      if (duplicate) {
+        return res.status(400).json({
+          message:
+            "A different assignment already exists for this department, year, and batch",
+          success: false,
+        });
+      }
     }
 
     assignment.department = department;
-    assignment.departmentYears = year;
+    assignment.batch = batch;
+    assignment.departmentYears.push(year);
     await assignment.save();
 
     return res.status(200).json({
@@ -196,7 +238,7 @@ const updateAssignment = async (req, res) => {
       success: true,
     });
   } catch (err) {
-    console.log(err);
+    console.error("Error updating assignment:", err);
     return res.status(500).json({
       message: "Internal Server Error while updating assignment",
       success: false,
@@ -204,11 +246,11 @@ const updateAssignment = async (req, res) => {
   }
 };
 
-module.exports = { 
-  newAssignment, 
-  getAllHODs, 
-  getDepartmentAssignments, 
-  getAssignmentsByHOD, 
-  removeAssignment, 
-  updateAssignment 
+module.exports = {
+  newAssignment,
+  getAllHODs,
+  getDepartmentAssignments,
+  getAssignmentsByHOD,
+  removeAssignment,
+  updateAssignment,
 };

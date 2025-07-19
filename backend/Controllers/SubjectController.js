@@ -10,12 +10,13 @@ const departmentAssignment = require("../Models/AssignedDepartments.js");
  */
 const getSubjectsbyCriteria = async (req, res) => {
   try {
-    let { department, year, semester } = req.query;
+    let { department, year, semester, batch } = req.query;
 
     const query = {};
     if (semester) query.semester = semester;
     if (department) query.department = department;
     if (year) query.year = year;
+    if (batch) query.batch = batch;
 
     if (req.user.role === "HOD") {
       const assignedDetails = await departmentAssignment
@@ -70,12 +71,17 @@ const getSubjectsbyCriteria = async (req, res) => {
  * returns a newly created subject
  */
 const addSubject = async (req, res) => {
-  const { name, code, department, year, semester, batch } = req.body;
+  const { name, code, department, year, semester } = req.body;
   try {
-    const existingSubject = await Subject.findOne({ code });
+    const classInfo = await Class.findOne({ department, year })
+      .sort({ batch: -1 })
+      .select("batch _id")
+      .lean();
+    const batch = classInfo.batch;
+    const existingSubject = await Subject.findOne({ code, batch });
     if (existingSubject) {
       return res.status(400).json({
-        message: "Subject with the same code already exists",
+        message: "Subject already exists",
         success: false,
       });
     }
@@ -85,6 +91,7 @@ const addSubject = async (req, res) => {
       department,
       year,
       semester,
+      batch,
     });
     await newSubject.save();
     await Class.updateMany(
@@ -116,6 +123,7 @@ const addSubject = async (req, res) => {
  *  returns the newly assigned subjectName and facultyName
  */
 const assignSubject = async (req, res) => {
+  const assignedBy = req.user.id;
   const { subjectId, facultyId, section } = req.body;
   try {
     const subject = await Subject.findOne({ _id: subjectId });
@@ -146,6 +154,7 @@ const assignSubject = async (req, res) => {
       subject: subject._id,
       faculty: faculty._id,
       section: section,
+      assignedBy,
     });
 
     await newAssignment.save();
@@ -198,5 +207,5 @@ module.exports = {
   getSubjectsbyCriteria,
   addSubject,
   assignSubject,
-  deleteSubjectAssignment
+  deleteSubjectAssignment,
 };
