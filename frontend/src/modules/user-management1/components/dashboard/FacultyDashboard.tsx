@@ -882,16 +882,22 @@ const FacultyDashboard = () => {
     </div>
   );
 
-  // Mock faculty profile (replace with real data or store)
-  const facultyProfile = {
-    firstName: "Dr. Lila",
-    lastName: "Ramirez",
-    email: "lila.ramirez@college.edu",
-    department: "Physics",
-    phone: "(44) 99888-7777",
-    id: "FAC-2025-001",
-    dob: "1980-05-12",
-  };
+  // Faculty profile state
+  const [facultyProfile, setFacultyProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState(null);
+
+  useEffect(() => {
+    apiClient.get('/auth/me')
+      .then(res => {
+        setFacultyProfile(res.data.user);
+        setProfileLoading(false);
+      })
+      .catch(err => {
+        setProfileError('Failed to load profile');
+        setProfileLoading(false);
+      });
+  }, []);
 
   const handleAttendanceSubmit = async () => {
     const selected = facultyData.find(
@@ -953,8 +959,8 @@ const FacultyDashboard = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) {
+  if (profileLoading || loading) return <div>Loading...</div>;
+  if (profileError || error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
@@ -971,7 +977,7 @@ const FacultyDashboard = () => {
               d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
             />
           </svg>
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">{error}</h2>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800">{profileError || error}</h2>
           <button
             className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
             onClick={() => window.open("mailto:support@college.edu")}
@@ -1003,31 +1009,20 @@ const FacultyDashboard = () => {
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-                      {facultyProfile.firstName} {facultyProfile.lastName}
+                      {facultyProfile?.firstName} {facultyProfile?.lastName}
                     </h2>
                     <button className="p-1 text-gray-400 hover:text-gray-600">
                       <Edit className="w-4 h-4" />
                     </button>
                   </div>
                   <p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">
-                    {facultyProfile.email}
+                    {facultyProfile?.email}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
-                    <div>
-                      <span className="font-medium">Faculty ID:</span>{" "}
-                      {facultyProfile.id}
-                    </div>
-                    <div>
-                      <span className="font-medium">Department:</span>{" "}
-                      {facultyProfile.department}
-                    </div>
-                    <div>
-                      <span className="font-medium">Date of birth:</span>{" "}
-                      {dayjs(facultyProfile.dob).format("DD/MM/YYYY")}
-                    </div>
+                    {/* Removed Faculty ID, Department, and Date of Birth */}
                     <div>
                       <span className="font-medium">Phone:</span>{" "}
-                      {facultyProfile.phone}
+                      {facultyProfile?.phoneNumber || facultyProfile?.phone}
                     </div>
                   </div>
                   <div className="mt-4 md:mt-6">
