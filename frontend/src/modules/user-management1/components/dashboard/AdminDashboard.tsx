@@ -58,34 +58,6 @@ import apiClient from "@/api";
 import HODAssignmentManager from "./HODAssignmentManager";
 
 // --- Mock Data ---
-const systemStats = [
-  {
-    title: "Total Users",
-    value: "1,247",
-    change: "+12 from last month",
-    icon: <Users className="h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    title: "Active Students",
-    value: "980",
-    change: "78.6% of total users",
-    icon: <UserCheck className="h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    title: "Faculty Members",
-    value: "185",
-    change: "across all departments",
-    icon: <Users className="h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    title: "System Health",
-    value: "99.9%",
-    change: "uptime this month",
-    icon: <Activity className="h-4 w-4 text-green-600" />,
-    color: "text-green-600",
-  },
-];
-
 const recentActivity = [
   {
     title: "New User Registration",
@@ -253,33 +225,6 @@ const announcements = [
   },
 ];
 
-const pieData = {
-  labels: ["Students", "Faculty", "Admins"],
-  datasets: [
-    {
-      data: [980, 185, 10],
-      backgroundColor: ["#3b82f6", "#f59e42", "#10b981"],
-      borderWidth: 1,
-    },
-  ],
-};
-
-const barData = {
-  labels: ["CSE", "ECE", "MECH"],
-  datasets: [
-    {
-      label: "Students",
-      data: [320, 210, 180],
-      backgroundColor: "#3b82f6",
-    },
-    {
-      label: "Faculty",
-      data: [20, 15, 12],
-      backgroundColor: "#f59e42",
-    },
-  ],
-};
-
 const sectionIds = [
   "overview",
   "user-management",
@@ -382,6 +327,9 @@ const AdminDashboard = () => {
       | null;
   }>({ open: false, user: null });
 
+  // User Distribution State
+  const [userCounts, setUserCounts] = useState({ students: 0, faculty: 0, hods: 0 });
+
   useEffect(() => {
     let data = {};
     setLoadingUsers(true);
@@ -396,6 +344,24 @@ const AdminDashboard = () => {
       .then(setUsers)
       .finally(() => setLoadingUsers(false));
   }, [userType, studentYear, studentBranch, studentSection]);
+
+  useEffect(() => {
+    // Fetch all students
+    const fetchCounts = async () => {
+      try {
+        // Students: fetch all (no filter)
+        const students = await authService.fetchUsersByRole("STUDENT", { year: "", department: "", section: "" });
+        // Faculty: fetch all
+        const faculty = await authService.fetchUsersByRole("FACULTY", {});
+        // HODs: fetch all
+        const hods = await authService.fetchUsersByRole("HOD", {});
+        setUserCounts({ students: students.length, faculty: faculty.length, hods: hods.length });
+      } catch (err) {
+        setUserCounts({ students: 0, faculty: 0, hods: 0 });
+      }
+    };
+    fetchCounts();
+  }, []);
 
   // Fetch timetable from backend when year, branch, or section changes
   useEffect(() => {
@@ -441,6 +407,55 @@ const AdminDashboard = () => {
 
   const branches = ["CSE", "ECE", "EEE", "MECH", "CSD", "CSM"];
   const sections = ["1", "2", "3"]; // You can adjust this as needed
+
+  // Add state for dynamic department stats
+  const [departmentStats, setDepartmentStats] = useState([]);
+  const [departmentBarData, setDepartmentBarData] = useState({ labels: [], datasets: [] });
+
+  useEffect(() => {
+    // Fetch department-wise stats
+    async function fetchDepartmentStats() {
+      const stats = [];
+      const studentCounts = [];
+      for (const dept of branches) {
+        // Fetch students in department
+        let students = [];
+        try {
+          const res = await apiClient.get(`/userData/students?year=&department=${dept}&section=`);
+          students = res.data.students || [];
+        } catch (e) {
+          students = [];
+        }
+        // Fetch HOD name (from department assignments)
+        let hodName = "-";
+        try {
+          const res = await apiClient.get(`/department/assignments`);
+          const assignments = res.data.assignments || [];
+          const assignment = assignments.find(a => a.department === dept);
+          if (assignment && assignment.hod) {
+            hodName = `${assignment.hod.firstName} ${assignment.hod.lastName}`;
+          }
+        } catch (e) {
+          hodName = "-";
+        }
+        stats.push({ department: dept, students: students.length, hod: hodName });
+        studentCounts.push(students.length);
+      }
+      setDepartmentStats(stats);
+      setDepartmentBarData({
+        labels: branches,
+        datasets: [
+          {
+            label: "Students",
+            data: studentCounts,
+            backgroundColor: "#3b82f6",
+          }
+        ],
+      });
+    }
+    fetchDepartmentStats();
+    // No return value needed
+  }, []);
 
   const handleNavClick = (section) => {
     setActiveSection(section);
@@ -510,6 +525,62 @@ const AdminDashboard = () => {
     });
     return unique;
   }, [timetableData]);
+
+  // Replace pieData with real-time data
+  const pieData = useMemo(() => ({
+    labels: ["Students", "Faculty", "HODs"],
+    datasets: [
+      {
+        data: [userCounts.students, userCounts.faculty, userCounts.hods],
+        backgroundColor: ["#3b82f6", "#f59e42", "#a855f7"],
+        borderWidth: 1,
+      },
+    ],
+  }), [userCounts]);
+
+  const barData = {
+    labels: ["CSE", "ECE", "MECH"],
+    datasets: [
+      {
+        label: "Students",
+        data: [320, 210, 180],
+        backgroundColor: "#3b82f6",
+      },
+      {
+        label: "Faculty",
+        data: [20, 15, 12],
+        backgroundColor: "#f59e42",
+      },
+    ],
+  };
+
+  // System stats for overview section
+  const systemStats = [
+    {
+      title: "Total Users",
+      value: (userCounts.students + userCounts.faculty + userCounts.hods).toLocaleString(),
+      change: "Total registered users",
+      icon: <Users className="h-4 w-4 text-muted-foreground" />,
+    },
+    {
+      title: "Students",
+      value: userCounts.students.toLocaleString(),
+      change: "Current students",
+      icon: <UserCheck className="h-4 w-4 text-blue-600" />,
+    },
+    {
+      title: "Faculty Members",
+      value: userCounts.faculty.toLocaleString(),
+      change: "Current faculty",
+      icon: <Users className="h-4 w-4 text-orange-500" />,
+    },
+    {
+      title: "HODs",
+      value: userCounts.hods.toLocaleString(),
+      change: "Current HODs",
+      icon: <Users className="h-4 w-4 text-purple-600" />,
+    },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -596,7 +667,7 @@ const AdminDashboard = () => {
                 <CardTitle>Department Stats</CardTitle>
               </CardHeader>
               <CardContent>
-                <Bar data={barData} />
+                <Bar key={JSON.stringify(departmentBarData)} data={departmentBarData} />
               </CardContent>
             </Card>
           </div>
@@ -911,13 +982,26 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                 </div>
-                <Button
-                  onClick={handleTimetableEdit}
-                  className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2"
-                >
-                  <CalendarDays className="w-5 h-5" />
-                  Create/Edit Timetable
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => navigate("/admin/timetable")}
+                    className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2"
+                  >
+                    <CalendarDays className="w-5 h-5" />
+                    Create Timetable
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      navigate(
+                        `/admin/timetable?year=${selectedYear}&branch=${selectedBranch}&section=${selectedSection}`
+                      )
+                    }
+                    className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2"
+                  >
+                    <CalendarDays className="w-5 h-5" />
+                    Edit Timetable
+                  </Button>
+                </div>
               </div>
               {/* Timetable Table */}
               <div className="w-full">
@@ -1035,7 +1119,6 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
             <BookOpen className="w-6 h-6" /> Department Management
           </h2>
-
           {/* Mobile View: Cards */}
           <div className="md:hidden space-y-3">
             {departmentStats.map((dept, idx) => (
@@ -1044,18 +1127,12 @@ const AdminDashboard = () => {
                 <p className="text-sm">HOD: {dept.hod}</p>
                 <div className="flex justify-between mt-2 text-sm">
                   <span>
-                    Students:{" "}
-                    <span className="font-semibold">{dept.students}</span>
-                  </span>
-                  <span>
-                    Faculty:{" "}
-                    <span className="font-semibold">{dept.faculty}</span>
+                    Students: <span className="font-semibold">{dept.students}</span>
                   </span>
                 </div>
               </Card>
             ))}
           </div>
-
           {/* Desktop View: Table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
@@ -1063,7 +1140,6 @@ const AdminDashboard = () => {
                 <tr className="bg-gray-100">
                   <th className="py-2 px-3 text-left">Department</th>
                   <th className="py-2 px-3 text-left">Students</th>
-                  <th className="py-2 px-3 text-left">Faculty</th>
                   <th className="py-2 px-3 text-left">HOD</th>
                 </tr>
               </thead>
@@ -1072,7 +1148,6 @@ const AdminDashboard = () => {
                   <tr key={idx} className="border-b last:border-b-0">
                     <td className="py-2 px-3">{dept.department}</td>
                     <td className="py-2 px-3">{dept.students}</td>
-                    <td className="py-2 px-3">{dept.faculty}</td>
                     <td className="py-2 px-3">{dept.hod}</td>
                   </tr>
                 ))}

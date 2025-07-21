@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import DashboardNav from '../../user-management1/components/dashboard/DashboardNav';
 import { toast } from "@/common/hooks/use-toast";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import apiClient from '@/api';
 
@@ -29,13 +29,23 @@ interface TimetableCell {
 
 const TimetableDashboard = () => {
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  // Parse query params
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return {
+      branch: params.get('branch') || '',
+      year: params.get('year') || '',
+      section: params.get('section') || '',
+    };
+  }, [location.search]);
+
   const [subjects, setSubjects] = useState<Subject[]>([]);
   // Step 1: Setup form state
   const [setup, setSetup] = useState({
-    branch: '',
-    year: '',
-    section: '',
+    branch: queryParams.branch,
+    year: queryParams.year,
+    section: queryParams.section,
     periods: 6,
   });
   const [step, setStep] = useState(1);
@@ -220,6 +230,37 @@ const TimetableDashboard = () => {
     }
     setLoading(false);
   };
+
+  // Auto-load timetable if query params are present
+  useEffect(() => {
+    if (queryParams.branch && queryParams.year && queryParams.section) {
+      // Only run if not already at step 2
+      if (step === 1) {
+        // Simulate form submit
+        (async () => {
+          setLoading(true);
+          try {
+            const response = await apiClient.get(`/userData/checkTimetable?department=${queryParams.branch}&year=${queryParams.year}&section=${queryParams.section}`);
+            if (response.data.subjects) {
+              setSubjects(response.data.subjects);
+            }
+            if (response.data.exists) {
+              fillExistingTimetable(response.data.timetable, setup.periods, response.data.subjects || []);
+              setSetup(prev => ({ ...prev, branch: queryParams.branch, year: queryParams.year, section: queryParams.section }));
+              setStep(2);
+            } else {
+              // If not exists, just fill setup and stay at step 1
+              setSetup(prev => ({ ...prev, branch: queryParams.branch, year: queryParams.year, section: queryParams.section }));
+            }
+          } catch (error) {
+            // fallback: just fill setup
+            setSetup(prev => ({ ...prev, branch: queryParams.branch, year: queryParams.year, section: queryParams.section }));
+          }
+          setLoading(false);
+        })();
+      }
+    }
+  }, [queryParams.branch, queryParams.year, queryParams.section]);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
