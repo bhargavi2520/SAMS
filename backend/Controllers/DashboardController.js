@@ -162,7 +162,9 @@ const getFacultyDashboard = async (req, res) => {
       })),
     };
     const allStudents = await User.find(studentQuery)
-      .select("_id firstName lastName section department year semester rollNumber")
+      .select(
+        "_id firstName lastName section department year semester rollNumber"
+      )
       .lean();
 
     const studentsByCombo = {};
@@ -221,53 +223,82 @@ const getFacultyDashboard = async (req, res) => {
   }
 };
 
-
-
 /**
  * hod dashboard function
  * returns department and year assigned to hod
  * and return hod details.
  */
 
-const getHodDashboard = async(req,res)=>{
+const getHodDashboard = async (req, res) => {
   const userId = req.user.id;
-  try{
+  try {
     const user = User.findById(userId).select("-password -_id -__v").lean();
-    if(!user){
+    if (!user) {
       return res.status(404).json({
-        message : "User not found",
-        success : false,
+        message: "User not found",
+        success: false,
       });
     }
-    const assigned = await departmentAssignment.findOne({hod : userId}).sort({createdAt: -1}).lean();
-    if(!assigned){
-      return res.status(204).json({ 
-        message : "No department is assigned to You",
-        success : true,
-        department : "",
-        years : [],
-      })
+    const assigned = await departmentAssignment
+      .findOne({ hod: userId })
+      .sort({ createdAt: -1 })
+      .lean();
+    if (!assigned) {
+      return res.status(204).json({
+        message: "No department is assigned to You",
+        success: true,
+        department: "",
+        years: [],
+      });
     }
-    const {departmentYears , department} = assigned;
-    
-    return res.status(200).json({
-      message : "Dashboard fetched successfully",
-      success : true,
-      department,
-      years : departmentYears,
-    })
-  }catch(err){
-    console.log("error in hod dashboard : ",err);
-    return res.status(500).json({
-      message : "Service unavailable right now",
-      success : false,
-    })
-  }
-}
+    const { departmentYears, department } = assigned;
 
+    return res.status(200).json({
+      message: "Dashboard fetched successfully",
+      success: true,
+      department,
+      years: departmentYears,
+    });
+  } catch (err) {
+    console.log("error in hod dashboard : ", err);
+    return res.status(500).json({
+      message: "Service unavailable right now",
+      success: false,
+    });
+  }
+};
+
+/**
+ * admin dashboard
+ * returns admin info
+ */
+
+const getAdminDashboard = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const admin = await User.findById(userId).select("-password").lean();
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Account doesn't exist",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Admin Dashboard Loaded.",
+      adminInfo: admin,
+    });
+  } catch (err) {
+    console.log("error at admin dashboard", err);
+    return res.status(500).json({
+      message: "Internal Server Occurred",
+    });
+  }
+};
 
 module.exports = {
   getStudentDashboard,
   getFacultyDashboard,
   getHodDashboard,
+  getAdminDashboard,
 };

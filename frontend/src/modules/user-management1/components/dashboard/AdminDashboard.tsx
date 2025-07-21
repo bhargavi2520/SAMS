@@ -31,6 +31,7 @@ import {
   CheckSquare,
   Award,
   Megaphone,
+  LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/modules/user-management1/store/authStore";
 import {
@@ -260,6 +261,7 @@ const AdminDashboard = () => {
   const [timetableData, setTimetableData] = useState([]); // fetched timetable
   const [timetableLoading, setTimetableLoading] = useState(false);
   const [timetableError, setTimetableError] = useState("");
+  const [dashboardLoaded, setDashboardLoaded] = useState(false);
   const navigate = useNavigate();
   const authStore = useAuthStore();
 
@@ -327,10 +329,34 @@ const AdminDashboard = () => {
       | null;
   }>({ open: false, user: null });
 
-  // User Distribution State
-  const [userCounts, setUserCounts] = useState({ students: 0, faculty: 0, hods: 0 });
+  //load admin dashboard
+
+  const [loading, setLoading] = useState(false);
+  const [adminData, setAdminData] = useState(null);
 
   useEffect(() => {
+    const fetchDashboard = async () => {
+      setLoading(true);
+      const response = await apiClient.get("/dashboard/admin");
+      const data = response.data;
+      setAdminData(data.adminInfo);
+      const newToken = response.headers["refreshedtoken"];
+      localStorage.setItem("authToken", newToken);
+      setDashboardLoaded(true);
+      setLoading(false);
+    };
+    fetchDashboard();
+  }, []);
+
+  // User Distribution State
+  const [userCounts, setUserCounts] = useState({
+    students: 0,
+    faculty: 0,
+    hods: 0,
+  });
+
+  useEffect(() => {
+    if (!dashboardLoaded) return;
     let data = {};
     setLoadingUsers(true);
     if (userType == "STUDENT")
@@ -343,28 +369,34 @@ const AdminDashboard = () => {
       .fetchUsersByRole(userType, data)
       .then(setUsers)
       .finally(() => setLoadingUsers(false));
-  }, [userType, studentYear, studentBranch, studentSection]);
+  }, [userType, studentYear, studentBranch, studentSection, dashboardLoaded]);
 
   useEffect(() => {
-    // Fetch all students
+    if (!dashboardLoaded) return;
     const fetchCounts = async () => {
       try {
-        // Students: fetch all (no filter)
-        const students = await authService.fetchUsersByRole("STUDENT", { year: "", department: "", section: "" });
-        // Faculty: fetch all
+        const students = await authService.fetchUsersByRole("STUDENT", {
+          year: "",
+          department: "",
+          section: "",
+        });
         const faculty = await authService.fetchUsersByRole("FACULTY", {});
-        // HODs: fetch all
         const hods = await authService.fetchUsersByRole("HOD", {});
-        setUserCounts({ students: students.length, faculty: faculty.length, hods: hods.length });
+        setUserCounts({
+          students: students.length,
+          faculty: faculty.length,
+          hods: hods.length,
+        });
       } catch (err) {
         setUserCounts({ students: 0, faculty: 0, hods: 0 });
       }
     };
     fetchCounts();
-  }, []);
+  }, [dashboardLoaded]);
 
   // Fetch timetable from backend when year, branch, or section changes
   useEffect(() => {
+    if (!dashboardLoaded) return;
     async function fetchTimetable() {
       setTimetableLoading(true);
       setTimetableError("");
@@ -391,7 +423,9 @@ const AdminDashboard = () => {
       }
     }
     fetchTimetable();
-  }, [selectedYear, selectedBranch, selectedSection]);
+  }, [selectedYear, selectedBranch, selectedSection,dashboardLoaded
+
+  ]);
 
   const timetablesByBranch = useMemo(() => {
     const filtered = timetableTable.filter((row) => row.year === selectedYear);
@@ -410,10 +444,13 @@ const AdminDashboard = () => {
 
   // Add state for dynamic department stats
   const [departmentStats, setDepartmentStats] = useState([]);
-  const [departmentBarData, setDepartmentBarData] = useState({ labels: [], datasets: [] });
+  const [departmentBarData, setDepartmentBarData] = useState({
+    labels: [],
+    datasets: [],
+  });
 
   useEffect(() => {
-    // Fetch department-wise stats
+    if (!dashboardLoaded) return;
     async function fetchDepartmentStats() {
       const stats = [];
       const studentCounts = [];
@@ -421,7 +458,9 @@ const AdminDashboard = () => {
         // Fetch students in department
         let students = [];
         try {
-          const res = await apiClient.get(`/userData/students?year=&department=${dept}&section=`);
+          const res = await apiClient.get(
+            `/userData/students?year=&department=${dept}&section=`
+          );
           students = res.data.students || [];
         } catch (e) {
           students = [];
@@ -431,14 +470,18 @@ const AdminDashboard = () => {
         try {
           const res = await apiClient.get(`/department/assignments`);
           const assignments = res.data.assignments || [];
-          const assignment = assignments.find(a => a.department === dept);
+          const assignment = assignments.find((a) => a.department === dept);
           if (assignment && assignment.hod) {
             hodName = `${assignment.hod.firstName} ${assignment.hod.lastName}`;
           }
         } catch (e) {
           hodName = "-";
         }
-        stats.push({ department: dept, students: students.length, hod: hodName });
+        stats.push({
+          department: dept,
+          students: students.length,
+          hod: hodName,
+        });
         studentCounts.push(students.length);
       }
       setDepartmentStats(stats);
@@ -449,13 +492,12 @@ const AdminDashboard = () => {
             label: "Students",
             data: studentCounts,
             backgroundColor: "#3b82f6",
-          }
+          },
         ],
       });
     }
     fetchDepartmentStats();
-    // No return value needed
-  }, []);
+  }, [dashboardLoaded]);
 
   const handleNavClick = (section) => {
     setActiveSection(section);
@@ -483,6 +525,7 @@ const AdminDashboard = () => {
 
   // Intersection Observer for active section
   useEffect(() => {
+    if (!dashboardLoaded) return;
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -70% 0px",
@@ -504,7 +547,7 @@ const AdminDashboard = () => {
       if (element) observer.observe(element);
     });
     return () => observer.disconnect();
-  }, []);
+  }, [dashboardLoaded]);
 
   // Dynamically extract unique time slots from timetableData
   const dynamicTimeSlots = useMemo(() => {
@@ -527,16 +570,19 @@ const AdminDashboard = () => {
   }, [timetableData]);
 
   // Replace pieData with real-time data
-  const pieData = useMemo(() => ({
-    labels: ["Students", "Faculty", "HODs"],
-    datasets: [
-      {
-        data: [userCounts.students, userCounts.faculty, userCounts.hods],
-        backgroundColor: ["#3b82f6", "#f59e42", "#a855f7"],
-        borderWidth: 1,
-      },
-    ],
-  }), [userCounts]);
+  const pieData = useMemo(
+    () => ({
+      labels: ["Students", "Faculty", "HODs"],
+      datasets: [
+        {
+          data: [userCounts.students, userCounts.faculty, userCounts.hods],
+          backgroundColor: ["#3b82f6", "#f59e42", "#a855f7"],
+          borderWidth: 1,
+        },
+      ],
+    }),
+    [userCounts]
+  );
 
   const barData = {
     labels: ["CSE", "ECE", "MECH"],
@@ -558,7 +604,11 @@ const AdminDashboard = () => {
   const systemStats = [
     {
       title: "Total Users",
-      value: (userCounts.students + userCounts.faculty + userCounts.hods).toLocaleString(),
+      value: (
+        userCounts.students +
+        userCounts.faculty +
+        userCounts.hods
+      ).toLocaleString(),
       change: "Total registered users",
       icon: <Users className="h-4 w-4 text-muted-foreground" />,
     },
@@ -581,7 +631,26 @@ const AdminDashboard = () => {
       icon: <Users className="h-4 w-4 text-purple-600" />,
     },
   ];
-
+  if (loading) return (<div>Loading...</div>);
+  if (!dashboardLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 font-semibold mb-2">
+             OOps! something's wrong
+          </div>
+          <button
+            onClick={() => {
+              authStore.logout();
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Login Again
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <DashboardNav
@@ -667,7 +736,10 @@ const AdminDashboard = () => {
                 <CardTitle>Department Stats</CardTitle>
               </CardHeader>
               <CardContent>
-                <Bar key={JSON.stringify(departmentBarData)} data={departmentBarData} />
+                <Bar
+                  key={JSON.stringify(departmentBarData)}
+                  data={departmentBarData}
+                />
               </CardContent>
             </Card>
           </div>
@@ -1127,7 +1199,8 @@ const AdminDashboard = () => {
                 <p className="text-sm">HOD: {dept.hod}</p>
                 <div className="flex justify-between mt-2 text-sm">
                   <span>
-                    Students: <span className="font-semibold">{dept.students}</span>
+                    Students:{" "}
+                    <span className="font-semibold">{dept.students}</span>
                   </span>
                 </div>
               </Card>

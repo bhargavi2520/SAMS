@@ -1057,7 +1057,7 @@ const HODDashboard = ({ isHOD = true }) => {
         <div className="text-center">
           <div className="text-red-600 font-semibold mb-2">{error}</div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => window.location.href = "/SAMS/login"}
             className="bg-blue-600 text-white px-4 py-2 rounded"
           >
             Login Page

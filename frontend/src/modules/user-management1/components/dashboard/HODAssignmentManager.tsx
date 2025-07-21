@@ -88,7 +88,7 @@ const HODAssignmentManager: React.FC = () => {
 
   const openEditModal = (assignment: HODAssignment) => {
     setEditDepartment(assignment.department);
-    setEditYear(assignment.departmentYears.toString());
+    setEditYear(assignment.years.toString());
     setEditModal({ open: true, assignment });
   };
 
@@ -170,9 +170,9 @@ const HODAssignmentManager: React.FC = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-base">
-                      {assignment.hod.firstName} {assignment.hod.lastName}
+                      {assignment.hodName}
                     </CardTitle>
-                    <p className="text-xs text-gray-600">{assignment.hod.email}</p>
+                    <p className="text-xs text-gray-600">{assignment.hodEmail}</p>
                   </div>
                   <div className="flex gap-1">
                     <Button
@@ -201,7 +201,7 @@ const HODAssignmentManager: React.FC = () => {
                       {assignment.department}
                     </Badge>
                     <Badge variant="outline">
-                      Year {assignment.departmentYears}
+                      Year {assignment.years}
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-500">
@@ -229,7 +229,7 @@ const HODAssignmentManager: React.FC = () => {
             <div>
               <Label>HOD</Label>
               <p className="text-sm text-gray-600 mt-1">
-                {editModal.assignment?.hod.firstName} {editModal.assignment?.hod.lastName}
+                {editModal.assignment?.hodName}
               </p>
             </div>
             <div>
@@ -282,9 +282,9 @@ const HODAssignmentManager: React.FC = () => {
           <p className="text-gray-600">
             Are you sure you want to remove{' '}
             <span className="font-medium">
-              {deleteModal.assignment?.hod.firstName} {deleteModal.assignment?.hod.lastName}
+              {deleteModal.assignment?.hodName}
             </span>{' '}
-            from {deleteModal.assignment?.department} Year {deleteModal.assignment?.departmentYears}?
+            from {deleteModal.assignment?.department} Year {deleteModal.assignment?.years}?
           </p>
           <p className="text-sm text-red-600">This action cannot be undone.</p>
           <DialogFooter>

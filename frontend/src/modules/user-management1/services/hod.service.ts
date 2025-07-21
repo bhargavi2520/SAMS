@@ -2,14 +2,11 @@ import apiClient from '@/api';
 
 export interface HODAssignment {
   _id: string;
-  hod: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+  hodName: string,
+  hodEmail : string,
   department: string;
-  departmentYears: number;
+  years: number;
+  batch : string,
   createdAt: string;
   updatedAt: string;
 }

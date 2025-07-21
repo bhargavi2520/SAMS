@@ -102,14 +102,40 @@ const getAllHODs = async (req, res) => {
 // Get all department assignments
 const getDepartmentAssignments = async (req, res) => {
   try {
-    const assignments = await departmentAssignment
-      .find()
-      .populate({
-        path: "hod",
-        select: "firstName lastName email batch",
-      })
-      .sort({ batch: -1 })
-      .lean();
+    const assignments = await departmentAssignment.aggregate([
+      {
+        $sort: {
+          batch: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "hod",
+          foreignField: "_id",
+          as: "hodInfo",
+        },
+      },
+      {
+        $unwind: {
+          path: "$hodInfo",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: "$_id",
+          years: "$departmentYears",
+          department: "$department",
+          hodName: {
+            $concat: ["$hodInfo.firstName", " ", "$hodInfo.lastName"],
+          },
+          assignedDate: "$createdAt",
+          batch: "$batch",
+          hodEmail: "$hodInfo.email",
+        },
+      },
+    ]);
 
     return res.status(200).json({
       message: "Department assignments fetched successfully",
