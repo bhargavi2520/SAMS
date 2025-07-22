@@ -3,15 +3,8 @@ const classInfo = require("../Models/Class.js");
 const { User, HOD } = require("../Models/User.js");
 
 const newAssignment = async (req, res) => {
-  const { hodId, department, years, batch } = req.body;
+  const { hodId, department, years} = req.body;
 
-  const currentYear = new Date().getFullYear();
-  if (parseInt(batch) + 4 < currentYear) {
-    return res.status(400).json({
-      success: false,
-      message: "Can't modify completed batch records",
-    });
-  }
 
   try {
     const hod = await User.findById(hodId).select("-__v -password").lean();
@@ -23,7 +16,7 @@ const newAssignment = async (req, res) => {
     }
 
     const doExist = await classInfo
-      .find({ department, year: { $in: years }, batch })
+      .find({ department, year: { $in: years } })
       .select("_id year")
       .lean();
 
@@ -38,7 +31,6 @@ const newAssignment = async (req, res) => {
       .find({
         hod: hodId,
         department,
-        batch,
       })
       .lean();
 
@@ -61,7 +53,6 @@ const newAssignment = async (req, res) => {
       hod: hodId,
       department,
       departmentYears: newYears,
-      batch,
     });
 
     await assignment.save();
@@ -133,6 +124,7 @@ const getDepartmentAssignments = async (req, res) => {
           assignedDate: "$createdAt",
           batch: "$batch",
           hodEmail: "$hodInfo.email",
+          createdAt: "$createdAt",
         },
       },
     ]);

@@ -7,11 +7,18 @@ import { Alert, AlertDescription } from '@/common/components/ui/alert';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { hodService, HODProfile, HODAssignment, CreateAssignmentData } from '@/modules/user-management1/services/hod.service';
 
+import ReactSelect from 'react-select';
+
 interface HODAssignmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedHOD?: HODProfile | null;
   onAssignmentSuccess?: () => void;
+}
+
+interface YearOption {
+  value: number;
+  label: string;
 }
 
 const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
@@ -24,13 +31,20 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
   const [assignments, setAssignments] = useState<HODAssignment[]>([]);
   const [selectedHODId, setSelectedHODId] = useState<string>('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
 
   const departments = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
-  const years = [1, 2, 3, 4];
+  
+  // Year options for multi-select
+  const yearOptions: YearOption[] = [
+    { value: 1, label: 'Year 1' },
+    { value: 2, label: 'Year 2' },
+    { value: 3, label: 'Year 3' },
+    { value: 4, label: 'Year 4' }
+  ];
 
   useEffect(() => {
     if (open) {
@@ -60,9 +74,14 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
     }
   };
 
+  const handleYearChange = (selectedOptions: readonly YearOption[]) => {
+    const yearValues = selectedOptions.map(option => option.value);
+    setSelectedYears(yearValues);
+  };
+
   const handleSubmit = async () => {
-    if (!selectedHODId || !selectedDepartment || !selectedYear) {
-      setError('Please fill in all fields');
+    if (!selectedHODId || !selectedDepartment || selectedYears.length === 0) {
+      setError('Please fill in all fields and select at least one year');
       return;
     }
 
@@ -74,7 +93,7 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
       const assignmentData: CreateAssignmentData = {
         hodId: selectedHODId,
         department: selectedDepartment,
-        year: parseInt(selectedYear)
+        years: selectedYears ,
       };
 
       await hodService.createAssignment(assignmentData);
@@ -83,7 +102,7 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
       // Reset form
       setSelectedHODId('');
       setSelectedDepartment('');
-      setSelectedYear('');
+      setSelectedYears([]);
       
       // Refresh assignments
       await fetchAssignments();
@@ -111,16 +130,29 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
     setSuccess('');
     setSelectedHODId('');
     setSelectedDepartment('');
-    setSelectedYear('');
+    setSelectedYears([]);
     onOpenChange(false);
   };
 
-  const isAssignmentExists = (hodId: string, department: string, year: string) => {
-    return assignments.some(
-      assignment => 
-        assignment.hod._id === hodId && 
-        assignment.department === department && 
-        assignment.departmentYears === parseInt(year)
+  const isAssignmentExists = (hodId: string, department: string, years: number[]) => {
+    return years.some(year => 
+      assignments.some(
+        assignment => 
+          assignment._id === hodId && 
+          assignment.department === department && 
+          assignment.years === year
+      )
+    );
+  };
+
+  const getConflictingYears = (hodId: string, department: string, years: number[]) => {
+    return years.filter(year => 
+      assignments.some(
+        assignment => 
+          assignment._id === hodId && 
+          assignment.department === department && 
+          assignment.years === year
+      )
     );
   };
 
@@ -128,6 +160,39 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
     const hod = hods.find(h => h._id === hodId);
     return hod ? `${hod.firstName} ${hod.lastName}` : 'Unknown HOD';
   };
+
+  // Custom styles for ReactSelect
+  const customStyles = {
+    control: (provided: any) => ({
+      ...provided,
+      minHeight: '40px',
+      border: '1px solid hsl(var(--border))',
+      borderRadius: '6px',
+      '&:hover': {
+        border: '1px solid hsl(var(--border))',
+      }
+    }),
+    multiValue: (provided: any) => ({
+      ...provided,
+      backgroundColor: 'hsl(var(--secondary))',
+    }),
+    multiValueLabel: (provided: any) => ({
+      ...provided,
+      color: 'hsl(var(--secondary-foreground))',
+    }),
+    multiValueRemove: (provided: any) => ({
+      ...provided,
+      color: 'hsl(var(--secondary-foreground))',
+      '&:hover': {
+        backgroundColor: 'hsl(var(--destructive))',
+        color: 'hsl(var(--destructive-foreground))',
+      }
+    })
+  };
+
+  const conflictingYears = selectedHODId && selectedDepartment && selectedYears.length > 0 
+    ? getConflictingYears(selectedHODId, selectedDepartment, selectedYears)
+    : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -186,31 +251,45 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
             </div>
 
             <div>
-              <Label htmlFor="year-select">Year</Label>
-              <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      Year {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="year-select">Years (Multi-select)</Label>
+              <ReactSelect
+                isMulti
+                options={yearOptions}
+                value={yearOptions.filter(option => selectedYears.includes(option.value))}
+                onChange={handleYearChange}
+                placeholder="Select years..."
+                styles={customStyles}
+                className="mt-1"
+                classNamePrefix="react-select"
+              />
             </div>
           </div>
 
-          {/* Warning if assignment already exists */}
-          {selectedHODId && selectedDepartment && selectedYear && 
-           isAssignmentExists(selectedHODId, selectedDepartment, selectedYear) && (
+          {/* Warning if any assignment already exists */}
+          {conflictingYears.length > 0 && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {getHODName(selectedHODId)} is already assigned to {selectedDepartment} Year {selectedYear}
+                {getHODName(selectedHODId)} is already assigned to {selectedDepartment} for Year(s): {conflictingYears.join(', ')}
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* Display selected years */}
+          {selectedYears.length > 0 && (
+            <div>
+              <Label className="text-sm font-medium">Selected Years:</Label>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {selectedYears.map(year => (
+                  <span 
+                    key={year} 
+                    className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-sm"
+                  >
+                    Year {year}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Current Assignments */}
@@ -221,11 +300,11 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
                 {assignments.map((assignment) => (
                   <div key={assignment._id} className="text-sm py-1 border-b last:border-b-0">
                     <span className="font-medium">
-                      {assignment.hod.firstName} {assignment.hod.lastName}
+                      {assignment.hodName}
                     </span>
                     {' → '}
                     <span className="text-gray-600">
-                      {assignment.department} Year {assignment.departmentYears}
+                      {assignment.department} Year {assignment.years}
                     </span>
                   </div>
                 ))}
@@ -240,8 +319,8 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={loading || !selectedHODId || !selectedDepartment || !selectedYear ||
-                     isAssignmentExists(selectedHODId, selectedDepartment, selectedYear)}
+            disabled={loading || !selectedHODId || !selectedDepartment || selectedYears.length === 0 ||
+                     conflictingYears.length > 0}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Assign HOD
@@ -252,4 +331,4 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
   );
 };
 
-export default HODAssignmentModal; 
+export default HODAssignmentModal;

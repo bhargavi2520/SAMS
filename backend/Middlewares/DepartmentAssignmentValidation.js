@@ -8,8 +8,7 @@ const departmentAssignmentValidation = (req, res, next) => {
   const schema = joi.object({
     hodId: joi.string().length(24).hex().required(),
     department: joi.string().required(),
-    years: joi.number().required(),
-    batch : joi.string().required(),
+    years: joi.array().items(joi.number()).required(),
   });
 
   const { error } = schema.validate(req.body, { convert: true });

@@ -22,7 +22,7 @@ export interface HODProfile {
 export interface CreateAssignmentData {
   hodId: string;
   department: string;
-  year: number;
+  years: number[];
 }
 
 export interface UpdateAssignmentData {

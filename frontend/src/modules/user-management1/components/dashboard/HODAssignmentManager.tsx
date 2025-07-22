@@ -201,7 +201,7 @@ const HODAssignmentManager: React.FC = () => {
                       {assignment.department}
                     </Badge>
                     <Badge variant="outline">
-                      Year {assignment.years}
+                      Year {assignment.years.join(',')}
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-500">
