@@ -590,7 +590,7 @@ const AttendanceGraph = ({
       <h4 className="text-lg font-semibold mb-4">
         Current Semester Attendance
       </h4>
-      <p className="text-gray-600 mb-4">Current Semester: Fall 2025</p>
+      <p className="text-gray-600 dark:text-white mb-4">Current Semester: Fall 2025</p>
       <div className="h-64">
         <Bar data={chartData} options={chartOptions} />
       </div>
@@ -672,6 +672,13 @@ const StudentDashboard = () => {
 
   const [activeSection, setActiveSection] = useState<string>("dashboard"); // Set initial active section to Dashboard
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar visibility
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
+
+  useEffect(() => {
+    const handler = () => setDarkMode(localStorage.getItem("theme") === "dark");
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
 
   // Section refs for scrolling
   const dashboardRef = useRef<HTMLDivElement>(null);
@@ -877,7 +884,7 @@ const StudentDashboard = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading dashboard...</p>
+          <p className="text-gray-500 dark:text-white">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -899,7 +906,7 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNav
         activeSection={activeSection}
         onNavClick={handleNavClick}
@@ -910,24 +917,24 @@ const StudentDashboard = () => {
           {/* Dashboard Section (merged with Profile) */}
           <div ref={dashboardRef} className="space-y-4 md:space-y-6">
             {/* Profile Card */}
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                   <User className="w-8 h-8 md:w-10 md:h-10 text-white" />
                 </div>
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                       {studentProfile?.firstName} {studentProfile?.lastName}
                     </h2>
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
+                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white">
                       <Edit className="w-4 h-4" />
                     </button>
                   </div>
-                  <p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">
+                  <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-4 text-sm md:text-base">
                     {studentProfile?.email}
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600 dark:text-gray-300">
                     <div>
                       <span className="font-medium">Phone:</span>{" "}
                       {studentProfile?.phoneNumber}
@@ -936,7 +943,7 @@ const StudentDashboard = () => {
                   <div className="mt-4 md:mt-6">
                     <Button
                       onClick={() => navigate("/profile")}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
                     >
                       View Full Profile
                     </Button>
@@ -946,24 +953,24 @@ const StudentDashboard = () => {
             </Card>
 
             {/* Dashboard Overview Content */}
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 sm:p-4 md:p-6">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 sm:p-4 md:p-6">
               <CardHeader>
-                <CardTitle className="text-base md:text-lg font-semibold text-gray-900">
+                <CardTitle className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                   Dashboard Overview
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 md:space-y-6">
                 {/* GPA Percentage Calculator */}
-                <Card className="bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                <Card className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                   <CardContent>
                     <GPA_Calculator />
                   </CardContent>
                 </Card>
 
                 {/* Fee Due Details */}
-                <Card className="bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                <Card className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                   <CardHeader>
-                    <CardTitle className="text-base md:text-lg font-semibold text-gray-900">
+                    <CardTitle className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                       Fee Due Details
                     </CardTitle>
                   </CardHeader>
@@ -971,17 +978,17 @@ const StudentDashboard = () => {
                     <div className="overflow-x-auto w-full">
                       <table className="min-w-full text-xs md:text-sm">
                         <thead>
-                          <tr className="text-left border-b border-gray-200">
-                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
+                          <tr className="text-left border-b border-gray-200 dark:border-gray-700">
+                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500 dark:text-white">
                               Item
                             </th>
-                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
+                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500 dark:text-white">
                               Amount
                             </th>
-                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
+                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500 dark:text-white">
                               Due Date
                             </th>
-                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
+                            <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500 dark:text-white">
                               Status
                             </th>
                           </tr>
@@ -992,13 +999,13 @@ const StudentDashboard = () => {
                               key={index}
                               className="border-b border-gray-100 last:border-b-0"
                             >
-                              <td className="py-2 md:py-3 text-gray-600">
+                              <td className="py-2 md:py-3 text-gray-600 dark:text-white">
                                 {fee.item}
                               </td>
-                              <td className="py-2 md:py-3 text-gray-600">
+                              <td className="py-2 md:py-3 text-gray-600 dark:text-white">
                                 {fee.amount}
                               </td>
-                              <td className="py-2 md:py-3 text-gray-600">
+                              <td className="py-2 md:py-3 text-gray-600 dark:text-white">
                                 {fee.dueDate}
                               </td>
                               <td className="py-2 md:py-3">
@@ -1023,9 +1030,9 @@ const StudentDashboard = () => {
                 </Card>
 
                 {/* Achievements and Awards */}
-                <Card className="bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                <Card className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                   <CardHeader>
-                    <CardTitle className="text-base md:text-lg font-semibold text-gray-900">
+                    <CardTitle className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                       Achievements and Awards
                     </CardTitle>
                   </CardHeader>
@@ -1034,21 +1041,21 @@ const StudentDashboard = () => {
                       {achievements.map((achievement, index) => (
                         <div
                           key={index}
-                          className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-100"
+                          className="flex items-start space-x-3 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700"
                         >
                           <Award className="w-5 h-5 text-purple-600 flex-shrink-0" />
                           <div>
-                            <h4 className="font-semibold text-gray-900 text-sm md:text-base">
+                            <h4 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">
                               {achievement.title} ({achievement.year})
                             </h4>
-                            <p className="text-xs md:text-sm text-gray-600">
+                            <p className="text-xs md:text-sm text-gray-600 dark:text-white">
                               {achievement.description}
                             </p>
                           </div>
                         </div>
                       ))}
                       {achievements.length === 0 && (
-                        <p className="text-gray-500 text-sm">
+                        <p className="text-gray-500 dark:text-white text-sm">
                           No achievements yet.
                         </p>
                       )}
@@ -1057,9 +1064,9 @@ const StudentDashboard = () => {
                 </Card>
 
                 {/* Certificates Issued */}
-                <Card className="bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                <Card className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                   <CardHeader>
-                    <CardTitle className="text-base md:text-lg font-semibold text-gray-900">
+                    <CardTitle className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                       Certificates Issued
                     </CardTitle>
                   </CardHeader>
@@ -1068,14 +1075,14 @@ const StudentDashboard = () => {
                       {issuedCertificates.map((certificate, index) => (
                         <div
                           key={index}
-                          className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-100"
+                          className="flex items-start space-x-3 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700"
                         >
                           <FileText className="w-5 h-5 text-green-600 flex-shrink-0" />
                           <div>
-                            <h4 className="font-semibold text-gray-900 text-sm md:text-base">
+                            <h4 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">
                               {certificate.name}
                             </h4>
-                            <p className="text-xs md:text-sm text-gray-600">
+                            <p className="text-xs md:text-sm text-gray-600 dark:text-white">
                               Issued on:{" "}
                               {dayjs(certificate.date).format("DD MMMM YYYY")}
                             </p>
@@ -1083,7 +1090,7 @@ const StudentDashboard = () => {
                         </div>
                       ))}
                       {issuedCertificates.length === 0 && (
-                        <p className="text-gray-500 text-sm">
+                        <p className="text-gray-500 dark:text-white text-sm">
                           No certificates issued yet.
                         </p>
                       )}
@@ -1096,7 +1103,7 @@ const StudentDashboard = () => {
 
           {/* Exams & Performance Section (merged) */}
           <div ref={examsRef} className="pt-4 md:pt-8">
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">
                   Exams & Performance
@@ -1112,16 +1119,16 @@ const StudentDashboard = () => {
                     Mid Exams Marks (Current Semester)
                   </h4>
                   <div className="overflow-x-auto">
-                    <table className="min-w-full text-xs md:text-sm border border-gray-200 rounded-lg">
+                    <table className="min-w-full text-xs md:text-sm border border-gray-200 dark:border-gray-700 rounded-lg">
                       <thead>
-                        <tr className="bg-gray-50">
-                          <th className="py-2 px-3 text-left font-semibold text-gray-700">
+                        <tr className="bg-gray-50 dark:bg-gray-800">
+                          <th className="py-2 px-3 text-left font-semibold text-gray-700 dark:text-white">
                             Subject
                           </th>
-                          <th className="py-2 px-3 text-center font-semibold text-gray-700">
+                          <th className="py-2 px-3 text-center font-semibold text-gray-700 dark:text-white">
                             Mid 1 (out of 30)
                           </th>
-                          <th className="py-2 px-3 text-center font-semibold text-gray-700">
+                          <th className="py-2 px-3 text-center font-semibold text-gray-700 dark:text-white">
                             Mid 2 (out of 30)
                           </th>
                         </tr>
@@ -1138,7 +1145,7 @@ const StudentDashboard = () => {
                           <tr
                             key={row.subject}
                             className={
-                              idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              idx % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-800"
                             }
                           >
                             <td className="py-2 px-3 text-gray-800 font-medium">
@@ -1162,7 +1169,7 @@ const StudentDashboard = () => {
                   <h4 className="text-md md:text-lg font-semibold mb-3">
                     Performance Overview
                   </h4>
-                  <p className="text-gray-600 text-sm mb-4">
+                  <p className="text-gray-600 dark:text-white text-sm mb-4">
                     Your academic performance trends over time.
                   </p>
                   <div className="h-48 md:h-64">
@@ -1192,14 +1199,14 @@ const StudentDashboard = () => {
                     {announcements.map((announcement, index) => (
                       <div
                         key={index}
-                        className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
+                        className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                       >
                         <Megaphone className="w-5 h-5 text-blue-600 flex-shrink-0" />
                         <div>
-                          <h4 className="font-semibold text-gray-900 text-sm md:text-base">
+                          <h4 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">
                             {announcement.title}
                           </h4>
-                          <p className="text-xs md:text-sm text-gray-600">
+                          <p className="text-xs md:text-sm text-gray-600 dark:text-white">
                             {announcement.desc}
                           </p>
                         </div>
@@ -1213,7 +1220,7 @@ const StudentDashboard = () => {
 
           {/* Timetable Section (merged) */}
           <div ref={timetableRef} className="pt-4 md:pt-8">
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">
                   Timetable
@@ -1230,20 +1237,20 @@ const StudentDashboard = () => {
                   </h4>
                   <div className="overflow-x-auto">
                     {timetableSlots.length === 0 ? (
-                      <div className="text-center text-gray-500 py-8">
+                      <div className="text-center text-gray-500 dark:text-white py-8">
                         Timetable is not available at the moment.
                       </div>
                     ) : (
                       <table className="min-w-full text-xs md:text-sm">
                         <thead>
                           <tr>
-                            <th className="p-2 md:p-3 font-semibold text-center bg-gray-50">
+                            <th className="p-2 md:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800">
                               Time
                             </th>
                             {presentDays.map((day) => (
                               <th
                                 key={day}
-                                className="p-2 md:p-3 font-semibold text-center bg-gray-50"
+                                className="p-2 md:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800"
                               >
                                 {day}
                               </th>
@@ -1257,7 +1264,7 @@ const StudentDashboard = () => {
                                 key={idx}
                                 className="border-b border-gray-100 last:border-b-0"
                               >
-                                <td className="p-2 md:p-3 text-center font-medium bg-gray-50">
+                                <td className="p-2 md:p-3 text-center font-medium bg-gray-50 dark:bg-gray-800">
                                   {row.startTime} - {row.endTime}
                                 </td>
                                 {presentDays.map((day) => (
@@ -1274,7 +1281,7 @@ const StudentDashboard = () => {
                             <tr>
                               <td
                                 colSpan={presentDays.length + 1}
-                                className="py-2 md:py-3 text-gray-600 text-center"
+                                className="py-2 md:py-3 text-gray-600 dark:text-white text-center"
                               >
                                 No Data Available at the moment.
                               </td>
@@ -1297,7 +1304,7 @@ const StudentDashboard = () => {
                   <div className="overflow-x-auto">
                     <table className="min-w-full text-xs md:text-sm">
                       <thead>
-                        <tr className="text-left border-b border-gray-200">
+                        <tr className="text-left border-b border-gray-200 dark:border-gray-700">
                           <th className="pb-2 md:pb-3 text-xs md:text-sm font-medium text-gray-500">
                             Subject
                           </th>
@@ -1316,13 +1323,13 @@ const StudentDashboard = () => {
                               key={index}
                               className="border-b border-gray-100 last:border-b-0"
                             >
-                              <td className="py-2 md:py-3 text-gray-600">
+                              <td className="py-2 md:py-3 text-gray-600 dark:text-white">
                                 {detail.subjectName}
                               </td>
-                              <td className="py-2 md:py-3 text-gray-600">
+                              <td className="py-2 md:py-3 text-gray-600 dark:text-white">
                                 {detail.faculty}
                               </td>
-                              <td className="py-2 md:py-3 text-gray-600">
+                              <td className="py-2 md:py-3 text-gray-600 dark:text-white">
                                 {detail.book}
                               </td>
                             </tr>
@@ -1331,7 +1338,7 @@ const StudentDashboard = () => {
                           <tr className="border-b border-gray-100 last:border-b-0">
                             <td
                               colSpan={3}
-                              className="py-2 md:py-3 text-gray-600 text-center"
+                              className="py-2 md:py-3 text-gray-600 dark:text-white text-center"
                             >
                               No Data Available at the moment.
                             </td>
@@ -1347,7 +1354,7 @@ const StudentDashboard = () => {
 
           {/* Attendance Section */}
           <div ref={attendanceRef} className="pt-4 md:pt-8">
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">
                   Attendance
@@ -1398,19 +1405,19 @@ const StudentDashboard = () => {
                             <tr
                               key={index}
                               className={`transition-colors ${
-                                index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                                index % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : "bg-white dark:bg-gray-900"
                               }`}
                             >
-                              <td className="py-3 px-2 text-gray-700 capitalize font-medium">
+                              <td className="py-3 px-2 text-gray-700 dark:text-white capitalize font-medium">
                                 {item.label}
                               </td>
-                              <td className="py-3 px-2 text-center text-gray-700">
+                              <td className="py-3 px-2 text-center text-gray-700 dark:text-white">
                                 {item.total}
                               </td>
-                              <td className="py-3 px-2 text-center text-gray-700">
+                              <td className="py-3 px-2 text-center text-gray-700 dark:text-white">
                                 {item.attended}
                               </td>
-                              <td className="py-3 px-2 text-center text-gray-900 font-semibold">
+                              <td className="py-3 px-2 text-center text-gray-900 dark:text-white font-semibold">
                                 {percent}%
                               </td>
                               <td className="py-3 px-2 w-20 text-center">
@@ -1438,18 +1445,18 @@ const StudentDashboard = () => {
                       return (
                         <div
                           key={index}
-                          className="flex items-center justify-between bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100"
+                          className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700"
                         >
                           <div className="flex items-center gap-3">
                             <CircularProgress percent={percent} />
-                            <span className="ml-2 mr-2 text-base font-semibold text-gray-900">
+                            <span className="ml-2 mr-2 text-base font-semibold text-gray-900 dark:text-white">
                               {percent}%
                             </span>
                             <div>
-                              <div className="font-semibold text-gray-800 capitalize text-sm">
+                              <div className="font-semibold text-gray-800 dark:text-white capitalize text-sm">
                                 {item.label}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-500 dark:text-white">
                                 <span className="font-medium">
                                   {item.attended}
                                 </span>{" "}
@@ -1468,7 +1475,7 @@ const StudentDashboard = () => {
 
           {/* Notifications Section */}
           <div ref={notificationsRef} className="pt-4 md:pt-8">
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">
                   Notifications
@@ -1482,20 +1489,20 @@ const StudentDashboard = () => {
                   {announcements.map((announcement, index) => (
                     <div
                       key={index}
-                      className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg"
+                      className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-600 rounded-lg"
                     >
-                      <Bell className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                      <Bell className="w-5 h-5 text-blue-600 dark:text-white flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 text-sm md:text-base">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">
                           {announcement.title}
                         </h4>
-                        <p className="text-xs md:text-sm text-gray-600">
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-white">
                           {announcement.desc}
                         </p>
                       </div>
                     </div>
                   ))}
-                  <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <Bell className="w-5 h-5 text-gray-600 flex-shrink-0" />
                     <div>
                       <h4 className="font-semibold text-gray-900 text-sm md:text-base">
@@ -1513,7 +1520,7 @@ const StudentDashboard = () => {
 
           {/* Feedback Section */}
           <div ref={feedbackRef} className="pt-4 md:pt-8 pb-8">
-            <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">Feedback</CardTitle>
               </CardHeader>
@@ -1527,7 +1534,7 @@ const StudentDashboard = () => {
                     Recipient
                   </label>
                   <select
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     value={feedbackRecipient}
                     onChange={(e) => setFeedbackRecipient(e.target.value)}
                     disabled={feedbackSubmitting}
@@ -1539,7 +1546,7 @@ const StudentDashboard = () => {
                     ))}
                   </select>
                   <textarea
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     rows={4}
                     placeholder="Type your feedback here..."
                     value={feedbackText}

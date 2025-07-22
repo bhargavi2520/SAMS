@@ -119,12 +119,11 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed md:hidden bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-100 rounded-full px-4 py-3 z-50 shadow-lg max-w-[85vw]">
+      <nav className="fixed md:hidden bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-3 z-50 shadow-lg max-w-[85vw] border-2 border-gray-600">
         <div className="flex items-center space-x-4">
           {navItems.map((item, index) => {
             const isActive = activeSection === item.section;
             const isMultiWord = item.label.includes(' ') || item.label.includes('&');
-            
             return (
               <button
                 key={item.label}
@@ -132,17 +131,16 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
                 className={`relative flex items-center transition-all duration-300 ${
                   isActive 
                     ? 'bg-blue-600 text-white rounded-full px-3 py-2 shadow-md' 
-                    : 'text-gray-600 hover:text-blue-600 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200'
+                    : 'text-gray-600 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
                 aria-label={item.label}
               >
                 {React.cloneElement(item.icon, { 
-                  className: "w-5 h-5" 
+                  className: `w-5 h-5 ${isActive ? 'text-white' : 'text-gray-600 dark:text-white'}`
                 })}
-                
                 {/* Text label for active item */}
                 {isActive && (
-                  <div className="ml-2 text-xs font-medium">
+                  <div className="ml-2 text-xs font-medium text-white">
                     {formatLabel(item.label)}
                   </div>
                 )}
