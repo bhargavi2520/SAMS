@@ -2,6 +2,7 @@ const { User } = require("../Models/User");
 const classInfo = require("../Models/Class");
 const TimeTable = require("../Models/TimeTable");
 const departmentAssignment = require("../Models/AssignedDepartments");
+const { default: mongoose } = require("mongoose");
 
 /**
  * function to get students by the department ,year, semester and section
@@ -48,9 +49,9 @@ const getStudentDataByCriteria = async (req, res) => {
  */
 const getFaculties = async (req, res) => {
   try {
-    const faculties = await User.find({ role: "FACULTY" }).select(
-      "-password -__v "
-    ).lean();
+    const faculties = await User.find({ role: "FACULTY" })
+      .select("-password -__v ")
+      .lean();
     if (faculties.length === 0) {
       return res.status(404).json({
         message: "No faculty members found",
@@ -178,7 +179,7 @@ const createTimeTable = async (req, res) => {
  * return subject to corresponding class
  */
 const checkTimetableExists = async (req, res) => {
-  const { department, year, section} = req.query;
+  const { department, year, section } = req.query;
   try {
     const classDoc = await classInfo
       .findOne({ department, year, section })
@@ -308,7 +309,6 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
   try {
     let department;
     let years;
-    let batch;
     if (user.role === "ADMIN") {
       if (!req.query.department) {
         return res.status(400).json({
@@ -318,7 +318,6 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
       }
 
       department = req.query.department;
-      batch = req.query.batch;
 
       if (req.query.years) {
         years = req.query.years.split(",").map(Number);
@@ -340,13 +339,11 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
 
       department = assignedDepartment.department;
       years = assignedDepartment.departmentYears;
-      batch = assignedDepartment.batch;
     }
     const result = await classInfo.aggregate([
       {
         $match: {
           department: department,
-          batch: batch,
           year: { $in: years },
         },
       },
@@ -437,7 +434,68 @@ const getAssignedSubjectsAndFaculties = async (req, res) => {
   }
 };
 
+/**
+ * faculty timetable
+ * returns the slots for each day of week for faculty lecture
+ */
 
+const mySchedule = async (req, res) => {
+  const facultyId = req.user.id;
+  try {
+    const timeSlots = await TimeTable.aggregate([
+      {
+        $match: {
+          "timeSlots.faculty": new mongoose.Types.ObjectId(facultyId),
+        },
+      },
+      {
+        $unwind: {
+          path: "$timeSlots",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          "timeSlots.faculty":new mongoose.Types.ObjectId(facultyId),
+        },
+      },
+      {
+        $lookup: {
+          from: "classes",
+          localField: "class",
+          foreignField: "_id",
+          as: "classDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$classDetails",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          day: "$timeSlots.day",
+          startTime: "$timeSlots.startTime",
+          endTime: "$timeSlots.endTime",
+          subject: "$timeSlots.subject",
+          department: "$classDetails.department",
+          year: "$classDetails.year",
+        },
+      },
+    ]);
+    return res.status(200).json({
+      success: true,
+      message: "Faculty Time Table fetched Successfully",
+      timeTable : (timeSlots.length > 0) ? timeSlots : [],
+    });
+  } catch (err) {
+    console.log("error in faculty Timetable", err);
+    return res.status(500).json({
+      message: "Internal Server Occurred",
+    });
+  }
+};
 
 module.exports = {
   getStudentDataByCriteria,
@@ -445,4 +503,5 @@ module.exports = {
   createTimeTable,
   checkTimetableExists,
   getAssignedSubjectsAndFaculties,
+  mySchedule,
 };

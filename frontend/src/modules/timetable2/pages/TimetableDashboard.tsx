@@ -9,7 +9,6 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 const branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CSD', 'CSM'];
 const years = ['1', '2', '3', '4'];
 const sections = ['1', '2', '3'];
-// Replace const subjects = []; with state
 
 // TypeScript interfaces
 interface Subject {
@@ -58,7 +57,6 @@ const TimetableDashboard = () => {
   const [showConfirmOverwrite, setShowConfirmOverwrite] = useState(false);
   const [pendingTimetableData, setPendingTimetableData] = useState<any>(null);
 
-
   // Handle setup form changes
   const handleSetupChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -89,7 +87,6 @@ const TimetableDashboard = () => {
     setStep(2);
   };
 
-
   // On setup submit, create empty timetable grid
   const handleSetupSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -111,7 +108,6 @@ const TimetableDashboard = () => {
       return;
     }
 
-
     if (setup.branch && setup.year && setup.section && setup.periods > 0) {
       const emptyGrid = days.map(() =>
         Array.from({ length: Number(setup.periods) }, () => ({ subject: '', faculty: '', facultyName: 'Unassigned', startTime: '', endTime: '' }))
@@ -129,6 +125,7 @@ const TimetableDashboard = () => {
       setPendingTimetableData(null);
     }
   };
+  
   const handleCancelOverwrite = () => {
     setShowConfirmOverwrite(false);
     setPendingTimetableData(null);
@@ -172,8 +169,39 @@ const TimetableDashboard = () => {
     });
   };
 
+  // Add this validation function to check data consistency
+  const validateSubjectMapping = () => {
+    const errors = [];
+    
+    for (let dayIdx = 0; dayIdx < timetable.length; dayIdx++) {
+      const periods = timetable[dayIdx];
+      for (let periodIdx = 0; periodIdx < periods.length; periodIdx++) {
+        const cell = periods[periodIdx];
+        if (cell.subject) {
+          const subjectObj = subjects.find(s => s.subject_id === cell.subject);
+          if (!subjectObj) {
+            errors.push(`Invalid subject ID "${cell.subject}" at ${days[dayIdx]}, Period ${periodIdx + 1}`);
+          }
+        }
+      }
+    }
+    
+    return errors;
+  };
+
   // Validation for empty fields and overlapping times
   const validateTimetable = () => {
+    // Check for subject mapping errors first
+    const subjectErrors = validateSubjectMapping();
+    if (subjectErrors.length > 0) {
+      toast({ 
+        title: 'Subject Mapping Error', 
+        description: `${subjectErrors[0]}. Please refresh the page and try again.`, 
+        variant: 'destructive' 
+      });
+      return false;
+    }
+
     for (let dayIdx = 0; dayIdx < timetable.length; dayIdx++) {
       const periods = timetable[dayIdx];
       for (let periodIdx = 0; periodIdx < periods.length; periodIdx++) {
@@ -200,32 +228,64 @@ const TimetableDashboard = () => {
     return true;
   };
 
-  // Handle timetable submit
+  // Handle timetable submit - FIXED VERSION
   const handleTimetableSubmit = async () => {
     if (!validateTimetable()) {
       toast({ title: 'Error', description: 'Please fix the errors in the timetable.', variant: 'destructive' });
       return;
     }
+    
     setLoading(true);
-    const payload = {
-      timeTable: timetable.map(dayArr =>
-        dayArr.map(cell => ({
-          subject: subjects.find(s => s.subject_id === cell.subject)?.subject_name || '', // send subject_name
-          faculty: cell.faculty,
-          startTime: cell.startTime,
-          endTime: cell.endTime,
-        }))
-      ),
-      classDetails: {
-        department: setup.branch,
-        year: setup.year,
-        section: setup.section,
-      }
-    };
+    
+    // Add validation to ensure subjects array is loaded
+    if (subjects.length === 0) {
+      toast({ title: 'Error', description: 'Subjects not loaded. Please refresh and try again.', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+    
+    // Debug: Log the subjects array and timetable data
+    console.log('Subjects array:', subjects);
+    console.log('Timetable data:', timetable);
+    
     try {
+      const payload = {
+        timeTable: timetable.map((dayArr, dayIndex) =>
+          dayArr.map((cell, periodIndex) => {
+            const subjectObj = subjects.find(s => s.subject_id === cell.subject);
+           
+            if (!subjectObj) {
+              console.error(`Subject not found for ID: ${cell.subject}`);
+              toast({ 
+                title: 'Error', 
+                description: `Subject not found for ID: ${cell.subject}. Please refresh and try again.`, 
+                variant: 'destructive' 
+              });
+              throw new Error(`Subject not found: ${cell.subject}`);
+            }
+            
+            return {
+              subject: subjectObj.subject_name, 
+              faculty: subjectObj.faculty_id,
+              startTime: cell.startTime,
+              endTime: cell.endTime,
+            };
+          })
+        ),
+        classDetails: {
+          department: setup.branch,
+          year: setup.year,
+          section: setup.section,
+        }
+      };
+      
+      // Debug: Log the final payload
+      console.log('Final payload:', JSON.stringify(payload, null, 2));
+      
       const response = await apiClient.post('/userData/createTimeTable', payload);
       toast({ title: 'Success', description: response.data.message, variant: 'success' });
     } catch (error: any) {
+      console.error('Submission error:', error);
       toast({ title: 'Error', description: error.response?.data?.message || error.message || 'Submission failed', variant: 'destructive' });
     }
     setLoading(false);

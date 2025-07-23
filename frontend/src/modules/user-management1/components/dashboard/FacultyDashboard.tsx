@@ -131,7 +131,7 @@ const StudentPieChart = () => {
       },
     ],
   };
-  
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -149,16 +149,25 @@ const StudentPieChart = () => {
       },
       tooltip: {
         callbacks: {
-          label: (context: { label: string; parsed: number; dataset: { data: number[] } }) => {
-            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+          label: (context: {
+            label: string;
+            parsed: number;
+            dataset: { data: number[] };
+          }) => {
+            const total = context.dataset.data.reduce(
+              (a: number, b: number) => a + b,
+              0
+            );
             const percentage = ((context.parsed / total) * 100).toFixed(1);
-            return `${context.label}: ${context.parsed.toLocaleString()} (${percentage}%)`;
+            return `${
+              context.label
+            }: ${context.parsed.toLocaleString()} (${percentage}%)`;
           },
         },
       },
     },
   };
-  
+
   return (
     <div className="h-48 flex items-center justify-center">
       <Pie data={data} options={options} />
@@ -279,6 +288,7 @@ const FacultyDashboard = () => {
   const [todayDate, setTodayDate] = useState(
     new Date().toISOString().slice(0, 10)
   );
+  const [dashboardLoaded, setDashboardLoaded] = useState(false);
 
   useEffect(() => {
     apiClient
@@ -286,8 +296,9 @@ const FacultyDashboard = () => {
       .then((res) => {
         setFacultyData(res.data.data || []);
         setLoading(false);
-        const newToken = res.headers['refreshedtoken'];
-        localStorage.setItem("authToken",newToken);
+        const newToken = res.headers["refreshedtoken"];
+        localStorage.setItem("authToken", newToken);
+        setDashboardLoaded(true);
       })
       .catch((err) => {
         setLoading(false);
@@ -370,6 +381,7 @@ const FacultyDashboard = () => {
   };
 
   useEffect(() => {
+    if (!dashboardLoaded) return;
     if (!selectedClass || facultyData.length === 0) return;
 
     // For future dates, show empty attendance and disable editing
@@ -385,11 +397,11 @@ const FacultyDashboard = () => {
           (item) => `${item.subject.id}-${item.section}` === selectedClass
         );
         if (!selected) return;
-        
+
         const response = await apiClient.get(
           `/attendance/byDate?department=${selected.subject.department}&year=${selected.subject.year}&section=${selected.section}&subjectId=${selected.subject.id}&date=${attendanceDate}`
         );
-        
+
         const att = response.data.attendance;
         if (att && att.students && att.students.length > 0) {
           // Attendance exists for this date
@@ -402,7 +414,7 @@ const FacultyDashboard = () => {
             }))
           );
           setAttendanceEditable(false);
-        } else if(isToday(attendanceDate)) {
+        } else if (isToday(attendanceDate)) {
           // No attendance found for this date, initialize with students
           setAttendance(
             (studentsForSelectedClass || []).map((s) => ({
@@ -413,19 +425,59 @@ const FacultyDashboard = () => {
             }))
           );
           setAttendanceEditable(true);
-        }else{
+        } else {
           setAttendance([]);
           setAttendanceEditable(false);
         }
       } catch (err) {
         console.error("Error fetching attendance:", err);
-          setAttendance([]);
-          setAttendanceEditable(false);
+        setAttendance([]);
+        setAttendanceEditable(false);
       }
     };
 
     fetchAttendance();
-  }, [selectedClass, attendanceDate, facultyData, studentsForSelectedClass]);
+  }, [
+    selectedClass,
+    attendanceDate,
+    facultyData,
+    studentsForSelectedClass,
+    dashboardLoaded,
+  ]);
+
+  /**
+   * fetch faculty timetable
+   */
+  const [rawTimetableData, setRawTimeTableData] = useState([]);
+  useEffect(() => {
+    if (!dashboardLoaded) return;
+    const fetchTimeTable = async () => {
+      const response = await apiClient.get("userData/mySchedule");
+      setRawTimeTableData(response.data.timeTable);
+      console.log(response.data.timeTable);
+    };
+    fetchTimeTable();
+  }, [dashboardLoaded]);
+
+  const days = [...new Set(rawTimetableData.map((entry) => entry.day))];
+
+  const uniqueSlots = [
+    ...new Set(
+      rawTimetableData.map((entry) => `${entry.startTime} - ${entry.endTime}`)
+    ),
+  ].sort();
+
+  const timeTableSlots = uniqueSlots.map((slot) => {
+    const [startTime, endTime] = slot.split(" - ");
+    return { startTime, endTime };
+  });
+
+  const timetableMap = {};
+  rawTimetableData.forEach((entry) => {
+    const timeKey = `${entry.startTime} - ${entry.endTime}`;
+    if (!timetableMap[timeKey]) timetableMap[timeKey] = {};
+    timetableMap[timeKey][entry.day] = entry;
+  });
 
   // Exams section state
   const [selectedExamClass, setSelectedExamClass] = useState("A");
@@ -637,7 +689,7 @@ const FacultyDashboard = () => {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { 
+        legend: {
           display: true,
           position: "top" as const,
           labels: {
@@ -645,7 +697,7 @@ const FacultyDashboard = () => {
             usePointStyle: true,
           },
         },
-        tooltip: { 
+        tooltip: {
           enabled: true,
           backgroundColor: "rgba(0, 0, 0, 0.8)",
           titleColor: "#ffffff",
@@ -666,7 +718,7 @@ const FacultyDashboard = () => {
           grid: {
             color: "rgba(0, 0, 0, 0.1)",
           },
-          ticks: { 
+          ticks: {
             callback: (v) => `${v}%`,
             font: { size: 11 },
             color: "#6b7280",
@@ -676,7 +728,7 @@ const FacultyDashboard = () => {
           grid: {
             display: false,
           },
-          ticks: { 
+          ticks: {
             maxTicksLimit: 8,
             font: { size: 11 },
             color: "#6b7280",
@@ -726,13 +778,17 @@ const FacultyDashboard = () => {
     <div ref={examsRef} id="exams" className="scroll-mt-24">
       <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold dark:text-white">Exams</CardTitle>
+          <CardTitle className="text-lg font-semibold dark:text-white">
+            Exams
+          </CardTitle>
           <CardDescription className="dark:text-white">
             Upcoming and past exams overview.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <span className="text-gray-400 dark:text-white">[Exams content here]</span>
+          <span className="text-gray-400 dark:text-white">
+            [Exams content here]
+          </span>
           {/* Mid Exam Marks Entry Section */}
           <div className="mt-6">
             <h3 className="font-semibold text-base mb-2 dark:text-white">
@@ -776,7 +832,10 @@ const FacultyDashboard = () => {
               </select>
             </div>
             <div className="flex flex-wrap gap-2 mb-2">
-              <label htmlFor="exam-marks" className="text-xs font-medium dark:text-white">
+              <label
+                htmlFor="exam-marks"
+                className="text-xs font-medium dark:text-white"
+              >
                 Exam (out of 30):
               </label>
               <input
@@ -790,7 +849,10 @@ const FacultyDashboard = () => {
                 aria-label="Exam marks out of 30"
                 placeholder="0"
               />
-              <label htmlFor="bit-marks" className="text-xs font-medium dark:text-white">
+              <label
+                htmlFor="bit-marks"
+                className="text-xs font-medium dark:text-white"
+              >
                 Bit Paper (out of 20):
               </label>
               <input
@@ -804,7 +866,10 @@ const FacultyDashboard = () => {
                 aria-label="Bit Paper marks out of 20"
                 placeholder="0"
               />
-              <label htmlFor="assignment-marks" className="text-xs font-medium dark:text-white">
+              <label
+                htmlFor="assignment-marks"
+                className="text-xs font-medium dark:text-white"
+              >
                 Assignment (out of 5):
               </label>
               <input
@@ -829,18 +894,36 @@ const FacultyDashboard = () => {
             </div>
             <div className="mt-2 text-xs text-gray-700 dark:text-white">
               <div>
-                Mid-term Score: <span className="font-semibold dark:text-white">{calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)}</span>
+                Mid-term Score:{" "}
+                <span className="font-semibold dark:text-white">
+                  {calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)}
+                </span>
               </div>
               <div>
-                Weighted Final Score: <span className="font-semibold dark:text-white">{getWeightedFinal(midTermScores[`${selectedExamClass}-${selectedExamStudent}`] || [calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)])}</span>
-                {midTermScores[`${selectedExamClass}-${selectedExamStudent}`]?.length === 2 && (
+                Weighted Final Score:{" "}
+                <span className="font-semibold dark:text-white">
+                  {getWeightedFinal(
+                    midTermScores[
+                      `${selectedExamClass}-${selectedExamStudent}`
+                    ] || [
+                      calcMidTermScore(
+                        examMarks,
+                        bitPaperMarks,
+                        assignmentMarks
+                      ),
+                    ]
+                  )}
+                </span>
+                {midTermScores[`${selectedExamClass}-${selectedExamStudent}`]
+                  ?.length === 2 && (
                   <span className="ml-2 text-gray-500 dark:text-white">
                     (80% higher + 20% lower mid-term)
                   </span>
                 )}
               </div>
               <div className="mt-1 text-gray-500 dark:text-white">
-                (Scores are auto-calculated and saved per student. Only last 2 mid-terms are considered.)
+                (Scores are auto-calculated and saved per student. Only last 2
+                mid-terms are considered.)
               </div>
             </div>
           </div>
@@ -854,11 +937,17 @@ const FacultyDashboard = () => {
     <div ref={resultsRef} id="results" className="scroll-mt-24">
       <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold dark:text-white">Results</CardTitle>
-          <CardDescription className="dark:text-white">Results overview.</CardDescription>
+          <CardTitle className="text-lg font-semibold dark:text-white">
+            Results
+          </CardTitle>
+          <CardDescription className="dark:text-white">
+            Results overview.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <span className="text-gray-400 dark:text-white">[Results content here]</span>
+          <span className="text-gray-400 dark:text-white">
+            [Results content here]
+          </span>
         </CardContent>
       </Card>
     </div>
@@ -869,13 +958,17 @@ const FacultyDashboard = () => {
     <div ref={announcementsRef} id="announcements" className="scroll-mt-24">
       <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold dark:text-white">Announcements</CardTitle>
+          <CardTitle className="text-lg font-semibold dark:text-white">
+            Announcements
+          </CardTitle>
           <CardDescription className="dark:text-white">
             Important announcements and updates.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <span className="text-gray-400 dark:text-white">[Announcements content here]</span>
+          <span className="text-gray-400 dark:text-white">
+            [Announcements content here]
+          </span>
         </CardContent>
       </Card>
     </div>
@@ -887,13 +980,14 @@ const FacultyDashboard = () => {
   const [profileError, setProfileError] = useState(null);
 
   useEffect(() => {
-    apiClient.get('/auth/me')
-      .then(res => {
+    apiClient
+      .get("/auth/me")
+      .then((res) => {
         setFacultyProfile(res.data.user);
         setProfileLoading(false);
       })
-      .catch(err => {
-        setProfileError('Failed to load profile');
+      .catch((err) => {
+        setProfileError("Failed to load profile");
         setProfileLoading(false);
       });
   }, []);
@@ -923,17 +1017,11 @@ const FacultyDashboard = () => {
     try {
       await apiClient.post("/attendance/mark", payload);
       toast({ title: "Attendance submitted successfully", variant: "default" });
-      
-      // After successful submission, refresh the attendance data
-      // This will show the submitted attendance as read-only
       setAttendanceEditable(false);
-      
-      // Optionally, you can trigger a re-fetch of the attendance data
-      // by calling the fetchAttendance function again
       const response = await apiClient.get(
         `/attendance/byDate?department=${selected.subject.department}&year=${selected.subject.year}&section=${selected.section}&subjectId=${selected.subject.id}&date=${attendanceDate}`
       );
-      
+
       const att = response.data.attendance;
       if (att && att.students && att.students.length > 0) {
         setAttendance(
@@ -959,7 +1047,7 @@ const FacultyDashboard = () => {
   };
 
   if (profileLoading || loading) return <div>Loading...</div>;
-  if (profileError || error) {
+  if (profileError || error || !dashboardLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
@@ -976,7 +1064,9 @@ const FacultyDashboard = () => {
               d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
             />
           </svg>
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">{profileError || error}</h2>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800">
+            {profileError || error}
+          </h2>
           <button
             className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
             onClick={() => window.open("mailto:support@college.edu")}
@@ -1024,8 +1114,8 @@ const FacultyDashboard = () => {
                     </div>
                   </div>
                   <div className="mt-4 md:mt-6">
-                    <Button 
-                      onClick={() => navigate('/profile')}
+                    <Button
+                      onClick={() => navigate("/profile")}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
                     >
                       View Profile
@@ -1048,7 +1138,10 @@ const FacultyDashboard = () => {
                 {/* Top Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
                   {stats.map((stat, idx) => (
-                    <Card key={idx} className={`${stat.color} dark:bg-gray-700`}>
+                    <Card
+                      key={idx}
+                      className={`${stat.color} dark:bg-gray-700`}
+                    >
                       <CardContent className="flex items-center justify-between py-2 sm:py-4">
                         <div>
                           <div className="text-base sm:text-lg font-bold dark:text-white">
@@ -1126,40 +1219,29 @@ const FacultyDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {timeSlots.map((slot, rowIdx) => (
-                        <tr key={slot}>
+                      {uniqueSlots.map((slot, idx) => (
+                        <tr key={idx}>
                           <td className="p-2 md:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-700 dark:text-white">
                             {slot}
                           </td>
-                          {facultyTimetable.map((dayArr, colIdx) => {
-                            const cell = dayArr[rowIdx];
-                            if (!cell)
-                              return (
-                                <td
-                                  key={colIdx}
-                                  className="p-2 md:p-3 text-center"
-                                ></td>
-                              );
-                            if (cell.rest) {
-                              return (
-                                <td
-                                  key={colIdx}
-                                  className="p-2 md:p-3 text-center"
-                                >
-                                  <span className="inline-block bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">
-                                    Rest
-                                  </span>
-                                </td>
-                              );
-                            }
+                          {days.map((day, colIdx) => {
+                            const cell = timetableMap[slot]?.[day];
+
                             return (
                               <td
                                 key={colIdx}
                                 className="p-2 md:p-3 text-center"
                               >
-                                <span className="inline-block bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">
-                                  {cell.class} - {cell.subject}
-                                </span>
+                                {cell ? (
+                                  <span className="inline-block bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">
+                                    {cell.subject} - {cell.department} (Y
+                                    {cell.year})
+                                  </span>
+                                ) : (
+                                  <span className="inline-block bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">
+                                    Rest
+                                  </span>
+                                )}
                               </td>
                             );
                           })}
@@ -1321,13 +1403,17 @@ const FacultyDashboard = () => {
             {/* ...reuse your exams section, but styled like StudentDashboard... */}
             <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold dark:text-white">Exams</CardTitle>
+                <CardTitle className="text-lg font-semibold dark:text-white">
+                  Exams
+                </CardTitle>
                 <CardDescription className="dark:text-white">
                   Upcoming and past exams overview.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <span className="text-gray-400 dark:text-white">[Exams content here]</span>
+                <span className="text-gray-400 dark:text-white">
+                  [Exams content here]
+                </span>
                 {/* Mid Exam Marks Entry Section */}
                 <div className="mt-6">
                   <h3 className="font-semibold text-base mb-2 dark:text-white">
@@ -1371,7 +1457,10 @@ const FacultyDashboard = () => {
                     </select>
                   </div>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    <label htmlFor="exam-marks" className="text-xs font-medium dark:text-white">
+                    <label
+                      htmlFor="exam-marks"
+                      className="text-xs font-medium dark:text-white"
+                    >
                       Exam (out of 30):
                     </label>
                     <input
@@ -1385,7 +1474,10 @@ const FacultyDashboard = () => {
                       aria-label="Exam marks out of 30"
                       placeholder="0"
                     />
-                    <label htmlFor="bit-marks" className="text-xs font-medium dark:text-white">
+                    <label
+                      htmlFor="bit-marks"
+                      className="text-xs font-medium dark:text-white"
+                    >
                       Bit Paper (out of 20):
                     </label>
                     <input
@@ -1399,7 +1491,10 @@ const FacultyDashboard = () => {
                       aria-label="Bit Paper marks out of 20"
                       placeholder="0"
                     />
-                    <label htmlFor="assignment-marks" className="text-xs font-medium dark:text-white">
+                    <label
+                      htmlFor="assignment-marks"
+                      className="text-xs font-medium dark:text-white"
+                    >
                       Assignment (out of 5):
                     </label>
                     <input
@@ -1409,7 +1504,9 @@ const FacultyDashboard = () => {
                       max={5}
                       className="border rounded px-2 py-1 text-sm w-20 bg-white dark:bg-gray-700 dark:text-white"
                       value={assignmentMarks}
-                      onChange={(e) => setAssignmentMarks(Number(e.target.value))}
+                      onChange={(e) =>
+                        setAssignmentMarks(Number(e.target.value))
+                      }
                       aria-label="Assignment marks out of 5"
                       placeholder="0"
                     />
@@ -1424,18 +1521,41 @@ const FacultyDashboard = () => {
                   </div>
                   <div className="mt-2 text-xs text-gray-700 dark:text-white">
                     <div>
-                      Mid-term Score: <span className="font-semibold dark:text-white">{calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)}</span>
+                      Mid-term Score:{" "}
+                      <span className="font-semibold dark:text-white">
+                        {calcMidTermScore(
+                          examMarks,
+                          bitPaperMarks,
+                          assignmentMarks
+                        )}
+                      </span>
                     </div>
                     <div>
-                      Weighted Final Score: <span className="font-semibold dark:text-white">{getWeightedFinal(midTermScores[`${selectedExamClass}-${selectedExamStudent}`] || [calcMidTermScore(examMarks, bitPaperMarks, assignmentMarks)])}</span>
-                      {midTermScores[`${selectedExamClass}-${selectedExamStudent}`]?.length === 2 && (
+                      Weighted Final Score:{" "}
+                      <span className="font-semibold dark:text-white">
+                        {getWeightedFinal(
+                          midTermScores[
+                            `${selectedExamClass}-${selectedExamStudent}`
+                          ] || [
+                            calcMidTermScore(
+                              examMarks,
+                              bitPaperMarks,
+                              assignmentMarks
+                            ),
+                          ]
+                        )}
+                      </span>
+                      {midTermScores[
+                        `${selectedExamClass}-${selectedExamStudent}`
+                      ]?.length === 2 && (
                         <span className="ml-2 text-gray-500 dark:text-white">
                           (80% higher + 20% lower mid-term)
                         </span>
                       )}
                     </div>
                     <div className="mt-1 text-gray-500 dark:text-white">
-                      (Scores are auto-calculated and saved per student. Only last 2 mid-terms are considered.)
+                      (Scores are auto-calculated and saved per student. Only
+                      last 2 mid-terms are considered.)
                     </div>
                   </div>
                 </div>
@@ -1448,11 +1568,17 @@ const FacultyDashboard = () => {
             {/* ...reuse your results section, but styled like StudentDashboard... */}
             <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold dark:text-white">Results</CardTitle>
-                <CardDescription className="dark:text-white">Results overview.</CardDescription>
+                <CardTitle className="text-lg font-semibold dark:text-white">
+                  Results
+                </CardTitle>
+                <CardDescription className="dark:text-white">
+                  Results overview.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <span className="text-gray-400 dark:text-white">[Results content here]</span>
+                <span className="text-gray-400 dark:text-white">
+                  [Results content here]
+                </span>
               </CardContent>
             </Card>
           </div>
@@ -1462,11 +1588,17 @@ const FacultyDashboard = () => {
             {/* ...reuse your announcements section, but styled like StudentDashboard... */}
             <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold dark:text-white">Announcements</CardTitle>
-                <CardDescription className="dark:text-white">Important announcements and updates.</CardDescription>
+                <CardTitle className="text-lg font-semibold dark:text-white">
+                  Announcements
+                </CardTitle>
+                <CardDescription className="dark:text-white">
+                  Important announcements and updates.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <span className="text-gray-400 dark:text-white">[Announcements content here]</span>
+                <span className="text-gray-400 dark:text-white">
+                  [Announcements content here]
+                </span>
               </CardContent>
             </Card>
           </div>

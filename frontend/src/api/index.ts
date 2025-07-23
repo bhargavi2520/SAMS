@@ -46,12 +46,15 @@ apiClient.interceptors.response.use(
         error.response.data?.message ||
         error.response.data?.error ||
         "Request failed. Please check your input and try again.";
-
-      toast({
-        title: "Request Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+        toast({
+          title: "Request Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        if (error.response.status == 401) {
+          localStorage.removeItem("authToken");
+          window.location.href = "/SAMS/login"
+        }
     }
     // Handle network errors
     else if (error.code === "NETWORK_ERROR" || error.code === "ERR_NETWORK") {

@@ -22,15 +22,21 @@ const newAssignment = async (req, res) => {
 
     if (doExist.length === 0) {
       return res.status(404).json({
-        message: "Requested department and years do not exist for this batch.",
+        message: "Requested department and years do not exist.",
         success: false,
       });
+    }
+    const isHodAlreadyAssigned = await departmentAssignment.find({hod: hodId});
+    if(isHodAlreadyAssigned){
+      return res.status(409).json({
+        success: false,
+        message : "Hod is already assigned to a department",
+      })
     }
 
     const existingAssignments = await departmentAssignment
       .find({
-        hod: hodId,
-        department,
+        department
       })
       .lean();
 
@@ -44,7 +50,7 @@ const newAssignment = async (req, res) => {
     if (newYears.length === 0) {
       return res.status(400).json({
         message:
-          "All requested years are already assigned to this HOD for the selected batch.",
+          "All requested years are already assigned.",
         success: false,
       });
     }
