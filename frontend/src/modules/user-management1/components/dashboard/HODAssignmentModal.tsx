@@ -60,8 +60,12 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
     try {
       const hodsData = await hodService.getAllHODs();
       setHODs(hodsData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 
@@ -69,8 +73,12 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
     try {
       const assignmentsData = await hodService.getDepartmentAssignments();
       setAssignments(assignmentsData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 
@@ -118,8 +126,12 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
         setSuccess('');
       }, 2000);
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setLoading(false);
     }
@@ -300,7 +312,7 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
                 {assignments.map((assignment) => (
                   <div key={assignment._id} className="text-sm py-1 border-b last:border-b-0">
                     <span className="font-medium">
-                      {assignment.hodName}
+                      {assignment.hodName} ({assignment.hodEmail})
                     </span>
                     {' → '}
                     <span className="text-gray-600">
