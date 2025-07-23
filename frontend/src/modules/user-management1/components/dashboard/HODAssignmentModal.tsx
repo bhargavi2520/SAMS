@@ -46,8 +46,12 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
     try {
       const hodsData = await hodService.getAllHODs();
       setHODs(hodsData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 
@@ -55,8 +59,12 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
     try {
       const assignmentsData = await hodService.getDepartmentAssignments();
       setAssignments(assignmentsData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 
@@ -99,8 +107,12 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
         setSuccess('');
       }, 2000);
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setLoading(false);
     }
@@ -116,11 +128,13 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
   };
 
   const isAssignmentExists = (hodId: string, department: string, year: string) => {
+    const selectedHOD = hods.find(h => h._id === hodId);
+    if (!selectedHOD) return false;
     return assignments.some(
       assignment => 
-        assignment.hod._id === hodId && 
-        assignment.department === department && 
-        assignment.departmentYears === parseInt(year)
+        assignment.hodEmail === selectedHOD.email &&
+        assignment.department === department &&
+        assignment.years === parseInt(year)
     );
   };
 
@@ -221,11 +235,11 @@ const HODAssignmentModal: React.FC<HODAssignmentModalProps> = ({
                 {assignments.map((assignment) => (
                   <div key={assignment._id} className="text-sm py-1 border-b last:border-b-0">
                     <span className="font-medium">
-                      {assignment.hod.firstName} {assignment.hod.lastName}
+                      {assignment.hodName} ({assignment.hodEmail})
                     </span>
                     {' → '}
                     <span className="text-gray-600">
-                      {assignment.department} Year {assignment.departmentYears}
+                      {assignment.department} Year {assignment.years}
                     </span>
                   </div>
                 ))}
