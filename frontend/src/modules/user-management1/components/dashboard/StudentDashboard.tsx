@@ -667,7 +667,7 @@ interface DashboardData {
 
 const StudentDashboard = () => {
   // The 'user' object from the auth store is aliased to 'studentProfile' for use in this component.
-  const { user: studentProfile } = useAuthStore();
+  const { user: studentProfile, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<string>("dashboard"); // Set initial active section to Dashboard
@@ -895,10 +895,13 @@ const StudentDashboard = () => {
         <div className="text-center">
           <div className="text-red-600 font-semibold mb-2">{error}</div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() =>{
+              logout();
+              navigate('/login');
+            } }
             className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Retry
+            Logout / Login Again
           </button>
         </div>
       </div>

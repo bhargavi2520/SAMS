@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
+import { useAuthStore } from "../../store/authStore";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -281,6 +282,7 @@ const days = [
 
 const FacultyDashboard = () => {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
   // Refs for each section
   const [facultyData, setFacultyData] = useState<FacultyDataItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -291,19 +293,42 @@ const FacultyDashboard = () => {
   const [dashboardLoaded, setDashboardLoaded] = useState(false);
 
   useEffect(() => {
-    apiClient
-      .get("/dashboard/faculty")
-      .then((res) => {
-        setFacultyData(res.data.data || []);
+    const fetchDashboard = async () => {
+      try {
+        const response = await apiClient.get("/dashboard/faculty");
+        if (response.data && response.data.success) {
+          setFacultyData(response.data.data || []);
+          setLoading(false);
+          const newToken = response.headers["refreshedtoken"];
+          localStorage.setItem("authToken", newToken);
+          setDashboardLoaded(true);
+        } else {
+          setError(response.data?.message || "Failed to fetch dashboard data");
+        }
+      } catch (err: unknown) {
+        if (
+          err &&
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err
+        ) {
+          const errorObj = err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          setError(
+            errorObj.response?.data?.message ||
+              errorObj.message ||
+              "Failed to fetch dashboard data"
+          );
+        } else {
+          setError("Failed to fetch dashboard data");
+        }
+      } finally {
         setLoading(false);
-        const newToken = res.headers["refreshedtoken"];
-        localStorage.setItem("authToken", newToken);
-        setDashboardLoaded(true);
-      })
-      .catch((err) => {
-        setLoading(false);
-        setError(err?.response?.data?.message || " Please contact support.");
-      });
+      }
+    };
+    fetchDashboard();
   }, []);
 
   const sectionOptions = facultyData.map((item) => ({
@@ -1049,29 +1074,19 @@ const FacultyDashboard = () => {
   if (profileLoading || loading) return <div>Loading...</div>;
   if (profileError || error || !dashboardLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-md w-full">
-          <svg
-            className="w-16 h-16 text-red-400 mb-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"
-            />
-          </svg>
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">
-            {profileError || error}
-          </h2>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 font-semibold mb-2">
+            {error || "OOps! something's wrong"}
+          </div>
           <button
-            className="hover:text-blue-700 text-grey px-4 py-2 rounded-lg font-semibold"
-            onClick={() => window.open("mailto:support@college.edu")}
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Contact Support ?
+            Login Again/Log Out
           </button>
         </div>
       </div>

@@ -35,6 +35,7 @@ import {
 import apiClient from "@/api";
 import { toast } from "@/common/hooks/use-toast";
 import { addYears, setYear } from "date-fns";
+import { useAuthStore } from "../../store/authStore";
 
 // Mock Data
 const summaryCards = [
@@ -189,6 +190,7 @@ const statusColor = (status) =>
 
 const HODDashboard = ({ isHOD = true }) => {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
   // Section refs for scroll navigation
   const dashboardRef = useRef(null);
   const userManagementRef = useRef(null);
@@ -260,21 +262,48 @@ const HODDashboard = ({ isHOD = true }) => {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);
+    setError(null);
     const fetchDashboard = async () => {
-      const response = await apiClient.get("/dashboard/hod");
-      const data = response.data;
-      const newToken = response.headers["refreshedtoken"];
-      localStorage.setItem("authToken", newToken);
-      setYearsList(data.years);
-      setDepartment(data.department);
-      if (data.department != "" && data.years.length != 0) {
-        setDashboardLoaded(true);
-      } else {
-        setError(data.message || "You are not authorized.");
+      try {
+        const response = await apiClient.get("/dashboard/hod");
+        if (response.data && response.data.success) {
+          const data = response.data;
+          const newToken = response.headers["refreshedtoken"];
+          localStorage.setItem("authToken", newToken);
+          setYearsList(data.years);
+          if(data.department != ""){
+            setDepartment(data.department);
+          }else{
+            setError("NO department assigned to YOu");
+          }
+          setDashboardLoaded(true);
+        } else {
+          setError(response.data?.message || "Failed to fetch dashboard data");
+        }
+      } catch (err: unknown) {
+        if (
+          err &&
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err
+        ) {
+          const errorObj = err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          setError(
+            errorObj.response?.data?.message ||
+              errorObj.message ||
+              "Failed to fetch dashboard data"
+          );
+        } else {
+          setError("Failed to fetch dashboard data");
+        }
+      } finally {
+        setLoading(false);
       }
     };
     fetchDashboard();
-    setLoading(false);
   }, []);
 
   // Mock data for dropdowns
@@ -1039,7 +1068,7 @@ const HODDashboard = ({ isHOD = true }) => {
     fetchSubjectDetails();
   }, [subjectSelectedYear, dashboardLoaded]);
 
-  const handleNewSubject = async ( e : any ) => {
+  const handleNewSubject = async (e: any) => {
     e.preventDefault();
     const response = await apiClient.post("/subjectData/addSubject", {
       code: newSubjectCode,
@@ -1051,16 +1080,21 @@ const HODDashboard = ({ isHOD = true }) => {
     toast({ title: response.data.message, variant: "default" });
   };
   if (loading) return <div>Loading...</div>;
-  if (error) {
+  if (error || !dashboardLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-red-600 font-semibold mb-2">{error}</div>
+          <div className="text-red-600 font-semibold mb-2">
+            {error || "OOps! something's wrong"}
+          </div>
           <button
-            onClick={() => window.location.href = "/SAMS/login"}
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Login Page
+            Login Again/Log Out
           </button>
         </div>
       </div>

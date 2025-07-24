@@ -26,7 +26,7 @@ const newAssignment = async (req, res) => {
         success: false,
       });
     }
-    const isHodAlreadyAssigned = await departmentAssignment.find({hod: hodId});
+    const isHodAlreadyAssigned = await departmentAssignment.findOne({hod: hodId});
     if(isHodAlreadyAssigned){
       return res.status(409).json({
         success: false,

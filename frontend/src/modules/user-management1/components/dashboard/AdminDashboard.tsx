@@ -263,7 +263,7 @@ const AdminDashboard = () => {
   const [timetableError, setTimetableError] = useState("");
   const [dashboardLoaded, setDashboardLoaded] = useState(false);
   const navigate = useNavigate();
-  const authStore = useAuthStore();
+  const { logout } = useAuthStore();
 
   // User Management State
   const [userType, setUserType] = useState<UserRole>("STUDENT");
@@ -333,17 +333,45 @@ const AdminDashboard = () => {
 
   const [loading, setLoading] = useState(false);
   const [adminData, setAdminData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       setLoading(true);
-      const response = await apiClient.get("/dashboard/admin");
-      const data = response.data;
-      setAdminData(data.adminInfo);
-      const newToken = response.headers["refreshedtoken"];
-      localStorage.setItem("authToken", newToken);
-      setDashboardLoaded(true);
-      setLoading(false);
+      setError(null);
+      try {
+        const response = await apiClient.get("/dashboard/admin");
+        if (response.data && response.data.success) {
+          const data = response.data;
+          setAdminData(data.adminInfo);
+          const newToken = response.headers["refreshedtoken"];
+          localStorage.setItem("authToken", newToken);
+          setDashboardLoaded(true);
+        } else {
+          setError(response.data?.message || "Failed to fetch dashboard data");
+        }
+      } catch (err: unknown) {
+        if (
+          err &&
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err
+        ) {
+          const errorObj = err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          setError(
+            errorObj.response?.data?.message ||
+              errorObj.message ||
+              "Failed to fetch dashboard data"
+          );
+        } else {
+          setError("Failed to fetch dashboard data");
+        }
+      } finally {
+        setLoading(false);
+      }
     };
     fetchDashboard();
   }, []);
@@ -423,9 +451,7 @@ const AdminDashboard = () => {
       }
     }
     fetchTimetable();
-  }, [selectedYear, selectedBranch, selectedSection,dashboardLoaded
-
-  ]);
+  }, [selectedYear, selectedBranch, selectedSection, dashboardLoaded]);
 
   const timetablesByBranch = useMemo(() => {
     const filtered = timetableTable.filter((row) => row.year === selectedYear);
@@ -631,21 +657,22 @@ const AdminDashboard = () => {
       icon: <Users className="h-4 w-4 text-purple-600" />,
     },
   ];
-  if (loading) return (<div>Loading...</div>);
-  if (!dashboardLoaded) {
+  if (loading) return <div>Loading...</div>;
+  if (error || !dashboardLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="text-red-600 font-semibold mb-2">
-             OOps! something's wrong
+            {error || "OOps! something's wrong"}
           </div>
           <button
             onClick={() => {
-              authStore.logout();
+              logout();
+              navigate("/login");
             }}
             className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Login Again
+            Login Again/Log Out
           </button>
         </div>
       </div>
