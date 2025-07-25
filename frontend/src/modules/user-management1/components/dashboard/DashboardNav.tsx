@@ -26,7 +26,6 @@ const navConfig = {
     { label: 'User Management', icon: <Users className="w-6 h-6" />, section: 'user-management' },
     { label: 'Timetable Management', icon: <CalendarDays className="w-6 h-6" />, section: 'timetable-management' },
     { label: 'Reports', icon: <BarChart2 className="w-6 h-6" />, section: 'reports' },
-    { label: 'Department Management', icon: <BookOpen className="w-6 h-6" />, section: 'department-management' },
     { label: 'Announcements', icon: <Megaphone className="w-6 h-6" />, section: 'announcements' },
     { label: 'Settings', icon: <Settings className="w-6 h-6" />, section: 'settings' },
   ],

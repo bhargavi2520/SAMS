@@ -231,7 +231,6 @@ const sectionIds = [
   "user-management",
   "timetable-management",
   "reports",
-  "department-management",
   "announcements",
   "settings",
 ];
@@ -1210,49 +1209,6 @@ const AdminDashboard = () => {
                 <Button className="mt-2 w-full">Generate Report</Button>
               </Card>
             ))}
-          </div>
-        </section>
-
-        {/* Department Management */}
-        <section id="department-management" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <BookOpen className="w-6 h-6" /> Department Management
-          </h2>
-          {/* Mobile View: Cards */}
-          <div className="md:hidden space-y-3">
-            {departmentStats.map((dept, idx) => (
-              <Card key={idx} className="p-4">
-                <p className="font-bold text-lg">{dept.department}</p>
-                <p className="text-sm">HOD: {dept.hod}</p>
-                <div className="flex justify-between mt-2 text-sm">
-                  <span>
-                    Students:{" "}
-                    <span className="font-semibold">{dept.students}</span>
-                  </span>
-                </div>
-              </Card>
-            ))}
-          </div>
-          {/* Desktop View: Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="py-2 px-3 text-left">Department</th>
-                  <th className="py-2 px-3 text-left">Students</th>
-                  <th className="py-2 px-3 text-left">HOD</th>
-                </tr>
-              </thead>
-              <tbody>
-                {departmentStats.map((dept, idx) => (
-                  <tr key={idx} className="border-b last:border-b-0">
-                    <td className="py-2 px-3">{dept.department}</td>
-                    <td className="py-2 px-3">{dept.students}</td>
-                    <td className="py-2 px-3">{dept.hod}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </section>
 
