@@ -235,23 +235,6 @@ const sectionIds = [
   "settings",
 ];
 
-const daysOfWeek = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-const timeSlots = [
-  "08:00-09:00",
-  "09:00-10:00",
-  "10:00-11:00",
-  "11:00-12:00",
-  "12:00-01:00",
-  "01:00-02:00",
-];
-
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState(sectionIds[0]);
   const [selectedYear, setSelectedYear] = useState("1");
@@ -451,6 +434,46 @@ const AdminDashboard = () => {
     }
     fetchTimetable();
   }, [selectedYear, selectedBranch, selectedSection, dashboardLoaded]);
+
+  // --- Timetable Grid Logic (copied from StudentDashboard) ---
+  const allDays = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  function parseTime(str) {
+    const [h, m] = str.split(":").map(Number);
+    return h * 60 + m;
+  }
+  const presentDays = allDays.filter((day) =>
+    timetableData.some(
+      (slot) => slot.day === day && slot.subject && slot.subject.trim() !== ""
+    )
+  );
+  const timeSlots = Array.from(
+    new Set(timetableData.map((slot) => `${slot.startTime}-${slot.endTime}`))
+  ).sort((a, b) => {
+    const [aStart] = a.split("-");
+    const [bStart] = b.split("-");
+    return parseTime(aStart) - parseTime(bStart);
+  });
+  const timetableGrid = timeSlots.map((time) => {
+    const [startTime, endTime] = time.split("-");
+    const row = { startTime, endTime };
+    for (const day of presentDays) {
+      const found = timetableData.find(
+        (slot) =>
+          slot.day === day &&
+          slot.startTime === startTime &&
+          slot.endTime === endTime
+      );
+      row[day] = found ? found.subject : "";
+    }
+    return row;
+  });
 
   const timetablesByBranch = useMemo(() => {
     const filtered = timetableTable.filter((row) => row.year === selectedYear);
@@ -684,24 +707,24 @@ const AdminDashboard = () => {
         onNavClick={handleNavClick}
         dashboardType="admin"
       />
-      <div className="max-w-6xl mx-auto py-6 px-4 space-y-10">
+      <div className="max-w-6xl mx-auto py-6 px-2 sm:px-4 space-y-8 sm:space-y-10">
         {/* Admin Profile Section */}
         <section id="admin-profile" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <User className="w-6 h-6" /> Admin Profile
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
+            <User className="w-5 h-5 sm:w-6 sm:h-6" /> Admin Profile
           </h2>
           <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-              <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="w-8 h-8 md:w-10 md:h-10 text-white" />
               </div>
               <div>
                 <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
                     System Administrator
                   </h2>
                 </div>
-                <p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">
+                <p className="text-gray-600 mb-2 md:mb-4 text-xs sm:text-sm md:text-base">
                   admin@college.edu
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
@@ -709,14 +732,13 @@ const AdminDashboard = () => {
                     <span className="font-medium">Role:</span> Administrator
                   </div>
                   <div>
-                    <span className="font-medium">Department:</span> IT
-                    Management
+                    <span className="font-medium">Department:</span> IT Management
                   </div>
                 </div>
                 <div className="mt-4 md:mt-6">
                   <Button
                     onClick={() => navigate("/profile")}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium"
                   >
                     View Profile
                   </Button>
@@ -728,17 +750,17 @@ const AdminDashboard = () => {
 
         {/* System Overview & Recent Activity */}
         <section id="overview" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <LayoutDashboard className="w-6 h-6" /> System Overview
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
+            <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" /> System Overview
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             {systemStats.map((stat) => (
               <div
                 key={stat.title}
-                className={`rounded-lg p-4 flex flex-col items-center bg-white shadow-sm`}
+                className="aspect-square rounded-lg p-4 flex flex-col items-center justify-center bg-white shadow-sm"
               >
-                <span className="text-2xl mb-1">{stat.icon}</span>
-                <span className="text-lg font-bold">{stat.value}</span>
+                <span className="text-2xl mb-1 flex items-center justify-center">{stat.icon}</span>
+                <span className="text-lg font-bold text-center">{stat.value}</span>
                 <span className="text-xs text-gray-600 mt-1 text-center">
                   {stat.title}
                 </span>
@@ -753,18 +775,19 @@ const AdminDashboard = () => {
               <CardHeader>
                 <CardTitle>User Distribution</CardTitle>
               </CardHeader>
-              <CardContent className="h-64">
-                <Pie data={pieData} options={{ maintainAspectRatio: false }} />
+              <CardContent className="h-56 sm:h-64 w-full">
+                <Pie data={pieData} options={{ maintainAspectRatio: false, responsive: true }} />
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
                 <CardTitle>Department Stats</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="h-56 sm:h-64 w-full">
                 <Bar
                   key={JSON.stringify(departmentBarData)}
                   data={departmentBarData}
+                  options={{ maintainAspectRatio: false, responsive: true }}
                 />
               </CardContent>
             </Card>
@@ -772,14 +795,14 @@ const AdminDashboard = () => {
 
           {/* Recent Activity */}
           <div className="mt-8">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5" /> Recent Activity
+            <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5" /> Recent Activity
             </h3>
             <div className="space-y-3">
               {recentActivity.map((activity, index) => (
                 <div
                   key={index}
-                  className={`flex items-start space-x-3 p-3 rounded-lg ${activity.bg}`}
+                  className={`flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 p-3 rounded-lg ${activity.bg}`}
                 >
                   <div className="flex-shrink-0">{activity.icon}</div>
                   <div className="flex-1">
@@ -799,14 +822,14 @@ const AdminDashboard = () => {
 
         {/* User Management */}
         <section id="user-management" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Users className="w-6 h-6" /> User Management
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6" /> User Management
           </h2>
 
           <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               {/* Tab Navigation */}
-              <div className="flex border-b border-gray-200 mb-4">
+              <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-4 gap-2 sm:gap-0">
                 <button
                   onClick={() => setUserManagementTab("users")}
                   className={`px-3 py-2 font-medium text-sm border-b-2 transition-colors ${
@@ -832,25 +855,27 @@ const AdminDashboard = () => {
               {/* Users Tab */}
               {userManagementTab === "users" && (
                 <div>
-                  <div className="mb-4 flex gap-2 items-center">
-                    <label htmlFor="userType" className="font-semibold">
-                      User Type:
-                    </label>
-                    <select
-                      id="userType"
-                      value={userType}
-                      onChange={(e) => setUserType(e.target.value as UserRole)}
-                      className="border rounded px-2 py-1"
-                    >
-                      <option value="STUDENT">Student</option>
-                      <option value="FACULTY">Faculty</option>
-                      <option value="HOD">HOD</option>
-                      <option value="ADMIN">Admin</option>
-                    </select>
+                  <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <div className="flex gap-2 items-center w-full sm:w-auto">
+                      <label htmlFor="userType" className="font-semibold">
+                        User Type:
+                      </label>
+                      <select
+                        id="userType"
+                        value={userType}
+                        onChange={(e) => setUserType(e.target.value as UserRole)}
+                        className="border rounded px-2 py-1"
+                      >
+                        <option value="STUDENT">Student</option>
+                        <option value="FACULTY">Faculty</option>
+                        <option value="HOD">HOD</option>
+                        <option value="ADMIN">Admin</option>
+                      </select>
+                    </div>
                     {/* Show year, branch, section if Student is selected */}
                     {userType === "STUDENT" && (
-                      <>
-                        <label className="font-semibold ml-2">Year:</label>
+                      <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
+                        <label className="font-semibold">Year:</label>
                         <select
                           value={studentYear}
                           onChange={(e) => setStudentYear(e.target.value)}
@@ -861,7 +886,7 @@ const AdminDashboard = () => {
                           <option value="3">3</option>
                           <option value="4">4</option>
                         </select>
-                        <label className="font-semibold ml-2">Branch:</label>
+                        <label className="font-semibold">Branch:</label>
                         <select
                           value={studentBranch}
                           onChange={(e) => setStudentBranch(e.target.value)}
@@ -874,7 +899,7 @@ const AdminDashboard = () => {
                           <option value="CSD">CSD</option>
                           <option value="CSM">CSM</option>
                         </select>
-                        <label className="font-semibold ml-2">Section:</label>
+                        <label className="font-semibold">Section:</label>
                         <select
                           value={studentSection}
                           onChange={(e) => setStudentSection(e.target.value)}
@@ -885,126 +910,187 @@ const AdminDashboard = () => {
                           <option value="3">3</option>
                           {/* Add more sections as needed */}
                         </select>
-                      </>
+                      </div>
                     )}
                   </div>
                   {loadingUsers ? (
                     <div>Loading...</div>
                   ) : (
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
-                        <thead>
-                          <tr className="bg-gray-100">
-                            <th className="py-2 px-3 text-left">Name</th>
-                            <th className="py-2 px-3 text-left">Email</th>
-                            <th className="py-2 px-3 text-left">Role</th>
-                            <th className="py-2 px-3 text-left">Status</th>
-                            <th className="py-2 px-3 text-left">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {users.length > 0 ? (
-                            users.map((user, idx) => {
-                              const name =
-                                "firstName" in user && "lastName" in user
-                                  ? `${
-                                      (
-                                        user as
-                                          | StudentProfile
-                                          | FacultyProfile
-                                          | HODProfile
-                                      ).firstName
-                                    } ${
-                                      (
-                                        user as
-                                          | StudentProfile
-                                          | FacultyProfile
-                                          | HODProfile
-                                      ).lastName
-                                    }`
-                                  : "name" in user
-                                  ? (user as { name: string }).name
-                                  : "";
-                              const email =
-                                "email" in user ? (user.email as string) : "";
-                              const role =
-                                "role" in user
-                                  ? (user.role as string)
-                                  : userType;
-                              const status =
-                                "status" in user
-                                  ? (user.status as string)
-                                  : "Active";
-                              return (
-                                <tr
-                                  key={idx}
-                                  className="border-b last:border-b-0"
-                                >
-                                  <td className="py-2 px-3">{name}</td>
-                                  <td className="py-2 px-3">{email}</td>
-                                  <td className="py-2 px-3">{role}</td>
-                                  <td className="py-2 px-3">
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                        status === "Active"
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-red-100 text-red-800"
-                                      }`}
-                                    >
-                                      {status}
+                    <>
+                      {/* Mobile: User Cards */}
+                      <div className="block md:hidden space-y-3">
+                        {users.length > 0 ? (
+                          users.map((user, idx) => {
+                            const name =
+                              "firstName" in user && "lastName" in user
+                                ? `${(user as StudentProfile | FacultyProfile | HODProfile).firstName} ${(user as StudentProfile | FacultyProfile | HODProfile).lastName}`
+                                : "name" in user
+                                ? (user as { name: string }).name
+                                : "";
+                            const email =
+                              "email" in user ? (user.email as string) : "";
+                            const role =
+                              "role" in user
+                                ? (user.role as string)
+                                : userType;
+                            const status =
+                              "status" in user
+                                ? (user.status as string)
+                                : "Active";
+                            return (
+                              <Card key={idx} className="p-3 flex flex-col gap-1">
+                                <div className="font-bold text-base">{name}</div>
+                                <div className="text-xs text-gray-600">{email}</div>
+                                <div className="flex gap-2 text-xs mt-1">
+                                  <span className="font-semibold">{role}</span>
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                      status === "Active"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {status}
+                                  </span>
+                                </div>
+                                <div className="flex gap-2 mt-2">
+                                  <button
+                                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 text-xs"
+                                    title="Edit"
+                                    onClick={() => setEditUserModal({ open: true, user })}
+                                  >
+                                    <span role="img" aria-label="Edit">
+                                      ✏️
                                     </span>
-                                  </td>
-                                  <td className="py-2 px-3 flex gap-2">
+                                  </button>
+                                  <button
+                                    className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 text-xs"
+                                    title="Delete"
+                                    onClick={() => setDeleteUserModal({ open: true, user })}
+                                  >
+                                    <span role="img" aria-label="Delete">
+                                      🗑️
+                                    </span>
+                                  </button>
+                                  {role === "HOD" && (
                                     <button
-                                      className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-                                      title="Edit"
-                                      onClick={() =>
-                                        setEditUserModal({ open: true, user })
-                                      }
+                                      className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 text-xs"
+                                      title="Assign Teacher"
+                                      onClick={() => setAssignTeacherModal({ open: true, user })}
                                     >
-                                      <span role="img" aria-label="Edit">
-                                        ✏️
-                                      </span>
+                                      Assign Teacher
                                     </button>
-                                    <button
-                                      className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
-                                      title="Delete"
-                                      onClick={() =>
-                                        setDeleteUserModal({ open: true, user })
-                                      }
-                                    >
-                                      <span role="img" aria-label="Delete">
-                                        🗑️
+                                  )}
+                                </div>
+                              </Card>
+                            );
+                          })
+                        ) : (
+                          <div className="text-center text-gray-500">No Users Found</div>
+                        )}
+                      </div>
+                      {/* Desktop: User Table */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="py-2 px-3 text-left">Name</th>
+                              <th className="py-2 px-3 text-left">Email</th>
+                              <th className="py-2 px-3 text-left">Role</th>
+                              <th className="py-2 px-3 text-left">Status</th>
+                              <th className="py-2 px-3 text-left">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {users.length > 0 ? (
+                              users.map((user, idx) => {
+                                const name =
+                                  "firstName" in user && "lastName" in user
+                                    ? `${(user as StudentProfile | FacultyProfile | HODProfile).firstName} ${(user as StudentProfile | FacultyProfile | HODProfile).lastName}`
+                                    : "name" in user
+                                    ? (user as { name: string }).name
+                                    : "";
+                                const email =
+                                  "email" in user ? (user.email as string) : "";
+                                const role =
+                                  "role" in user
+                                    ? (user.role as string)
+                                    : userType;
+                                const status =
+                                  "status" in user
+                                    ? (user.status as string)
+                                    : "Active";
+                                return (
+                                  <tr
+                                    key={idx}
+                                    className="border-b last:border-b-0"
+                                  >
+                                    <td className="py-2 px-3">{name}</td>
+                                    <td className="py-2 px-3">{email}</td>
+                                    <td className="py-2 px-3">{role}</td>
+                                    <td className="py-2 px-3">
+                                      <span
+                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                          status === "Active"
+                                            ? "bg-green-100 text-green-800"
+                                            : "bg-red-100 text-red-800"
+                                        }`}
+                                      >
+                                        {status}
                                       </span>
-                                    </button>
-                                    {role === "HOD" && (
+                                    </td>
+                                    <td className="py-2 px-3 flex gap-2">
                                       <button
-                                        className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200"
-                                        title="Assign Teacher"
+                                        className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
+                                        title="Edit"
                                         onClick={() =>
-                                          setAssignTeacherModal({
-                                            open: true,
-                                            user,
-                                          })
+                                          setEditUserModal({ open: true, user })
                                         }
                                       >
-                                        Assign Teacher
+                                        <span role="img" aria-label="Edit">
+                                          ✏️
+                                        </span>
                                       </button>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          ) : (
-                            <tr className="border-b last:border-b-0">
-                              <td colSpan={5} className="py-2 px-3 text-center">
-                                No Users Found
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                                      <button
+                                        className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
+                                        title="Delete"
+                                        onClick={() =>
+                                          setDeleteUserModal({ open: true, user })
+                                        }
+                                      >
+                                        <span role="img" aria-label="Delete">
+                                          🗑️
+                                        </span>
+                                      </button>
+                                      {role === "HOD" && (
+                                        <button
+                                          className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200"
+                                          title="Assign Teacher"
+                                          onClick={() =>
+                                            setAssignTeacherModal({
+                                              open: true,
+                                              user,
+                                            })
+                                          }
+                                        >
+                                          Assign Teacher
+                                        </button>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                            ) : (
+                              <tr className="border-b last:border-b-0">
+                                <td colSpan={5} className="py-2 px-3 text-center">
+                                  No Users Found
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -1020,24 +1106,22 @@ const AdminDashboard = () => {
         </section>
 
         {/* Timetable Management */}
-        <div id="timetable-management" className="scroll-mt-24">
-          <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold">Timetable</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              {/* Redesigned Controls Row */}
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                <div className="flex flex-wrap items-center gap-3 md:gap-4 w-full md:w-auto">
+        <div id="timetable-management" className="scroll-mt-24 px-2 sm:px-0">
+          <div className="w-full overflow-x-auto">
+            <div style={{ minWidth: 400 }}>
+              <div className="text-lg sm:text-xl font-bold mb-2">Timetable</div>
+              {/* Controls Row (restored and responsive) */}
+              <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
                   <div className="flex items-center gap-2">
-                    <label className="font-semibold" htmlFor="year-select">
+                    <label className="font-semibold text-xs sm:text-sm" htmlFor="year-select">
                       Year:
                     </label>
                     <select
                       id="year-select"
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(e.target.value)}
-                      className="border rounded px-3 py-1 min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
                     >
                       <option value="1">Year 1</option>
                       <option value="2">Year 2</option>
@@ -1046,14 +1130,14 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="font-semibold" htmlFor="branch-select">
+                    <label className="font-semibold text-xs sm:text-sm" htmlFor="branch-select">
                       Branch:
                     </label>
                     <select
                       id="branch-select"
                       value={selectedBranch}
                       onChange={(e) => setSelectedBranch(e.target.value)}
-                      className="border rounded px-3 py-1 min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
                     >
                       {branches.map((branch) => (
                         <option key={branch} value={branch}>
@@ -1063,14 +1147,14 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="font-semibold" htmlFor="section-select">
+                    <label className="font-semibold text-xs sm:text-sm" htmlFor="section-select">
                       Section:
                     </label>
                     <select
                       id="section-select"
                       value={selectedSection}
                       onChange={(e) => setSelectedSection(e.target.value)}
-                      className="border rounded px-3 py-1 min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
                     >
                       {sections.map((section) => (
                         <option key={section} value={section}>
@@ -1080,12 +1164,12 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                   <Button
                     onClick={() => navigate("/admin/timetable")}
-                    className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2"
+                    className="bg-green-600 hover:bg-green-700 px-4 sm:px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 text-xs sm:text-sm"
                   >
-                    <CalendarDays className="w-5 h-5" />
+                    <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
                     Create Timetable
                   </Button>
                   <Button
@@ -1094,98 +1178,61 @@ const AdminDashboard = () => {
                         `/admin/timetable?year=${selectedYear}&branch=${selectedBranch}&section=${selectedSection}`
                       )
                     }
-                    className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2"
+                    className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 text-xs sm:text-sm"
                   >
-                    <CalendarDays className="w-5 h-5" />
+                    <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
                     Edit Timetable
                   </Button>
                 </div>
               </div>
-              {/* Timetable Table */}
-              <div className="w-full">
-                {timetableLoading ? (
-                  <div className="text-center py-10 text-gray-500">
-                    Loading timetable...
-                  </div>
-                ) : timetableError ? (
-                  <div className="text-center py-10 text-red-500">
-                    {timetableError}
-                  </div>
-                ) : timetableData.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500">
-                    No timetable found for {selectedBranch} Year {selectedYear}{" "}
-                    Section {selectedSection}.
+              {/* Timetable Table (minimal, borderless, scrollable) */}
+              <div>
+                {timetableData.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    Timetable is not available at the moment.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white rounded-lg text-sm border">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="py-2 px-5 text-left border min-w-[120px] w-[140px]">
-                            Time
+                  <table className="min-w-full text-xs sm:text-sm">
+                    <thead>
+                      <tr>
+                        <th className="p-2 sm:p-3 font-semibold text-center bg-gray-50 sticky left-0 z-10">Time</th>
+                        {presentDays.map((day) => (
+                          <th
+                            key={day}
+                            className="p-2 sm:p-3 font-semibold text-center bg-gray-50"
+                          >
+                            {day}
                           </th>
-                          {daysOfWeek.map((day) => (
-                            <th
-                              key={day}
-                              className="py-2 px-3 text-center border min-w-[120px]"
-                            >
-                              {day}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dynamicTimeSlots.map((slot) => {
-                          const [start, end] = slot.split("-");
-                          return (
-                            <tr key={slot}>
-                              <td className="py-2 px-5 font-semibold border bg-gray-50 min-w-[120px] w-[140px]">
-                                {start} - {end}
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {timetableGrid.length > 0 ? (
+                        timetableGrid.map((row, idx) => (
+                          <tr key={idx} className="border-b last:border-b-0">
+                            <td className="p-2 sm:p-3 text-center font-medium bg-gray-50 sticky left-0 z-10">
+                              {row.startTime} - {row.endTime}
+                            </td>
+                            {presentDays.map((day) => (
+                              <td key={day} className="p-2 sm:p-3 text-center">
+                                {row[day] || ""}
                               </td>
-                              {daysOfWeek.map((day) => {
-                                const entry = timetableData.find(
-                                  (e) =>
-                                    e.day === day &&
-                                    e.startTime === start &&
-                                    e.endTime === end
-                                );
-                                return (
-                                  <td
-                                    key={day}
-                                    className="py-2 px-3 text-center border h-20 align-top"
-                                  >
-                                    {entry ? (
-                                      <div>
-                                        <p className="font-semibold text-base">
-                                          {entry.subject}
-                                        </p>
-                                        {typeof entry.facultyName ===
-                                          "string" &&
-                                        entry.facultyName.length > 0 &&
-                                        !/^[0-9a-fA-F]{24}$/.test(
-                                          entry.facultyName
-                                        ) ? (
-                                          <p className="text-xs text-gray-500 mt-1">
-                                            {entry.facultyName}
-                                          </p>
-                                        ) : null}
-                                      </div>
-                                    ) : (
-                                      <span className="text-gray-400">-</span>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                            ))}
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={presentDays.length + 1} className="py-2 sm:py-3 text-gray-600 text-center">
+                            No Data Available at the moment.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Reports */}
