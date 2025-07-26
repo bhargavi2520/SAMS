@@ -61,9 +61,9 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
       const parts = text.split(' & ');
       if (parts.length === 2) {
         return (
-          <div className="text-left">
-            <div>{parts[0]} &</div>
-            <div>{parts[1]}</div>
+          <div className="text-left leading-none">
+            <div className="whitespace-nowrap">{parts[0]}</div>
+            <div className="whitespace-nowrap">{parts[1]}</div>
           </div>
         );
       }
@@ -72,14 +72,14 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
     const words = text.split(' ');
     if (words.length > 1) {
       return (
-        <div className="text-left">
-          <div>{words[0]}</div>
-          <div>{words.slice(1).join(' ')}</div>
+        <div className="text-left leading-tight">
+          <div className="whitespace-nowrap">{words[0]}</div>
+          <div className="whitespace-nowrap">{words.slice(1).join(' ')}</div>
         </div>
       );
     }
     
-    return <div>{text}</div>;
+    return <div className="whitespace-nowrap">{text}</div>;
   };
   
   // Scroll to top if Home is clicked
@@ -118,8 +118,8 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed md:hidden bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-3 z-50 shadow-lg max-w-[85vw] border-2 border-gray-600">
-        <div className="flex items-center space-x-4">
+      <nav className="fixed md:hidden bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-2 z-50 shadow-lg border-2 border-gray-600 overflow-x-auto w-auto">
+        <div className="flex items-center space-x-2 flex-nowrap min-w-max">
           {navItems.map((item, index) => {
             const isActive = activeSection === item.section;
             const isMultiWord = item.label.includes(' ') || item.label.includes('&');
@@ -127,19 +127,20 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeSection, onNavClick, 
               <button
                 key={item.label}
                 onClick={() => handleNav(item.section)}
-                className={`relative flex items-center transition-all duration-300 ${
+                className={`relative flex items-center transition-all duration-300 min-w-0 flex-shrink-0 ${
                   isActive 
-                    ? 'bg-blue-600 text-white rounded-full px-3 py-2 shadow-md' 
-                    : 'text-gray-600 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-blue-600 text-white rounded-full px-2 py-1.5 shadow-md' 
+                    : 'text-gray-600 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
                 aria-label={item.label}
+                style={{ maxWidth: isActive ? '120px' : '32px' }}
               >
                 {React.cloneElement(item.icon, { 
-                  className: `w-5 h-5 ${isActive ? 'text-white' : 'text-gray-600 dark:text-white'}`
+                  className: `w-4 h-4 ${isActive ? 'text-white' : 'text-gray-600 dark:text-white'}`
                 })}
                 {/* Text label for active item */}
                 {isActive && (
-                  <div className="ml-2 text-xs font-medium text-white">
+                  <div className="ml-1.5 text-[10px] leading-tight font-medium text-white truncate max-w-[85px]">
                     {formatLabel(item.label)}
                   </div>
                 )}

@@ -547,11 +547,49 @@ const AdminDashboard = () => {
     fetchDepartmentStats();
   }, [dashboardLoaded]);
 
+  // Section refs for scrolling
+  const overviewRef = useRef<HTMLDivElement>(null);
+  const userManagementRef = useRef<HTMLDivElement>(null);
+  const timetableManagementRef = useRef<HTMLDivElement>(null);
+  const reportsRef = useRef<HTMLDivElement>(null);
+  const announcementsRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  const sectionRefs = {
+    overview: overviewRef,
+    "user-management": userManagementRef,
+    "timetable-management": timetableManagementRef,
+    reports: reportsRef,
+    announcements: announcementsRef,
+    settings: settingsRef,
+  };
+
+  // Scroll event for active section
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 120; // Offset for nav
+      let current = "overview";
+      for (const id of sectionIds) {
+        const ref = sectionRefs[id];
+        if (ref && ref.current) {
+          const offsetTop = ref.current.offsetTop;
+          if (scrollPosition >= offsetTop) {
+            current = id;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Nav click handler
   const handleNavClick = (section) => {
     setActiveSection(section);
-    const el = document.getElementById(section);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const ref = sectionRefs[section];
+    if (ref && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -570,32 +608,6 @@ const AdminDashboard = () => {
       setSelectedYear(years[prevIndex]);
     }
   };
-
-  // Intersection Observer for active section
-  useEffect(() => {
-    if (!dashboardLoaded) return;
-    const observerOptions = {
-      root: null,
-      rootMargin: "-20% 0px -70% 0px",
-      threshold: 0,
-    };
-    const observerCallback = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    };
-    const observer = new window.IntersectionObserver(
-      observerCallback,
-      observerOptions
-    );
-    sectionIds.forEach((id) => {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
-    });
-    return () => observer.disconnect();
-  }, [dashboardLoaded]);
 
   // Dynamically extract unique time slots from timetableData
   const dynamicTimeSlots = useMemo(() => {
@@ -648,35 +660,31 @@ const AdminDashboard = () => {
     ],
   };
 
-  // System stats for overview section
-  const systemStats = [
+  // Top statistics data styled like FacultyDashboard
+  const adminStats = [
     {
-      title: "Total Users",
-      value: (
-        userCounts.students +
-        userCounts.faculty +
-        userCounts.hods
-      ).toLocaleString(),
-      change: "Total registered users",
-      icon: <Users className="h-4 w-4 text-muted-foreground" />,
-    },
-    {
-      title: "Students",
+      label: "Students",
       value: userCounts.students.toLocaleString(),
-      change: "Current students",
-      icon: <UserCheck className="h-4 w-4 text-blue-600" />,
+      color: "bg-yellow-100",
+      icon: <Users className="text-yellow-500" />,
     },
     {
-      title: "Faculty Members",
+      label: "Teachers",
       value: userCounts.faculty.toLocaleString(),
-      change: "Current faculty",
-      icon: <Users className="h-4 w-4 text-orange-500" />,
+      color: "bg-purple-100",
+      icon: <Users className="text-purple-500" />,
     },
     {
-      title: "HODs",
+      label: "HODs",
       value: userCounts.hods.toLocaleString(),
-      change: "Current HODs",
-      icon: <Users className="h-4 w-4 text-purple-600" />,
+      color: "bg-blue-100",
+      icon: <Users className="text-blue-500" />,
+    },
+    {
+      label: "All Members",
+      value: (userCounts.students + userCounts.faculty + userCounts.hods).toLocaleString(),
+      color: "bg-green-100",
+      icon: <Users className="text-green-500" />,
     },
   ];
   if (loading) return <div>Loading...</div>;
@@ -701,33 +709,31 @@ const AdminDashboard = () => {
     );
   }
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNav
         activeSection={activeSection}
         onNavClick={handleNavClick}
         dashboardType="admin"
       />
-      <div className="max-w-6xl mx-auto py-6 px-2 sm:px-4 space-y-8 sm:space-y-10">
+      <main className="flex-1 overflow-auto md:ml-20 pb-16 md:pb-0">
+        <div className="p-2 sm:p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Admin Profile Section */}
-        <section id="admin-profile" className="scroll-mt-24">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 sm:w-6 sm:h-6" /> Admin Profile
-          </h2>
-          <Card className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+          <div ref={overviewRef} className="space-y-4 md:space-y-6 scroll-mt-24 min-h-[60vh]" id="overview">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-              <div className="w-14 h-14 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600 dark:bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="w-8 h-8 md:w-10 md:h-10 text-white" />
               </div>
-              <div>
+                <div className="flex-1">
                 <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                     System Administrator
                   </h2>
                 </div>
-                <p className="text-gray-600 mb-2 md:mb-4 text-xs sm:text-sm md:text-base">
+                  <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-4 text-sm md:text-base">
                   admin@college.edu
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600 dark:text-gray-300">
                   <div>
                     <span className="font-medium">Role:</span> Administrator
                   </div>
@@ -738,50 +744,57 @@ const AdminDashboard = () => {
                 <div className="mt-4 md:mt-6">
                   <Button
                     onClick={() => navigate("/profile")}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium"
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
                   >
-                    View Profile
+                      View Full Profile
                   </Button>
                 </div>
               </div>
             </div>
           </Card>
-        </section>
 
-        {/* System Overview & Recent Activity */}
-        <section id="overview" className="scroll-mt-24">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
-            <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" /> System Overview
-          </h2>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {systemStats.map((stat) => (
-              <div
-                key={stat.title}
-                className="aspect-square rounded-lg p-4 flex flex-col items-center justify-center bg-white shadow-sm"
+            {/* System Overview Content */}
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 sm:p-4 md:p-6">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
+                  System Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 md:space-y-6">
+                {/* Top Stats - FacultyDashboard style */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
+                  {adminStats.map((stat, idx) => (
+                    <Card
+                      key={idx}
+                      className={`${stat.color} dark:bg-gray-700`}
               >
-                <span className="text-2xl mb-1 flex items-center justify-center">{stat.icon}</span>
-                <span className="text-lg font-bold text-center">{stat.value}</span>
-                <span className="text-xs text-gray-600 mt-1 text-center">
-                  {stat.title}
-                </span>
-                <span className="text-xs text-gray-400 text-center">
-                  {stat.change}
-                </span>
+                      <CardContent className="flex items-center justify-between py-2 sm:py-4">
+                        <div>
+                          <div className="text-base sm:text-lg font-bold dark:text-white">
+                            {stat.value}
               </div>
+                          <div className="text-xs text-gray-600 dark:text-white">
+                            {stat.label}
+                          </div>
+                        </div>
+                        <div className="text-xl sm:text-2xl">{stat.icon}</div>
+                      </CardContent>
+                    </Card>
             ))}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Card>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle>User Distribution</CardTitle>
+                      <CardTitle className="dark:text-white">User Distribution</CardTitle>
               </CardHeader>
               <CardContent className="h-56 sm:h-64 w-full">
                 <Pie data={pieData} options={{ maintainAspectRatio: false, responsive: true }} />
               </CardContent>
             </Card>
-            <Card>
+                  <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle>Department Stats</CardTitle>
+                      <CardTitle className="dark:text-white">Department Stats</CardTitle>
               </CardHeader>
               <CardContent className="h-56 sm:h-64 w-full">
                 <Bar
@@ -794,8 +807,8 @@ const AdminDashboard = () => {
           </div>
 
           {/* Recent Activity */}
-          <div className="mt-8">
-            <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
+                <div className="border-t pt-6 dark:border-gray-700">
+                  <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2 dark:text-white">
               <Activity className="w-4 h-4 sm:w-5 sm:h-5" /> Recent Activity
             </h3>
             <div className="space-y-3">
@@ -806,28 +819,31 @@ const AdminDashboard = () => {
                 >
                   <div className="flex-shrink-0">{activity.icon}</div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.title}</p>
-                    <p className="text-xs text-gray-600">
+                          <p className="text-sm font-medium dark:text-white">{activity.title}</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-300">
                       {activity.description}
                     </p>
                   </div>
-                  <Badge variant="outline" className="ml-auto flex-shrink-0">
+                        <Badge variant="outline" className="ml-auto flex-shrink-0 dark:border-gray-600 dark:text-gray-300">
                     {activity.badge}
                   </Badge>
                 </div>
               ))}
             </div>
           </div>
-        </section>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* User Management */}
-        <section id="user-management" className="scroll-mt-24">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 sm:w-6 sm:h-6" /> User Management
-          </h2>
-
-          <Card className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <CardContent className="p-3 sm:p-6">
+          {/* User Management Section */}
+          <div ref={userManagementRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="user-management">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg dark:text-white">
+                  User Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
               {/* Tab Navigation */}
               <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-4 gap-2 sm:gap-0">
                 <button
@@ -1103,13 +1119,17 @@ const AdminDashboard = () => {
               )}
             </CardContent>
           </Card>
-        </section>
+          </div>
 
-        {/* Timetable Management */}
-        <div id="timetable-management" className="scroll-mt-24 px-2 sm:px-0">
-          <div className="w-full overflow-x-auto">
-            <div style={{ minWidth: 400 }}>
-              <div className="text-lg sm:text-xl font-bold mb-2">Timetable</div>
+          {/* Timetable Management Section */}
+          <div ref={timetableManagementRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="timetable-management">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg dark:text-white">
+                  Timetable Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
               {/* Controls Row (restored and responsive) */}
               <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 mb-4 sm:mb-6">
                 <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
@@ -1186,20 +1206,20 @@ const AdminDashboard = () => {
                 </div>
               </div>
               {/* Timetable Table (minimal, borderless, scrollable) */}
-              <div>
+              <div className="overflow-x-auto w-full">
                 {timetableData.length === 0 ? (
                   <div className="text-center text-gray-500 py-8">
                     Timetable is not available at the moment.
                   </div>
                 ) : (
-                  <table className="min-w-full text-xs sm:text-sm">
+                  <table className="min-w-[600px] text-xs sm:text-sm">
                     <thead>
                       <tr>
-                        <th className="p-2 sm:p-3 font-semibold text-center bg-gray-50 sticky left-0 z-10">Time</th>
+                        <th className="p-2 sm:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">Time</th>
                         {presentDays.map((day) => (
                           <th
                             key={day}
-                            className="p-2 sm:p-3 font-semibold text-center bg-gray-50"
+                            className="p-2 sm:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800 sticky top-0 z-10"
                           >
                             {day}
                           </th>
@@ -1210,7 +1230,7 @@ const AdminDashboard = () => {
                       {timetableGrid.length > 0 ? (
                         timetableGrid.map((row, idx) => (
                           <tr key={idx} className="border-b last:border-b-0">
-                            <td className="p-2 sm:p-3 text-center font-medium bg-gray-50 sticky left-0 z-10">
+                            <td className="p-2 sm:p-3 text-center font-medium bg-gray-50 dark:bg-gray-800 sticky left-0 z-10">
                               {row.startTime} - {row.endTime}
                             </td>
                             {presentDays.map((day) => (
@@ -1231,77 +1251,92 @@ const AdminDashboard = () => {
                   </table>
                 )}
               </div>
-            </div>
-          </div>
+              </CardContent>
+            </Card>
         </div>
 
-        {/* Reports */}
-        <section id="reports" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <BarChart2 className="w-6 h-6" /> Reports
-          </h2>
+          {/* Reports Section */}
+          <div ref={reportsRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="reports">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg dark:text-white">
+                  Reports
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {reports.map((report) => (
               <Card
                 key={report.title}
-                className="bg-white rounded-lg shadow-sm p-6 flex flex-col items-start gap-4 border border-gray-100"
+                      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 flex flex-col items-start gap-4 border border-gray-100 dark:border-gray-700"
               >
                 <span className="text-3xl">📊</span>
-                <div className="font-semibold text-lg text-gray-900">
+                      <div className="font-semibold text-lg text-gray-900 dark:text-white">
                   {report.title}
                 </div>
-                <div className="text-sm text-gray-700 flex-1">
+                      <div className="text-sm text-gray-700 dark:text-gray-300 flex-1">
                   {report.description}
                 </div>
-                <Button className="mt-2 w-full">Generate Report</Button>
+                      <Button className="mt-2 w-full dark:bg-blue-600 dark:hover:bg-blue-700">Generate Report</Button>
               </Card>
             ))}
           </div>
-        </section>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Announcements */}
-        <section id="announcements" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Megaphone className="w-6 h-6" /> Announcements
-          </h2>
+          {/* Announcements Section */}
+          <div ref={announcementsRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="announcements">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg dark:text-white">
+                  Announcements
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
           <div className="space-y-4">
             {announcements.map((a, idx) => (
-              <Card key={idx}>
+                    <Card key={idx} className="dark:bg-gray-800 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle>{a.title}</CardTitle>
-                  <CardDescription>{a.date}</CardDescription>
+                        <CardTitle className="dark:text-white">{a.title}</CardTitle>
+                        <CardDescription className="dark:text-gray-300">{a.date}</CardDescription>
                 </CardHeader>
-                <CardContent>{a.content}</CardContent>
+                      <CardContent className="dark:text-gray-300">{a.content}</CardContent>
               </Card>
             ))}
           </div>
-        </section>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Settings */}
-        <section id="settings" className="scroll-mt-24">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Settings className="w-6 h-6" /> Settings
-          </h2>
-          <Card>
-            <CardContent className="pt-6">
+          {/* Settings Section */}
+          <div ref={settingsRef} className="pt-4 md:pt-8 pb-8 scroll-mt-24 min-h-[60vh]" id="settings">
+            <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg dark:text-white">
+                  Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">System Backup</span>
-                  <Button>Backup Now</Button>
+                    <span className="font-semibold dark:text-white">System Backup</span>
+                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">Backup Now</Button>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">Security</span>
-                  <Button>Update Settings</Button>
+                    <span className="font-semibold dark:text-white">Security</span>
+                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">Update Settings</Button>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">User Roles</span>
-                  <Button>Manage Roles</Button>
+                    <span className="font-semibold dark:text-white">User Roles</span>
+                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">Manage Roles</Button>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </section>
       </div>
+        </div>
+      </main>
 
       {/* Edit User Modal */}
       <Dialog
