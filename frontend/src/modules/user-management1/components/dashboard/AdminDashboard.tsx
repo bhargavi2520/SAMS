@@ -836,7 +836,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* User Management Section */}
-          <div ref={userManagementRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="user-management">
+          <div ref={userManagementRef} className="pt-4 " id="user-management">
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg dark:text-white">
@@ -1122,7 +1122,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Timetable Management Section */}
-          <div ref={timetableManagementRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="timetable-management">
+          <div ref={timetableManagementRef} className="pt-4 " id="timetable-management">
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg dark:text-white">
@@ -1256,7 +1256,7 @@ const AdminDashboard = () => {
         </div>
 
           {/* Reports Section */}
-          <div ref={reportsRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="reports">
+          <div ref={reportsRef} className="pt-4" id="reports">
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg dark:text-white">
@@ -1286,7 +1286,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Announcements Section */}
-          <div ref={announcementsRef} className="pt-4 md:pt-8 scroll-mt-24 min-h-[60vh]" id="announcements">
+          <div ref={announcementsRef} className="pt-4 " id="announcements">
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg dark:text-white">
@@ -1310,7 +1310,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Settings Section */}
-          <div ref={settingsRef} className="pt-4 md:pt-8 pb-8 scroll-mt-24 min-h-[60vh]" id="settings">
+          <div ref={settingsRef} className="pt-4" id="settings">
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg dark:text-white">
