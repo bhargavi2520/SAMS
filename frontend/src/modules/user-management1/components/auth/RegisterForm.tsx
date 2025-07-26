@@ -145,15 +145,15 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-lg shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 p-4">
+      <Card className="w-full max-w-lg shadow-xl dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-green-600 rounded-full">
               <UserPlus className="h-6 w-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+          <CardTitle className="text-2xl font-bold dark:text-white">Create Account</CardTitle>
         </CardHeader>
 
         <CardContent>
@@ -165,7 +165,7 @@ const RegisterForm = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="dark:text-gray-200">Email Address</Label>
               <Input
                 id="email"
                 name="email"
@@ -174,17 +174,17 @@ const RegisterForm = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                className="transition-all duration-200 focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role" className="dark:text-gray-200">Role</Label>
               <Select value={formData.role} onValueChange={handleRoleChange}>
-                <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
+                <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
                   {roleOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex flex-col">
@@ -198,7 +198,7 @@ const RegisterForm = () => {
 
             {/* Common fields for all roles */}
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName" className="dark:text-gray-200">First Name</Label>
               <Input
                 id="firstName"
                 name="firstName"
@@ -207,8 +207,9 @@ const RegisterForm = () => {
                 value={formData.profileData.firstName || ""}
                 onChange={handleProfileDataChange}
                 required
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
               />
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName" className="dark:text-gray-200">Last Name</Label>
               <Input
                 id="lastName"
                 name="lastName"
@@ -217,12 +218,13 @@ const RegisterForm = () => {
                 value={formData.profileData.lastName || ""}
                 onChange={handleProfileDataChange}
                 required
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
               />
             </div>
             {/* Role-specific fields */}
             {formData.role === "STUDENT" && (
               <div className="space-y-2">
-                <Label htmlFor="rollNumber">Roll Number</Label>
+                <Label htmlFor="rollNumber" className="dark:text-gray-200">Roll Number</Label>
                 <Input
                   id="rollNumber"
                   name="rollNumber"
@@ -233,9 +235,10 @@ const RegisterForm = () => {
                   }
                   onChange={handleProfileDataChange}
                   required
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
 
-                <Label htmlFor="phoneNumber">Phone number</Label>
+                <Label htmlFor="phoneNumber" className="dark:text-gray-200">Phone number</Label>
                 <Input
                   id="phoneNumber"
                   name="phoneNumber"
@@ -244,6 +247,7 @@ const RegisterForm = () => {
                   value={formData.profileData.phoneNumber || ""}
                   onChange={handleProfileDataChange}
                   required
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
                 {!phoneNumberValid && (
                   <Alert variant="destructive">
@@ -253,7 +257,7 @@ const RegisterForm = () => {
                   </Alert>
                 )}
 
-                <Label htmlFor="aparId">APAR id</Label>
+                <Label htmlFor="aparId" className="dark:text-gray-200">APAR id</Label>
                 <Input
                   id="aparId"
                   name="aparId"
@@ -266,9 +270,10 @@ const RegisterForm = () => {
                   }
                   onChange={handleProfileDataChange}
                   required
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
 
-                <Label htmlFor="admission_academic_year">Admission date</Label>
+                <Label htmlFor="admission_academic_year" className="dark:text-gray-200">Admission date</Label>
                 <Input
                   id="admission_academic_year"
                   name="admission_academic_year"
@@ -280,6 +285,7 @@ const RegisterForm = () => {
                   }
                   onChange={handleProfileDataChange}
                   required
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
                 <div className="flex items-center space-x-2 mt-2">
                   <input
@@ -295,21 +301,21 @@ const RegisterForm = () => {
                         },
                       } as unknown as React.ChangeEvent<HTMLInputElement>)
                     }
-                    className="h-4 w-4"
+                    className="h-4 w-4 accent-green-600"
                   />
-                  <Label htmlFor="lateralEntry" className="mb-0">
+                  <Label htmlFor="lateralEntry" className="mb-0 dark:text-gray-200">
                     Lateral Entry
                   </Label>
                 </div>
-                <Label htmlFor="year">Year</Label>
+                <Label htmlFor="year" className="dark:text-gray-200">Year</Label>
                 <Select
                   value={(formData.profileData as any).year || ""}
                   onValueChange={handleYearChange}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     <SelectValue placeholder="Select year" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
                     <SelectItem value="1">1</SelectItem>
                     <SelectItem value="2">2</SelectItem>
                     <SelectItem value="3">3</SelectItem>
@@ -317,7 +323,7 @@ const RegisterForm = () => {
                   </SelectContent>
                 </Select>
 
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth" className="dark:text-gray-200">Date of Birth</Label>
                 <Input
                   id="dateOfBirth"
                   name="dateOfBirth"
@@ -329,9 +335,10 @@ const RegisterForm = () => {
                   }
                   onChange={handleProfileDataChange}
                   required
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
 
-                <Label htmlFor="semester">Semester</Label>
+                <Label htmlFor="semester" className="dark:text-gray-200">Semester</Label>
                 <Select
                   value={(formData.profileData as any).semester || ""}
                   onValueChange={(value) =>
@@ -340,10 +347,10 @@ const RegisterForm = () => {
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
                     {allowedSemesters.map((sem) => (
                       <SelectItem key={sem} value={sem}>
                         {sem}
@@ -352,7 +359,7 @@ const RegisterForm = () => {
                   </SelectContent>
                 </Select>
 
-                <Label htmlFor="department">Department</Label>
+                <Label htmlFor="department" className="dark:text-gray-200">Department</Label>
                 <Select
                   value={(formData.profileData as any).department || ""}
                   onValueChange={(value) =>
@@ -361,10 +368,10 @@ const RegisterForm = () => {
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
                     <SelectItem value="CSE">CSE</SelectItem>
                     <SelectItem value="CSD">CSD</SelectItem>
                     <SelectItem value="CSM">CSM</SelectItem>
@@ -375,7 +382,7 @@ const RegisterForm = () => {
                 </Select>
 
                 {/* New Section select */}
-                <Label htmlFor="section">Section</Label>
+                <Label htmlFor="section" className="dark:text-gray-200">Section</Label>
                 <Select
                   value={(formData.profileData as any).section || ""}
                   onValueChange={(value) =>
@@ -384,17 +391,17 @@ const RegisterForm = () => {
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     <SelectValue placeholder="Select section" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
                     <SelectItem value="1">1</SelectItem>
                     <SelectItem value="2">2</SelectItem>
                     <SelectItem value="3">3</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <Label htmlFor="transport">Transport</Label>
+                <Label htmlFor="transport" className="dark:text-gray-200">Transport</Label>
                 <Select
                   value={(formData.profileData as any).transport || ""}
                   onValueChange={(value) =>
@@ -403,10 +410,10 @@ const RegisterForm = () => {
                     } as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     <SelectValue placeholder="Select transport" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
                     <SelectItem value="College Bus">College Bus</SelectItem>
                     <SelectItem value="RTC">RTC</SelectItem>
                     <SelectItem value="Own Vehicle">Own Vehicle</SelectItem>
@@ -416,7 +423,7 @@ const RegisterForm = () => {
                 {/* Show bus route if College Bus is selected */}
                 {(formData.profileData as any).transport === "College Bus" && (
                   <>
-                    <Label htmlFor="busRoute">Bus Route</Label>
+                    <Label htmlFor="busRoute" className="dark:text-gray-200">Bus Route</Label>
                     <Select
                       value={(formData.profileData as any).busRoute || ""}
                       onValueChange={(value) =>
@@ -425,10 +432,10 @@ const RegisterForm = () => {
                         } as React.ChangeEvent<HTMLInputElement>)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         <SelectValue placeholder="Select bus route" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
                         <SelectItem value="Vizag">Vizag</SelectItem>
                         <SelectItem value="Parawada">Parawada</SelectItem>
                         <SelectItem value="Anakapalle">Anakapalle</SelectItem>
@@ -443,7 +450,7 @@ const RegisterForm = () => {
                   </>
                 )}
 
-                <Label htmlFor="address">Residential Address</Label>
+                <Label htmlFor="address" className="dark:text-gray-200">Residential Address</Label>
                 <Input
                   id="address"
                   name="address"
@@ -452,9 +459,10 @@ const RegisterForm = () => {
                   value={(formData.profileData as any).address || ""}
                   onChange={handleProfileDataChange}
                   required
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
 
-                <Label htmlFor="parentPhoneNumber">Parent Phone Number</Label>
+                <Label htmlFor="parentPhoneNumber" className="dark:text-gray-200">Parent Phone Number</Label>
                 <Input
                   id="parentPhoneNumber"
                   name="parentPhoneNumber"
@@ -463,6 +471,7 @@ const RegisterForm = () => {
                   value={(formData.profileData as any).parentPhoneNumber || ""}
                   onChange={handleProfileDataChange}
                   required
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
               </div>
             )}
@@ -470,7 +479,7 @@ const RegisterForm = () => {
             {formData.role === "FACULTY" && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone number</Label>
+                  <Label htmlFor="phoneNumber" className="dark:text-gray-200">Phone number</Label>
                   <Input
                     id="phoneNumber"
                     name="phoneNumber"
@@ -479,6 +488,7 @@ const RegisterForm = () => {
                     value={formData.profileData.phoneNumber || ""}
                     onChange={handleProfileDataChange}
                     required
+                    className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   />
                 </div>
                 {!phoneNumberValid && (
@@ -511,7 +521,7 @@ const RegisterForm = () => {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="dark:text-gray-200">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -521,13 +531,13 @@ const RegisterForm = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent dark:text-gray-400 dark:hover:text-gray-200"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -622,7 +632,7 @@ const RegisterForm = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="dark:text-gray-200">Confirm Password</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -632,13 +642,13 @@ const RegisterForm = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
-                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                  className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent dark:text-gray-400 dark:hover:text-gray-200"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
@@ -659,7 +669,7 @@ const RegisterForm = () => {
 
             <Button
               type="submit"
-              className="w-full border-2 border-green-600 text-green-600 bg-white hover:bg-green-600 hover:text-white transition duration-700 group"
+              className="w-full border-2 border-green-600 text-green-600 bg-white hover:bg-green-600 hover:text-white transition duration-700 group dark:bg-green-600 dark:border-green-600 dark:text-white dark:hover:bg-green-700 dark:hover:border-green-700"
               style={{ boxShadow: "0 0 0 transparent" }}
               disabled={
                 isLoading || formData.password !== formData.confirmPassword
@@ -686,13 +696,13 @@ const RegisterForm = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               Already have an account?{" "}
             </span>
             <Button
               variant="link"
               size="sm"
-              className="px-0 text-green-600 hover:text-green-800"
+              className="px-0 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
               onClick={() => navigate("/login")}
             >
               Sign in here

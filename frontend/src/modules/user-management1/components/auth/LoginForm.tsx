@@ -52,15 +52,15 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 p-4">
+      <Card className="w-full max-w-md shadow-xl dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-blue-600 rounded-full">
               <LogIn className="h-6 w-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl font-bold dark:text-white">Welcome Back</CardTitle>
           
         </CardHeader>
         
@@ -73,7 +73,7 @@ const LoginForm = () => {
           
           <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="dark:text-gray-200">Email Address</Label>
               <Input
                 id="email"
                 name="email"
@@ -82,12 +82,12 @@ const LoginForm = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700"
+                className="transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="dark:text-gray-200">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -97,13 +97,13 @@ const LoginForm = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="pr-10 transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700"
+                  className="pr-10 transition-all duration-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent dark:text-gray-400 dark:hover:text-gray-200"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -127,7 +127,7 @@ const LoginForm = () => {
                 />
                 <Label 
                   htmlFor="rememberMe" 
-                  className="text-sm text-gray-600 dark:text-gray-400"
+                  className="text-sm text-gray-600 dark:text-gray-300"
                 >
                   Remember me
                 </Label>
@@ -136,7 +136,7 @@ const LoginForm = () => {
               <Button
                 variant="link"
                 size="sm"
-                className="px-0 text-blue-600 hover:text-blue-800"
+                className="px-0 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                 onClick={() => navigate('/forgot-password')}
               >
                 Forgot password?
@@ -146,7 +146,7 @@ const LoginForm = () => {
             <Button
               ref={submitButtonRef}
               type="submit"
-              className="w-full bg-white border-2 border-blue-700 text-blue-700 shadow-md hover:bg-blue-700 hover:text-white hover:shadow-blue-500/70 hover:shadow-lg transition-all duration-200"
+              className="w-full bg-white border-2 border-blue-700 text-blue-700 shadow-md hover:bg-blue-700 hover:text-white hover:shadow-blue-500/70 hover:shadow-lg transition-all duration-200 dark:bg-blue-600 dark:border-blue-600 dark:text-white dark:hover:bg-blue-700 dark:hover:border-blue-700"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -164,13 +164,13 @@ const LoginForm = () => {
           </form>
           
           <div className="mt-6 text-center">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               Don't have an account?{' '}
             </span>
             <Button
               variant="link"
               size="sm"
-              className="px-0 text-blue-600 hover:text-blue-800"
+              className="px-0 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
               onClick={() => navigate('/register')}
             >
               Register here
