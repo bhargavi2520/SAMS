@@ -819,7 +819,7 @@ const HODDashboard = ({ isHOD = true }) => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <h2>Announcements</h2>
           <Button
-            className="ml-auto bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+            className="ml-auto bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium dark:bg-gray-700 dark:hover:bg-gray-600"
             onClick={() => setShowAnnouncementTab(true)}
           >
             Make Announcement
@@ -913,7 +913,7 @@ const HODDashboard = ({ isHOD = true }) => {
   }, [dashboardLoaded]);
 
   // Teacher Assignment Handlers
-  const handleAssignmentSubmit = (e) => {
+  const handleAssignmentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (
       selectedFaculty &&
@@ -933,7 +933,7 @@ const HODDashboard = ({ isHOD = true }) => {
     }
   };
 
-  const deleteAssignment = async (id: any) => {
+  const deleteAssignment = async (id: string) => {
     const confirm = window.confirm("Proceed with deletion ?");
     if (confirm) {
       const response = await apiClient.delete(
@@ -1068,7 +1068,7 @@ const HODDashboard = ({ isHOD = true }) => {
     fetchSubjectDetails();
   }, [subjectSelectedYear, dashboardLoaded]);
 
-  const handleNewSubject = async (e: any) => {
+  const handleNewSubject = async (e: React.FormEvent) => {
     e.preventDefault();
     const response = await apiClient.post("/subjectData/addSubject", {
       code: newSubjectCode,
@@ -1570,7 +1570,7 @@ const HODDashboard = ({ isHOD = true }) => {
                   </h3>
                   <Button
                     onClick={() => setShowAssignmentForm(!showAssignmentForm)}
-                    className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                    className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium dark:bg-gray-700 dark:hover:bg-gray-600"
                   >
                     Assign Teacher
                   </Button>
@@ -1898,7 +1898,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     </select>
                     <Button
                       onClick={() => setShowAddSubjectForm(!showAddSubjectForm)}
-                      className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                      className="bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium dark:bg-gray-700 dark:hover:bg-gray-600"
                     >
                       New Subject
                     </Button>
@@ -2459,7 +2459,7 @@ const HODDashboard = ({ isHOD = true }) => {
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <h2>Announcements</h2>
                   <Button
-                    className="ml-auto mb-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+                    className="ml-auto mb-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium dark:bg-gray-700 dark:hover:bg-gray-600"
                     onClick={() => setShowAnnouncementTab(true)}
                   >
                     Make Announcement
