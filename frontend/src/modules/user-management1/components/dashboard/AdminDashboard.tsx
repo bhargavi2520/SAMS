@@ -880,7 +880,7 @@ const AdminDashboard = () => {
                         id="userType"
                         value={userType}
                         onChange={(e) => setUserType(e.target.value as UserRole)}
-                        className="border rounded px-2 py-1"
+                        className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       >
                         <option value="STUDENT">Student</option>
                         <option value="FACULTY">Faculty</option>
@@ -895,7 +895,7 @@ const AdminDashboard = () => {
                         <select
                           value={studentYear}
                           onChange={(e) => setStudentYear(e.target.value)}
-                          className="border rounded px-2 py-1"
+                          className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                           <option value="1">1</option>
                           <option value="2">2</option>
@@ -906,7 +906,7 @@ const AdminDashboard = () => {
                         <select
                           value={studentBranch}
                           onChange={(e) => setStudentBranch(e.target.value)}
-                          className="border rounded px-2 py-1"
+                          className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                           <option value="CSE">CSE</option>
                           <option value="ECE">ECE</option>
@@ -919,7 +919,7 @@ const AdminDashboard = () => {
                         <select
                           value={studentSection}
                           onChange={(e) => setStudentSection(e.target.value)}
-                          className="border rounded px-2 py-1"
+                          className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                           <option value="1">1</option>
                           <option value="2">2</option>
@@ -954,11 +954,11 @@ const AdminDashboard = () => {
                                 ? (user.status as string)
                                 : "Active";
                             return (
-                              <Card key={idx} className="p-3 flex flex-col gap-1">
-                                <div className="font-bold text-base">{name}</div>
-                                <div className="text-xs text-gray-600">{email}</div>
-                                <div className="flex gap-2 text-xs mt-1">
-                                  <span className="font-semibold">{role}</span>
+                              <Card key={idx} className="p-3 flex flex-col gap-1 dark:bg-gray-800">
+                                <div className="font-bold text-base dark:text-white">{name}</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-300">{email}</div>
+                                <div className="flex gap-2 text-xs mt-1 dark:text-gray-300">
+                                  <span className="font-semibold dark:text-gray-200">{role}</span>
                                   <span
                                     className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                       status === "Active"
@@ -1007,14 +1007,14 @@ const AdminDashboard = () => {
                       </div>
                       {/* Desktop: User Table */}
                       <div className="hidden md:block overflow-x-auto">
-                        <table className="min-w-full bg-white rounded-lg shadow-sm text-sm">
+                        <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm text-sm">
                           <thead>
-                            <tr className="bg-gray-100">
-                              <th className="py-2 px-3 text-left">Name</th>
-                              <th className="py-2 px-3 text-left">Email</th>
-                              <th className="py-2 px-3 text-left">Role</th>
-                              <th className="py-2 px-3 text-left">Status</th>
-                              <th className="py-2 px-3 text-left">Actions</th>
+                            <tr className="bg-gray-100 dark:bg-gray-700">
+                              <th className="py-2 px-3 text-left dark:text-gray-200">Name</th>
+                              <th className="py-2 px-3 text-left dark:text-gray-200">Email</th>
+                              <th className="py-2 px-3 text-left dark:text-gray-200">Role</th>
+                              <th className="py-2 px-3 text-left dark:text-gray-200">Status</th>
+                              <th className="py-2 px-3 text-left dark:text-gray-200">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1039,11 +1039,11 @@ const AdminDashboard = () => {
                                 return (
                                   <tr
                                     key={idx}
-                                    className="border-b last:border-b-0"
+                                    className="border-b last:border-b-0 dark:border-gray-700"
                                   >
-                                    <td className="py-2 px-3">{name}</td>
-                                    <td className="py-2 px-3">{email}</td>
-                                    <td className="py-2 px-3">{role}</td>
+                                    <td className="py-2 px-3 dark:text-gray-200">{name}</td>
+                                    <td className="py-2 px-3 dark:text-gray-200">{email}</td>
+                                    <td className="py-2 px-3 dark:text-gray-200">{role}</td>
                                     <td className="py-2 px-3">
                                       <span
                                         className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -1141,7 +1141,7 @@ const AdminDashboard = () => {
                       id="year-select"
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(e.target.value)}
-                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       <option value="1">Year 1</option>
                       <option value="2">Year 2</option>
@@ -1157,7 +1157,7 @@ const AdminDashboard = () => {
                       id="branch-select"
                       value={selectedBranch}
                       onChange={(e) => setSelectedBranch(e.target.value)}
-                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {branches.map((branch) => (
                         <option key={branch} value={branch}>
@@ -1174,7 +1174,7 @@ const AdminDashboard = () => {
                       id="section-select"
                       value={selectedSection}
                       onChange={(e) => setSelectedSection(e.target.value)}
-                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200"
+                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {sections.map((section) => (
                         <option key={section} value={section}>
@@ -1212,7 +1212,7 @@ const AdminDashboard = () => {
                     Timetable is not available at the moment.
                   </div>
                 ) : (
-                  <table className="min-w-[600px] text-xs sm:text-sm">
+                  <table className="min-w-[600px] text-xs sm:text-sm dark:bg-gray-900">
                     <thead>
                       <tr>
                         <th className="p-2 sm:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">Time</th>
