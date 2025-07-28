@@ -83,32 +83,6 @@ const recentActivity = [
   },
 ];
 
-const usersTable = [
-  {
-    name: "Aarav Kumar",
-    email: "aarav.kumar@email.com",
-    role: "STUDENT",
-    status: "Active",
-  },
-  {
-    name: "Meera Singh",
-    email: "meera.singh@email.com",
-    role: "FACULTY",
-    status: "Active",
-  },
-  {
-    name: "Rohan Das",
-    email: "rohan.das@email.com",
-    role: "HOD",
-    status: "Inactive",
-  },
-  {
-    name: "Isha Patel",
-    email: "isha.patel@email.com",
-    role: "ADMIN",
-    status: "Active",
-  },
-];
 
 const timetableTable = [
   // Year 1

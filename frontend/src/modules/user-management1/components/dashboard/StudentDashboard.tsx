@@ -848,9 +848,7 @@ const StudentDashboard = () => {
           setDashboardData(res.data.data);
           const newToken = res.headers["refreshedtoken"];
           localStorage.setItem("authToken", newToken);
-        } else {
-          setError(res.data?.message || "Failed to fetch dashboard data");
-        }
+        } 
       } catch (err: unknown) {
         if (
           err &&

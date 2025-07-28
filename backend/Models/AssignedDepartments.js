@@ -19,7 +19,7 @@ const departmentAssignmentSchema = new mongoose.Schema(
       default: Date.now(),
     }
   },
-  { timeStamps: true }
+  { timestamps: true }
 );
 
 const departmentAssignment = mongoose.model(
