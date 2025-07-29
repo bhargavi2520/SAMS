@@ -57,9 +57,8 @@ const DashboardLayout = () => {
   };
 
   const getProfilePictureUrl = () => {
-    if (!user?.profile) return undefined;
-    const profile = user.profile as UserProfileMinimal;
-    return profile.profilePictureUrl;
+    if (!user?.profilePictureUrl) return undefined;
+    return `data:image/jpeg;base64,${user.profilePictureUrl}`;
   };
 
   return (

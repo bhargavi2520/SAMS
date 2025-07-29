@@ -10,6 +10,7 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const classInfo = require("../Models/Class");
+const ProfilePhoto = require("../Models/ProfilePicture");
 
 /**
  * Register user Function
@@ -143,15 +144,21 @@ const generateTokenAndLogin = async (user, rememberMe, req, res) => {
         expiresIn,
       }
     );
-    // Convert mongoose doc to plain object and remove password
     const userObj = user.toObject();
     delete userObj.password;
     delete userObj.__v;
 
+    const userWithPhoto = await getUserWithProfilePhoto(user._id);
+    if (!userWithPhoto) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
     return res.status(200).json({
       message: "Login successful",
       success: true,
-      user: userObj,
+      user: userWithPhoto,
       token,
     });
   } catch (error) {
@@ -160,7 +167,102 @@ const generateTokenAndLogin = async (user, rememberMe, req, res) => {
   }
 };
 
+/**
+ * function for uploading user profile picture to database
+ */
+
+const uploadImage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const photoBase64 = req.file.buffer.toString("base64");
+
+    await ProfilePhoto.updateOne(
+      { user: userId },
+      {
+        $set: {
+          image: photoBase64,
+        },
+      },
+      { upsert: true }
+    );
+    const userWithPhoto = await getUserWithProfilePhoto(userId);
+    if (!userWithPhoto) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+    return res.status(202).json({
+      success: true,
+      user: userWithPhoto,
+      message: "Image uploaded Successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(503).json({
+      message: "we are having some trouble while uploading , try again later",
+    });
+  }
+};
+
+/**
+ * function for deleting profile photo
+ */
+
+const deleteImage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userWithPhoto = await getUserWithProfilePhoto(userId);
+    if (!userWithPhoto) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+    await ProfilePhoto.deleteOne({ user: userId });
+    return res.status(200).json({
+      success: true,
+      user: userWithPhoto,
+      message: "Image Deleted Successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(503).json({
+      message: "we are having some trouble while deleting , try again later",
+    });
+  }
+};
+
+const getUserWithProfilePhoto = async (userId) => {
+  const user = await User.findById(userId).select("-password -__v").lean();
+  if (!user) return null;
+
+  const profilePhotoDoc = await ProfilePhoto.findOne({ user: userId });
+  return {
+    ...user,
+    profilePictureUrl: profilePhotoDoc ? profilePhotoDoc.image : null,
+  };
+};
+
+/**function  for getting profile */
+const getProfile = async (req, res) => {
+  try {
+    const user = await getUserWithProfilePhoto(req.user.id);
+    if (!userWithPhoto) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+    res.json({ user, success: true });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
 module.exports = {
   registerUser,
   loginUser,
+  uploadImage,
+  deleteImage,
+  getProfile,
 };

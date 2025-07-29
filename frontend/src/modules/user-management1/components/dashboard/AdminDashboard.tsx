@@ -519,7 +519,7 @@ const AdminDashboard = () => {
       });
     }
     fetchDepartmentStats();
-  }, );
+  }, [dashboardLoaded]);
 
   // Section refs for scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -556,7 +556,7 @@ const AdminDashboard = () => {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  },);
+  },[]);
 
   // Nav click handler
   const handleNavClick = (section) => {

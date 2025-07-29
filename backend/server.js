@@ -25,7 +25,6 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again after 5 minutes",
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true,
 });
 
 const allowedOrigins = [

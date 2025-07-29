@@ -12,6 +12,7 @@ interface AuthStore extends AuthState {
   fetchProfile: () => Promise<void>;
   setLoading: (loading: boolean) => void;
   updateProfilePhoto: (file: File) => Promise<void>;
+  deleteProfilePhoto : ()=> Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -129,6 +130,17 @@ export const useAuthStore = create<AuthStore>()(
           set({ user: updatedUser, isLoading: false });
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to update profile photo', isLoading: false });
+          throw error;
+        }
+      },
+
+      deleteProfilePhoto : async()=>{
+        try{
+          set({isLoading: true, error: null});
+          const updatedUser = await authService.deleteProfilePhoto();
+          set({user : updatedUser, isLoading: false});
+        }catch(error){
+          set({error: error instanceof Error ? error.message : 'Failed to delete profile photo', isLoading: false});
           throw error;
         }
       }
