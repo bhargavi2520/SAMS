@@ -359,7 +359,7 @@ const HODDashboard = ({ isHOD = true }) => {
                   {card.icon}
                   {card.label}
                 </div>
-                <div className="text-xl sm:text-2xl font-bold">
+                <div className="text-xl sm:text-2xl font-bold dark:text-white">
                   {card.value}
                 </div>
                 <div className="text-xs sm:text-sm opacity-70">{card.sub}</div>

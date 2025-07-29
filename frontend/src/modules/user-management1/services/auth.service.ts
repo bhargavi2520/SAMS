@@ -62,6 +62,27 @@ class AuthService {
       throw new Error('Profile update failed. Please try again.');
     }
   }
+
+  async updateProfilePhoto(file: File): Promise<BaseUserProfile> {
+    try {
+      const formData = new FormData();
+      formData.append('profilePhoto', file);
+
+      const response = await apiClient.put('/auth/profile-photo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data.user;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response) {
+        // @ts-expect-error: error is narrowed but TS can't infer nested types
+        throw new Error(error.response?.data?.message || 'Profile photo update failed. Please try again.');
+      }
+      throw new Error('Profile photo update failed. Please try again.');
+    }
+  }
     // Fetches the current user's profile using the stored auth token.
   async getProfile(): Promise<BaseUserProfile> {
     try {

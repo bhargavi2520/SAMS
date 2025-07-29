@@ -11,6 +11,7 @@ interface AuthStore extends AuthState {
   updateProfile: (profileData: Partial<StudentProfile | FacultyProfile | AdminProfile | HODProfile | GuestProfile>) => Promise<void>;
   fetchProfile: () => Promise<void>;
   setLoading: (loading: boolean) => void;
+  updateProfilePhoto: (file: File) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -119,6 +120,17 @@ export const useAuthStore = create<AuthStore>()(
 
       setLoading: (loading: boolean) => {
         set({ isLoading: loading });
+      },
+
+      updateProfilePhoto: async (file: File) => {
+        try {
+          set({ isLoading: true, error: null });
+          const updatedUser = await authService.updateProfilePhoto(file);
+          set({ user: updatedUser, isLoading: false });
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'Failed to update profile photo', isLoading: false });
+          throw error;
+        }
       }
     }),
     {
