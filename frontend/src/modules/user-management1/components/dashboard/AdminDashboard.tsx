@@ -519,7 +519,7 @@ const AdminDashboard = () => {
       });
     }
     fetchDepartmentStats();
-  }, [dashboardLoaded]);
+  }, );
 
   // Section refs for scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -556,7 +556,7 @@ const AdminDashboard = () => {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  },);
 
   // Nav click handler
   const handleNavClick = (section) => {
@@ -780,31 +780,8 @@ const AdminDashboard = () => {
             </Card>
           </div>
 
-          {/* Recent Activity */}
-                <div className="border-t pt-6 dark:border-gray-700">
-                  <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2 dark:text-white">
-              <Activity className="w-4 h-4 sm:w-5 sm:h-5" /> Recent Activity
-            </h3>
-            <div className="space-y-3">
-              {recentActivity.map((activity, index) => (
-                <div
-                  key={index}
-                  className={`flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 p-3 rounded-lg ${activity.bg}`}
-                >
-                  <div className="flex-shrink-0">{activity.icon}</div>
-                  <div className="flex-1">
-                          <p className="text-sm font-medium dark:text-white">{activity.title}</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-300">
-                      {activity.description}
-                    </p>
-                  </div>
-                        <Badge variant="outline" className="ml-auto flex-shrink-0 dark:border-gray-600 dark:text-gray-300">
-                    {activity.badge}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </div>
+          
+               
               </CardContent>
             </Card>
           </div>
