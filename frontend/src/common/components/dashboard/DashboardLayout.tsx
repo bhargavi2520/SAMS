@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Button } from '@/common/components/ui/button';
 import { useAuthStore } from '@/modules/user-management1/store/authStore';
-import { UserRole } from '@/modules/user-management1/types/auth.types';
+import { UserRole, BaseUserProfile } from '@/modules/user-management1/types/auth.types';
 import { LogOut, User, Settings, Bell } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -19,6 +19,7 @@ interface UserProfileMinimal {
   firstName?: string;
   lastName?: string;
   profilePictureUrl?: string;
+  email?: string;
 }
 
 const DashboardLayout = () => {
@@ -42,13 +43,13 @@ const DashboardLayout = () => {
   };
 
   const getDisplayName = () => {
-    if (!user?.profile) return user?.email.split('@')[0] || 'User';
+    if (!user) return 'User';
     
-    const profile = user.profile as UserProfileMinimal;
+    const profile = user.profile || user;
     if (profile.firstName) {
-      return `Hello ${profile.firstName} ${profile.lastName || ''}`.trim();
+      return `${profile.firstName} ${profile.lastName || ''}`.trim();
     }
-    return user.email.split('@')[0];
+    return user.email?.split('@')[0] || 'User';
   };
 
   const getInitials = () => {
@@ -57,8 +58,13 @@ const DashboardLayout = () => {
   };
 
   const getProfilePictureUrl = () => {
-    if (!user?.profilePictureUrl) return undefined;
-    return `data:image/jpeg;base64,${user.profilePictureUrl}`;
+    if (!user) return undefined;
+    
+    // Check both user and user.profile for profilePictureUrl
+    const profilePicture = user.profilePictureUrl || (user.profile && user.profile.profilePictureUrl);
+    
+    if (!profilePicture) return undefined;
+    return `data:image/jpeg;base64,${profilePicture}`;
   };
 
   return (
@@ -79,7 +85,6 @@ const DashboardLayout = () => {
               </div>
             </div>
 
-            {/* Right side - User info and actions */}
             <div className="flex items-center space-x-4">
               {/* Role Badge */}
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user?.role || 'GUEST')}`}>

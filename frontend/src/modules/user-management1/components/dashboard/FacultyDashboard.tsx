@@ -35,6 +35,7 @@ import { ChartOptions } from "chart.js";
 import { Bar, Pie } from "react-chartjs-2";
 import DashboardNav from "./DashboardNav";
 import { toast } from "@/common/hooks/use-toast";
+import { Avatar, AvatarImage, AvatarFallback } from "@/common/components/ui/avatar";
 
 type FacultyDataItem = {
   subject: {
@@ -1107,9 +1108,20 @@ const FacultyDashboard = () => {
           <div ref={myProfileRef} className="space-y-4 md:space-y-6">
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                </div>
+                <Avatar className="w-16 h-16 md:w-20 md:h-20">
+                  {facultyProfile?.profilePictureUrl ? (
+                    <AvatarImage
+                      src={`data:image/jpeg;base64,${facultyProfile.profilePictureUrl}`}
+                      alt={`${facultyProfile?.firstName} ${facultyProfile?.lastName}`}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-blue-600 text-white text-xl md:text-2xl">
+                      {facultyProfile?.firstName?.[0]}
+                      {facultyProfile?.lastName?.[0]}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">

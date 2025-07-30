@@ -36,6 +36,7 @@ import apiClient from "@/api";
 import { toast } from "@/common/hooks/use-toast";
 import { addYears, setYear } from "date-fns";
 import { useAuthStore } from "../../store/authStore";
+import { Avatar, AvatarImage, AvatarFallback } from "@/common/components/ui/avatar";
 
 // Mock Data
 const summaryCards = [
@@ -120,16 +121,6 @@ const pendingApprovals = [
   },
 ];
 
-const hodProfile = {
-  employeeId: "HOD2024-001",
-  name: "Dr. Priya Sharma",
-  department: "Computer Science & Engineering",
-  officialEmail: "priya.sharma@university.edu",
-  personalEmail: "priya.sharma@gmail.com",
-  phone: "+91 98765 43210",
-  address: "123, University Road, City, State, 123456",
-};
-
 const facultyPerformance = [
   {
     name: "Dr. Michael Smith",
@@ -191,6 +182,7 @@ const statusColor = (status) =>
 const HODDashboard = ({ isHOD = true }) => {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+  const [hodProfile, setHodProfile] = useState(null);
   // Section refs for scroll navigation
   const dashboardRef = useRef(null);
   const userManagementRef = useRef(null);
@@ -306,6 +298,21 @@ const HODDashboard = ({ isHOD = true }) => {
     fetchDashboard();
   }, []);
 
+  useEffect(() => {
+    if (!dashboardLoaded) return;
+    const fetchHodProfile = async () => {
+      try {
+        const response = await apiClient.get("/auth/me");
+        if (response.data && response.data.user) {
+          setHodProfile(response.data.user);
+        }
+      } catch (error) {
+        console.error("Error fetching HOD profile:", error);
+      }
+    };
+    fetchHodProfile();
+  }, [dashboardLoaded]);
+
   // Mock data for dropdowns
   const facultyList = [
     "Dr. Michael Smith",
@@ -401,8 +408,16 @@ const HODDashboard = ({ isHOD = true }) => {
                       </span>
                       {/* Only HOD can update status */}
                       {isHOD && (
-                        <Button size="sm" className="mt-2" variant="outline">
-                          Update Status
+                        <Button
+                          size="sm"
+                          className="mt-2"
+                          variant="outline"
+                          onClick={() => handleUpdateStatus(idx)}
+                        >
+                          Mark as{" "}
+                          {act.status === "pending"
+                            ? "Completed"
+                            : "Pending"}
                         </Button>
                       )}
                     </div>
@@ -418,7 +433,7 @@ const HODDashboard = ({ isHOD = true }) => {
                 <Clock className="w-5 h-5" /> Pending Approvals
               </h2>
               <div className="space-y-4">
-                {pendingApprovals.map((item, idx) => (
+                {approvals.map((item, idx) => (
                   <div
                     key={idx}
                     className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors"
@@ -1121,25 +1136,42 @@ const HODDashboard = ({ isHOD = true }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-white dark:bg-neutral-800 w-full">
                 <CardContent className="p-4 md:p-6 flex flex-col gap-4">
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 flex items-center gap-2">
-                    <User className="w-5 h-5" /> Primary Information
-                  </h3>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
-                      <Badge
-                        variant="secondary"
-                        className="bg-gray-200 dark:bg-neutral-700 text-sm"
-                      >
-                        <Building2 className="w-4 h-4 mr-1 inline" />{" "}
-                        {hodProfile.department}
-                      </Badge>
+                  <div className="flex items-center gap-4 mb-4">
+                    <Avatar className="w-16 h-16 md:w-20 md:h-20">
+                      {hodProfile?.profilePictureUrl ? (
+                        <AvatarImage 
+                          src={`data:image/jpeg;base64,${hodProfile.profilePictureUrl}`}
+                          alt={`${hodProfile.firstName} ${hodProfile.lastName}`}
+                          className="object-cover"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-purple-600 text-white text-xl md:text-2xl">
+                          {hodProfile?.firstName?.[0]}
+                          {hodProfile?.lastName?.[0]}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2 flex items-center gap-2">
+                        <User className="w-5 h-5" /> Primary Information
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                        <Badge
+                          variant="secondary"
+                          className="bg-gray-200 dark:bg-neutral-700 text-sm"
+                        >
+                          <Building2 className="w-4 h-4 mr-1 inline" /> {department}
+                        </Badge>
+                      </div>
                     </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
                       <span className="font-medium text-xs sm:text-sm">
                         Employee ID:
                       </span>{" "}
                       <span className="text-xs sm:text-sm">
-                        {hodProfile.employeeId}
+                        {hodProfile?.employeeId || "N/A"}
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
@@ -1147,7 +1179,7 @@ const HODDashboard = ({ isHOD = true }) => {
                         Name:
                       </span>{" "}
                       <span className="text-xs sm:text-sm">
-                        {hodProfile.name}
+                        {hodProfile ? `${hodProfile.firstName} ${hodProfile.lastName}` : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -1169,24 +1201,21 @@ const HODDashboard = ({ isHOD = true }) => {
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
                       <Mail className="w-4 h-4" />{" "}
-                      <span className="font-medium">Official Email:</span>{" "}
-                      {hodProfile.officialEmail}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
-                      <Mail className="w-4 h-4" />{" "}
-                      <span className="font-medium">Personal Email:</span>{" "}
-                      {hodProfile.personalEmail}
+                      <span className="font-medium">Email:</span>{" "}
+                      {hodProfile?.email || "N/A"}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
                       <Phone className="w-4 h-4" />{" "}
                       <span className="font-medium">Phone:</span>{" "}
-                      {hodProfile.phone}
+                      {hodProfile?.phoneNumber || "N/A"}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
-                      <MapPin className="w-4 h-4" />{" "}
-                      <span className="font-medium">Address:</span>{" "}
-                      {hodProfile.address}
-                    </div>
+                    {hodProfile?.address && (
+                      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+                        <MapPin className="w-4 h-4" />{" "}
+                        <span className="font-medium">Address:</span>{" "}
+                        {hodProfile.address}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/common/hooks/use-toast";
+import { Avatar, AvatarImage, AvatarFallback } from "@/common/components/ui/avatar";
+import { useAuthStore } from "../../store/authStore";
 
 // Attendance Switch Component
 const AttendanceSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
@@ -145,6 +147,7 @@ const sectionIds = [
 const ClassTeacherDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(sectionIds[0]);
+  const { user } = useAuthStore();
 
   const handleNavClick = (section: string) => {
     setActiveSection(section);
@@ -213,24 +216,35 @@ const ClassTeacherDashboard: React.FC = () => {
           <h2 className="text-xl font-bold mb-4">Class Teacher Profile</h2>
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-              <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">👨‍🏫</span>
-              </div>
+              <Avatar className="w-16 h-16 md:w-20 md:h-20">
+                {user?.profilePictureUrl ? (
+                  <AvatarImage 
+                    src={`data:image/jpeg;base64,${user.profilePictureUrl}`}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    className="object-cover"
+                  />
+                ) : (
+                  <AvatarFallback className="bg-purple-600 text-white text-xl md:text-2xl">
+                    {user?.firstName?.[0]}
+                    {user?.lastName?.[0]}
+                  </AvatarFallback>
+                )}
+              </Avatar>
               <div>
                 <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-                    Class Teacher
+                    {user ? `${user.firstName} ${user.lastName}` : 'Class Teacher'}
                   </h2>
                 </div>
                 <p className="text-gray-600 mb-2 md:mb-4 text-sm md:text-base">
-                  teacher@college.edu
+                  {user?.email || 'teacher@college.edu'}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
                   <div>
                     <span className="font-medium">Role:</span> Class Teacher
                   </div>
                   <div>
-                    <span className="font-medium">Class:</span> 10th Grade
+                    <span className="font-medium">Department:</span> {user?.department || 'N/A'}
                   </div>
                 </div>
                 <div className="mt-4 md:mt-6">

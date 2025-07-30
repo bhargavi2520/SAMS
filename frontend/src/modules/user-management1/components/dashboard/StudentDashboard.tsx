@@ -53,6 +53,7 @@ import {
 import DashboardNav from "./DashboardNav";
 import api from "@/api";
 import apiClient from "@/api";
+import { Avatar, AvatarImage, AvatarFallback } from "@/common/components/ui/avatar";
 
 // Register Chart.js components
 ChartJS.register(
@@ -920,9 +921,20 @@ const StudentDashboard = () => {
             {/* Profile Card */}
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                </div>
+                <Avatar className="w-16 h-16 md:w-20 md:h-20">
+                  {studentProfile?.profilePictureUrl ? (
+                    <AvatarImage 
+                      src={`data:image/jpeg;base64,${studentProfile.profilePictureUrl}`}
+                      alt={`${studentProfile?.firstName} ${studentProfile?.lastName}`}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-blue-600 text-white text-xl md:text-2xl">
+                      {studentProfile?.firstName?.[0]}
+                      {studentProfile?.lastName?.[0]}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">

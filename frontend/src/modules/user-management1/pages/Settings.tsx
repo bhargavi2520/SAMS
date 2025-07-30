@@ -8,6 +8,7 @@ import {
   AvatarFallback,
 } from "@/common/components/ui/avatar";
 import { toast } from "sonner";
+import ImageCropper from "../components/ImageCropper";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const SettingsPage = () => {
   const [profilePicture, setProfilePicture] = useState(
     user?.profilePictureUrl || ""
   );
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   useEffect(() => {
     setProfilePicture(user?.profilePictureUrl || "");
   }, [user?.profilePictureUrl]);
@@ -33,17 +36,26 @@ const SettingsPage = () => {
     }
   }, [darkMode]);
 
-  const handlePhotoUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Profile photo is too large , Max size in 5MB");
+      toast.error("Profile photo is too large, Max size is 2MB");
       return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
     try {
-      await updateProfilePhoto(file);
+      await updateProfilePhoto(new File([croppedBlob], 'profile.jpg', { type: 'image/jpeg' }));
+      setSelectedImage(null);
       toast.success("Profile photo updated successfully");
     } catch (error) {
       toast.error("Failed to update profile photo");
@@ -94,7 +106,7 @@ const SettingsPage = () => {
                 ref={fileInputRef}
                 className="hidden"
                 accept="image/*"
-                onChange={handlePhotoUpload}
+                onChange={handlePhotoSelect}
               />
               <Button
                 onClick={triggerFileInput}
@@ -179,6 +191,15 @@ const SettingsPage = () => {
           </div>
         </div>
       </div>
+
+      {selectedImage && (
+        <ImageCropper
+          image={selectedImage}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setSelectedImage(null)}
+          aspectRatio={1}
+        />
+      )}
     </div>
   );
 };
