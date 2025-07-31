@@ -456,7 +456,7 @@ const mySchedule = async (req, res) => {
       },
       {
         $match: {
-          "timeSlots.faculty":new mongoose.Types.ObjectId(facultyId),
+          "timeSlots.faculty": new mongoose.Types.ObjectId(facultyId),
         },
       },
       {
@@ -487,12 +487,118 @@ const mySchedule = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Faculty Time Table fetched Successfully",
-      timeTable : (timeSlots.length > 0) ? timeSlots : [],
+      timeTable: timeSlots.length > 0 ? timeSlots : [],
     });
   } catch (err) {
     console.log("error in faculty Timetable", err);
     return res.status(500).json({
-      message: "Internal Server Occurred",
+      message: "Internal Server Error Occurred",
+    });
+  }
+};
+
+/**
+ * function for getting stats for admin dashboard
+ */
+
+const getStats = async (req, res) => {
+  try {
+    const stats = await User.aggregate([
+      {
+        $match: {
+          role: "STUDENT",
+        },
+      },
+      {
+        $group: {
+          _id: "$department",
+          studentCount: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "departmentassigneds",
+          localField: "_id",
+          foreignField: "department",
+          as: "hodDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$hodDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "hodDetails.hod",
+          foreignField: "_id",
+          as: "hoduser",
+        },
+      },
+      {
+        $unwind: {
+          path: "$hoduser",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id : 0,
+          department: "$_id",
+          studentCount: 1,
+          hod: {
+            $cond: [
+              {
+                $eq: [
+                  {
+                    $type: "$hoduser._id",
+                  },
+                  "objectId",
+                ],
+              },
+              {
+                firstName: "$hoduser.firstName",
+                lastName: "$hoduser.lastName",
+              },
+              "unassigned",
+            ],
+          },
+        },
+      },
+    ]);
+
+    const userCount = await User.aggregate([
+      {
+        $group: {
+          _id: "$role",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          role: "$_id",
+          count: 1,
+          _id: 0,
+        },
+      },
+    ]);
+    const roleCounts = {};
+    userCount.forEach((userCount) => {
+      roleCounts[userCount.role] = userCount.count;
+    });
+    return res.status(200).json({
+      message: "Stats Loaded Successfully",
+      departmentStats: stats,
+      roleCounts,
+    });
+  } catch (err) {
+    console.log("can't get stats ", err);
+    return res.status(500).json({
+      message: "Internal Server Error Occurred.",
     });
   }
 };
@@ -504,4 +610,5 @@ module.exports = {
   checkTimetableExists,
   getAssignedSubjectsAndFaculties,
   mySchedule,
+  getStats,
 };

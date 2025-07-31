@@ -57,7 +57,11 @@ import {
 } from "@/common/components/ui/dialog";
 import apiClient from "@/api";
 import HODAssignmentManager from "./HODAssignmentManager";
-import { Avatar, AvatarImage, AvatarFallback } from "@/common/components/ui/avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/common/components/ui/avatar";
 
 // --- Mock Data ---
 const recentActivity = [
@@ -83,7 +87,6 @@ const recentActivity = [
     bg: "bg-orange-50 dark:bg-orange-900/20",
   },
 ];
-
 
 const timetableTable = [
   // Year 1
@@ -356,29 +359,6 @@ const AdminDashboard = () => {
       .finally(() => setLoadingUsers(false));
   }, [userType, studentYear, studentBranch, studentSection, dashboardLoaded]);
 
-  useEffect(() => {
-    if (!dashboardLoaded) return;
-    const fetchCounts = async () => {
-      try {
-        const students = await authService.fetchUsersByRole("STUDENT", {
-          year: "",
-          department: "",
-          section: "",
-        });
-        const faculty = await authService.fetchUsersByRole("FACULTY", {});
-        const hods = await authService.fetchUsersByRole("HOD", {});
-        setUserCounts({
-          students: students.length,
-          faculty: faculty.length,
-          hods: hods.length,
-        });
-      } catch (err) {
-        setUserCounts({ students: 0, faculty: 0, hods: 0 });
-      }
-    };
-    fetchCounts();
-  }, [dashboardLoaded]);
-
   // Fetch timetable from backend when year, branch, or section changes
   useEffect(() => {
     if (!dashboardLoaded) return;
@@ -475,45 +455,21 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!dashboardLoaded) return;
     async function fetchDepartmentStats() {
-      const stats = [];
-      const studentCounts = [];
-      for (const dept of branches) {
-        // Fetch students in department
-        let students = [];
-        try {
-          const res = await apiClient.get(
-            `/userData/students?year=&department=${dept}&section=`
-          );
-          students = res.data.students || [];
-        } catch (e) {
-          students = [];
-        }
-        // Fetch HOD name (from department assignments)
-        let hodName = "-";
-        try {
-          const res = await apiClient.get(`/department/assignments`);
-          const assignments = res.data.assignments || [];
-          const assignment = assignments.find((a) => a.department === dept);
-          if (assignment && assignment.hod) {
-            hodName = `${assignment.hod.firstName} ${assignment.hod.lastName}`;
-          }
-        } catch (e) {
-          hodName = "-";
-        }
-        stats.push({
-          department: dept,
-          students: students.length,
-          hod: hodName,
-        });
-        studentCounts.push(students.length);
-      }
-      setDepartmentStats(stats);
+      const res = await apiClient.get("/userData/stats");
+      const stats = res.data || [];
+
+      setDepartmentStats(stats.departmentStats);
+      setUserCounts({
+        students: stats.roleCounts["STUDENT"] || 0,
+        faculty: stats.roleCounts["FACULTY"] || 0,
+        hods: stats.roleCounts["HOD"] || 0,
+      });
       setDepartmentBarData({
-        labels: branches,
+        labels: stats.departmentStats.map((d) => d.department),
         datasets: [
           {
             label: "Students",
-            data: studentCounts,
+            data: stats.departmentStats.map((d) => d.studentCount),
             backgroundColor: "#3b82f6",
           },
         ],
@@ -557,7 +513,7 @@ const AdminDashboard = () => {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  },[]);
+  }, []);
 
   // Nav click handler
   const handleNavClick = (section) => {
@@ -657,7 +613,11 @@ const AdminDashboard = () => {
     },
     {
       label: "All Members",
-      value: (userCounts.students + userCounts.faculty + userCounts.hods).toLocaleString(),
+      value: (
+        userCounts.students +
+        userCounts.faculty +
+        userCounts.hods
+      ).toLocaleString(),
       color: "bg-green-100",
       icon: <Users className="text-green-500" />,
     },
@@ -692,52 +652,57 @@ const AdminDashboard = () => {
       />
       <main className="flex-1 overflow-auto md:ml-20 pb-16 md:pb-0">
         <div className="p-2 sm:p-4 md:p-6 space-y-4 md:space-y-6">
-        {/* Admin Profile Section */}
-          <div ref={overviewRef} className="space-y-4 md:space-y-6 scroll-mt-24 min-h-[60vh]" id="overview">
+          {/* Admin Profile Section */}
+          <div
+            ref={overviewRef}
+            className="space-y-4 md:space-y-6 scroll-mt-24 min-h-[60vh]"
+            id="overview"
+          >
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
                 <Avatar className="w-16 h-16 md:w-20 md:h-20">
                   {adminData?.profilePictureUrl ? (
-                    <AvatarImage 
+                    <AvatarImage
                       src={`data:image/jpeg;base64,${adminData.profilePictureUrl}`}
                       alt="Admin Profile"
                       className="object-cover"
                     />
                   ) : (
                     <AvatarFallback className="bg-red-600 text-white text-xl md:text-2xl">
-                      {adminData?.firstName?.[0] || 'A'}
-                      {adminData?.lastName?.[0] || 'D'}
+                      {adminData?.firstName?.[0] || "A"}
+                      {adminData?.lastName?.[0] || "D"}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div className="flex-1">
-                <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
+                  <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                    System Administrator
-                  </h2>
-                </div>
+                      System Administrator
+                    </h2>
+                  </div>
                   <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-4 text-sm md:text-base">
-                  admin@college.edu
-                </p>
+                    admin@college.edu
+                  </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                  <div>
-                    <span className="font-medium">Role:</span> Administrator
+                    <div>
+                      <span className="font-medium">Role:</span> Administrator
+                    </div>
+                    <div>
+                      <span className="font-medium">Department:</span> IT
+                      Management
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-medium">Department:</span> IT Management
-                  </div>
-                </div>
-                <div className="mt-4 md:mt-6">
-                  <Button
-                    onClick={() => navigate("/profile")}
+                  <div className="mt-4 md:mt-6">
+                    <Button
+                      onClick={() => navigate("/profile")}
                       className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-sm font-medium"
-                  >
+                    >
                       View Full Profile
-                  </Button>
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
 
             {/* System Overview Content */}
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 sm:p-4 md:p-6">
@@ -753,12 +718,12 @@ const AdminDashboard = () => {
                     <Card
                       key={idx}
                       className={`${stat.color} dark:bg-gray-700`}
-              >
+                    >
                       <CardContent className="flex items-center justify-between py-2 sm:py-4">
                         <div>
                           <div className="text-base sm:text-lg font-bold dark:text-white">
                             {stat.value}
-              </div>
+                          </div>
                           <div className="text-xs text-gray-600 dark:text-white">
                             {stat.label}
                           </div>
@@ -766,34 +731,44 @@ const AdminDashboard = () => {
                         <div className="text-xl sm:text-2xl">{stat.icon}</div>
                       </CardContent>
                     </Card>
-            ))}
-          </div>
+                  ))}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card className="dark:bg-gray-800 dark:border-gray-700">
-              <CardHeader>
-                      <CardTitle className="dark:text-white">User Distribution</CardTitle>
-              </CardHeader>
-              <CardContent className="h-56 sm:h-64 w-full">
-                <Pie data={pieData} options={{ maintainAspectRatio: false, responsive: true }} />
-              </CardContent>
-            </Card>
+                    <CardHeader>
+                      <CardTitle className="dark:text-white">
+                        User Distribution
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-56 sm:h-64 w-full">
+                      <Pie
+                        data={pieData}
+                        options={{
+                          maintainAspectRatio: false,
+                          responsive: true,
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
                   <Card className="dark:bg-gray-800 dark:border-gray-700">
-              <CardHeader>
-                      <CardTitle className="dark:text-white">Department Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="h-56 sm:h-64 w-full">
-                <Bar
-                  key={JSON.stringify(departmentBarData)}
-                  data={departmentBarData}
-                  options={{ maintainAspectRatio: false, responsive: true }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          
-               
+                    <CardHeader>
+                      <CardTitle className="dark:text-white">
+                        Department Stats
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-56 sm:h-64 w-full">
+                      <Bar
+                        key={JSON.stringify(departmentBarData)}
+                        data={departmentBarData}
+                        options={{
+                          maintainAspectRatio: false,
+                          responsive: true,
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -807,285 +782,366 @@ const AdminDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-              {/* Tab Navigation */}
-              <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-4 gap-2 sm:gap-0">
-                <button
-                  onClick={() => setUserManagementTab("users")}
-                  className={`px-3 py-2 font-medium text-sm border-b-2 transition-colors ${
-                    userManagementTab === "users"
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Users
-                </button>
-                <button
-                  onClick={() => setUserManagementTab("hod-assignments")}
-                  className={`px-3 py-2 font-medium text-sm border-b-2 transition-colors ${
-                    userManagementTab === "hod-assignments"
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  HOD Assignments
-                </button>
-              </div>
+                {/* Tab Navigation */}
+                <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-4 gap-2 sm:gap-0">
+                  <button
+                    onClick={() => setUserManagementTab("users")}
+                    className={`px-3 py-2 font-medium text-sm border-b-2 transition-colors ${
+                      userManagementTab === "users"
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    Users
+                  </button>
+                  <button
+                    onClick={() => setUserManagementTab("hod-assignments")}
+                    className={`px-3 py-2 font-medium text-sm border-b-2 transition-colors ${
+                      userManagementTab === "hod-assignments"
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    HOD Assignments
+                  </button>
+                </div>
 
-              {/* Users Tab */}
-              {userManagementTab === "users" && (
-                <div>
-                  <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                    <div className="flex gap-2 items-center w-full sm:w-auto">
-                      <label htmlFor="userType" className="font-semibold">
-                        User Type:
-                      </label>
-                      <select
-                        id="userType"
-                        value={userType}
-                        onChange={(e) => setUserType(e.target.value as UserRole)}
-                        className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      >
-                        <option value="STUDENT">Student</option>
-                        <option value="FACULTY">Faculty</option>
-                        <option value="HOD">HOD</option>
-                        <option value="ADMIN">Admin</option>
-                      </select>
+                {/* Users Tab */}
+                {userManagementTab === "users" && (
+                  <div>
+                    <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                      <div className="flex gap-2 items-center w-full sm:w-auto">
+                        <label htmlFor="userType" className="font-semibold">
+                          User Type:
+                        </label>
+                        <select
+                          id="userType"
+                          value={userType}
+                          onChange={(e) =>
+                            setUserType(e.target.value as UserRole)
+                          }
+                          className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        >
+                          <option value="STUDENT">Student</option>
+                          <option value="FACULTY">Faculty</option>
+                          <option value="HOD">HOD</option>
+                          <option value="ADMIN">Admin</option>
+                        </select>
+                      </div>
+                      {/* Show year, branch, section if Student is selected */}
+                      {userType === "STUDENT" && (
+                        <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
+                          <label className="font-semibold">Year:</label>
+                          <select
+                            value={studentYear}
+                            onChange={(e) => setStudentYear(e.target.value)}
+                            className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                          </select>
+                          <label className="font-semibold">Branch:</label>
+                          <select
+                            value={studentBranch}
+                            onChange={(e) => setStudentBranch(e.target.value)}
+                            className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          >
+                            <option value="CSE">CSE</option>
+                            <option value="ECE">ECE</option>
+                            <option value="EEE">EEE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="CSD">CSD</option>
+                            <option value="CSM">CSM</option>
+                          </select>
+                          <label className="font-semibold">Section:</label>
+                          <select
+                            value={studentSection}
+                            onChange={(e) => setStudentSection(e.target.value)}
+                            className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            {/* Add more sections as needed */}
+                          </select>
+                        </div>
+                      )}
                     </div>
-                    {/* Show year, branch, section if Student is selected */}
-                    {userType === "STUDENT" && (
-                      <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
-                        <label className="font-semibold">Year:</label>
-                        <select
-                          value={studentYear}
-                          onChange={(e) => setStudentYear(e.target.value)}
-                          className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        >
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                        </select>
-                        <label className="font-semibold">Branch:</label>
-                        <select
-                          value={studentBranch}
-                          onChange={(e) => setStudentBranch(e.target.value)}
-                          className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        >
-                          <option value="CSE">CSE</option>
-                          <option value="ECE">ECE</option>
-                          <option value="EEE">EEE</option>
-                          <option value="MECH">MECH</option>
-                          <option value="CSD">CSD</option>
-                          <option value="CSM">CSM</option>
-                        </select>
-                        <label className="font-semibold">Section:</label>
-                        <select
-                          value={studentSection}
-                          onChange={(e) => setStudentSection(e.target.value)}
-                          className="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        >
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          {/* Add more sections as needed */}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-                  {loadingUsers ? (
-                    <div>Loading...</div>
-                  ) : (
-                    <>
-                      {/* Mobile: User Cards */}
-                      <div className="block md:hidden space-y-3">
-                        {users.length > 0 ? (
-                          users.map((user, idx) => {
-                            const name =
-                              "firstName" in user && "lastName" in user
-                                ? `${(user as StudentProfile | FacultyProfile | HODProfile).firstName} ${(user as StudentProfile | FacultyProfile | HODProfile).lastName}`
-                                : "name" in user
-                                ? (user as { name: string }).name
-                                : "";
-                            const email =
-                              "email" in user ? (user.email as string) : "";
-                            const role =
-                              "role" in user
-                                ? (user.role as string)
-                                : userType;
-                            const status =
-                              "status" in user
-                                ? (user.status as string)
-                                : "Active";
-                            return (
-                              <Card key={idx} className="p-3 flex flex-col gap-1 dark:bg-gray-800">
-                                <div className="font-bold text-base dark:text-white">{name}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-300">{email}</div>
-                                <div className="flex gap-2 text-xs mt-1 dark:text-gray-300">
-                                  <span className="font-semibold dark:text-gray-200">{role}</span>
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                      status === "Active"
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {status}
-                                  </span>
-                                </div>
-                                <div className="flex gap-2 mt-2">
-                                  <button
-                                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 text-xs"
-                                    title="Edit"
-                                    onClick={() => setEditUserModal({ open: true, user })}
-                                  >
-                                    <span role="img" aria-label="Edit">
-                                      ✏️
+                    {loadingUsers ? (
+                      <div>Loading...</div>
+                    ) : (
+                      <>
+                        {/* Mobile: User Cards */}
+                        <div className="block md:hidden space-y-3">
+                          {users.length > 0 ? (
+                            users.map((user, idx) => {
+                              const name =
+                                "firstName" in user && "lastName" in user
+                                  ? `${
+                                      (
+                                        user as
+                                          | StudentProfile
+                                          | FacultyProfile
+                                          | HODProfile
+                                      ).firstName
+                                    } ${
+                                      (
+                                        user as
+                                          | StudentProfile
+                                          | FacultyProfile
+                                          | HODProfile
+                                      ).lastName
+                                    }`
+                                  : "name" in user
+                                  ? (user as { name: string }).name
+                                  : "";
+                              const email =
+                                "email" in user ? (user.email as string) : "";
+                              const role =
+                                "role" in user
+                                  ? (user.role as string)
+                                  : userType;
+                              const status =
+                                "status" in user
+                                  ? (user.status as string)
+                                  : "Active";
+                              return (
+                                <Card
+                                  key={idx}
+                                  className="p-3 flex flex-col gap-1 dark:bg-gray-800"
+                                >
+                                  <div className="font-bold text-base dark:text-white">
+                                    {name}
+                                  </div>
+                                  <div className="text-xs text-gray-600 dark:text-gray-300">
+                                    {email}
+                                  </div>
+                                  <div className="flex gap-2 text-xs mt-1 dark:text-gray-300">
+                                    <span className="font-semibold dark:text-gray-200">
+                                      {role}
                                     </span>
-                                  </button>
-                                  <button
-                                    className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 text-xs"
-                                    title="Delete"
-                                    onClick={() => setDeleteUserModal({ open: true, user })}
-                                  >
-                                    <span role="img" aria-label="Delete">
-                                      🗑️
-                                    </span>
-                                  </button>
-                                  {role === "HOD" && (
-                                    <button
-                                      className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 text-xs"
-                                      title="Assign Teacher"
-                                      onClick={() => setAssignTeacherModal({ open: true, user })}
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                        status === "Active"
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
+                                      }`}
                                     >
-                                      Assign Teacher
-                                    </button>
-                                  )}
-                                </div>
-                              </Card>
-                            );
-                          })
-                        ) : (
-                          <div className="text-center text-gray-500">No Users Found</div>
-                        )}
-                      </div>
-                      {/* Desktop: User Table */}
-                      <div className="hidden md:block overflow-x-auto">
-                        <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm text-sm">
-                          <thead>
-                            <tr className="bg-gray-100 dark:bg-gray-700">
-                              <th className="py-2 px-3 text-left dark:text-gray-200">Name</th>
-                              <th className="py-2 px-3 text-left dark:text-gray-200">Email</th>
-                              <th className="py-2 px-3 text-left dark:text-gray-200">Role</th>
-                              <th className="py-2 px-3 text-left dark:text-gray-200">Status</th>
-                              <th className="py-2 px-3 text-left dark:text-gray-200">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {users.length > 0 ? (
-                              users.map((user, idx) => {
-                                const name =
-                                  "firstName" in user && "lastName" in user
-                                    ? `${(user as StudentProfile | FacultyProfile | HODProfile).firstName} ${(user as StudentProfile | FacultyProfile | HODProfile).lastName}`
-                                    : "name" in user
-                                    ? (user as { name: string }).name
-                                    : "";
-                                const email =
-                                  "email" in user ? (user.email as string) : "";
-                                const role =
-                                  "role" in user
-                                    ? (user.role as string)
-                                    : userType;
-                                const status =
-                                  "status" in user
-                                    ? (user.status as string)
-                                    : "Active";
-                                return (
-                                  <tr
-                                    key={idx}
-                                    className="border-b last:border-b-0 dark:border-gray-700"
-                                  >
-                                    <td className="py-2 px-3 dark:text-gray-200">{name}</td>
-                                    <td className="py-2 px-3 dark:text-gray-200">{email}</td>
-                                    <td className="py-2 px-3 dark:text-gray-200">{role}</td>
-                                    <td className="py-2 px-3">
-                                      <span
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                          status === "Active"
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-red-100 text-red-800"
-                                        }`}
-                                      >
-                                        {status}
+                                      {status}
+                                    </span>
+                                  </div>
+                                  <div className="flex gap-2 mt-2">
+                                    <button
+                                      className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 text-xs"
+                                      title="Edit"
+                                      onClick={() =>
+                                        setEditUserModal({ open: true, user })
+                                      }
+                                    >
+                                      <span role="img" aria-label="Edit">
+                                        ✏️
                                       </span>
-                                    </td>
-                                    <td className="py-2 px-3 flex gap-2">
+                                    </button>
+                                    <button
+                                      className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 text-xs"
+                                      title="Delete"
+                                      onClick={() =>
+                                        setDeleteUserModal({ open: true, user })
+                                      }
+                                    >
+                                      <span role="img" aria-label="Delete">
+                                        🗑️
+                                      </span>
+                                    </button>
+                                    {role === "HOD" && (
                                       <button
-                                        className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-                                        title="Edit"
+                                        className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 text-xs"
+                                        title="Assign Teacher"
                                         onClick={() =>
-                                          setEditUserModal({ open: true, user })
+                                          setAssignTeacherModal({
+                                            open: true,
+                                            user,
+                                          })
                                         }
                                       >
-                                        <span role="img" aria-label="Edit">
-                                          ✏️
-                                        </span>
+                                        Assign Teacher
                                       </button>
-                                      <button
-                                        className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
-                                        title="Delete"
-                                        onClick={() =>
-                                          setDeleteUserModal({ open: true, user })
-                                        }
-                                      >
-                                        <span role="img" aria-label="Delete">
-                                          🗑️
+                                    )}
+                                  </div>
+                                </Card>
+                              );
+                            })
+                          ) : (
+                            <div className="text-center text-gray-500">
+                              No Users Found
+                            </div>
+                          )}
+                        </div>
+                        {/* Desktop: User Table */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm text-sm">
+                            <thead>
+                              <tr className="bg-gray-100 dark:bg-gray-700">
+                                <th className="py-2 px-3 text-left dark:text-gray-200">
+                                  Name
+                                </th>
+                                <th className="py-2 px-3 text-left dark:text-gray-200">
+                                  Email
+                                </th>
+                                <th className="py-2 px-3 text-left dark:text-gray-200">
+                                  Role
+                                </th>
+                                <th className="py-2 px-3 text-left dark:text-gray-200">
+                                  Status
+                                </th>
+                                <th className="py-2 px-3 text-left dark:text-gray-200">
+                                  Actions
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {users.length > 0 ? (
+                                users.map((user, idx) => {
+                                  const name =
+                                    "firstName" in user && "lastName" in user
+                                      ? `${
+                                          (
+                                            user as
+                                              | StudentProfile
+                                              | FacultyProfile
+                                              | HODProfile
+                                          ).firstName
+                                        } ${
+                                          (
+                                            user as
+                                              | StudentProfile
+                                              | FacultyProfile
+                                              | HODProfile
+                                          ).lastName
+                                        }`
+                                      : "name" in user
+                                      ? (user as { name: string }).name
+                                      : "";
+                                  const email =
+                                    "email" in user
+                                      ? (user.email as string)
+                                      : "";
+                                  const role =
+                                    "role" in user
+                                      ? (user.role as string)
+                                      : userType;
+                                  const status =
+                                    "status" in user
+                                      ? (user.status as string)
+                                      : "Active";
+                                  return (
+                                    <tr
+                                      key={idx}
+                                      className="border-b last:border-b-0 dark:border-gray-700"
+                                    >
+                                      <td className="py-2 px-3 dark:text-gray-200">
+                                        {name}
+                                      </td>
+                                      <td className="py-2 px-3 dark:text-gray-200">
+                                        {email}
+                                      </td>
+                                      <td className="py-2 px-3 dark:text-gray-200">
+                                        {role}
+                                      </td>
+                                      <td className="py-2 px-3">
+                                        <span
+                                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                            status === "Active"
+                                              ? "bg-green-100 text-green-800"
+                                              : "bg-red-100 text-red-800"
+                                          }`}
+                                        >
+                                          {status}
                                         </span>
-                                      </button>
-                                      {role === "HOD" && (
+                                      </td>
+                                      <td className="py-2 px-3 flex gap-2">
                                         <button
-                                          className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200"
-                                          title="Assign Teacher"
+                                          className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
+                                          title="Edit"
                                           onClick={() =>
-                                            setAssignTeacherModal({
+                                            setEditUserModal({
                                               open: true,
                                               user,
                                             })
                                           }
                                         >
-                                          Assign Teacher
+                                          <span role="img" aria-label="Edit">
+                                            ✏️
+                                          </span>
                                         </button>
-                                      )}
-                                    </td>
-                                  </tr>
-                                );
-                              })
-                            ) : (
-                              <tr className="border-b last:border-b-0">
-                                <td colSpan={5} className="py-2 px-3 text-center">
-                                  No Users Found
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
+                                        <button
+                                          className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
+                                          title="Delete"
+                                          onClick={() =>
+                                            setDeleteUserModal({
+                                              open: true,
+                                              user,
+                                            })
+                                          }
+                                        >
+                                          <span role="img" aria-label="Delete">
+                                            🗑️
+                                          </span>
+                                        </button>
+                                        {role === "HOD" && (
+                                          <button
+                                            className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200"
+                                            title="Assign Teacher"
+                                            onClick={() =>
+                                              setAssignTeacherModal({
+                                                open: true,
+                                                user,
+                                              })
+                                            }
+                                          >
+                                            Assign Teacher
+                                          </button>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  );
+                                })
+                              ) : (
+                                <tr className="border-b last:border-b-0">
+                                  <td
+                                    colSpan={5}
+                                    className="py-2 px-3 text-center"
+                                  >
+                                    No Users Found
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
 
-              {/* HOD Assignments Tab */}
-              {userManagementTab === "hod-assignments" && (
-                <div>
-                  <HODAssignmentManager />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                {/* HOD Assignments Tab */}
+                {userManagementTab === "hod-assignments" && (
+                  <div>
+                    <HODAssignmentManager />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Timetable Management Section */}
-          <div ref={timetableManagementRef} className="pt-4 " id="timetable-management">
+          <div
+            ref={timetableManagementRef}
+            className="pt-4 "
+            id="timetable-management"
+          >
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg dark:text-white">
@@ -1093,130 +1149,147 @@ const AdminDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-              {/* Controls Row (restored and responsive) */}
-              <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 mb-4 sm:mb-6">
-                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
-                  <div className="flex items-center gap-2">
-                    <label className="font-semibold text-xs sm:text-sm" htmlFor="year-select">
-                      Year:
-                    </label>
-                    <select
-                      id="year-select"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    >
-                      <option value="1">Year 1</option>
-                      <option value="2">Year 2</option>
-                      <option value="3">Year 3</option>
-                      <option value="4">Year 4</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="font-semibold text-xs sm:text-sm" htmlFor="branch-select">
-                      Branch:
-                    </label>
-                    <select
-                      id="branch-select"
-                      value={selectedBranch}
-                      onChange={(e) => setSelectedBranch(e.target.value)}
-                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    >
-                      {branches.map((branch) => (
-                        <option key={branch} value={branch}>
-                          {branch}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="font-semibold text-xs sm:text-sm" htmlFor="section-select">
-                      Section:
-                    </label>
-                    <select
-                      id="section-select"
-                      value={selectedSection}
-                      onChange={(e) => setSelectedSection(e.target.value)}
-                      className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    >
-                      {sections.map((section) => (
-                        <option key={section} value={section}>
-                          {section}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                  <Button
-                    onClick={() => navigate("/admin/timetable")}
-                    className="bg-green-600 hover:bg-green-700 px-4 sm:px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 text-xs sm:text-sm"
-                  >
-                    <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Create Timetable
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      navigate(
-                        `/admin/timetable?year=${selectedYear}&branch=${selectedBranch}&section=${selectedSection}`
-                      )
-                    }
-                    className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 text-xs sm:text-sm"
-                  >
-                    <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Edit Timetable
-                  </Button>
-                </div>
-              </div>
-              {/* Timetable Table (minimal, borderless, scrollable) */}
-              <div className="overflow-x-auto w-full">
-                {timetableData.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8">
-                    Timetable is not available at the moment.
-                  </div>
-                ) : (
-                  <table className="min-w-[600px] text-xs sm:text-sm dark:bg-gray-900">
-                    <thead>
-                      <tr>
-                        <th className="p-2 sm:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">Time</th>
-                        {presentDays.map((day) => (
-                          <th
-                            key={day}
-                            className="p-2 sm:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800 sticky top-0 z-10"
-                          >
-                            {day}
-                          </th>
+                {/* Controls Row (restored and responsive) */}
+                <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
+                    <div className="flex items-center gap-2">
+                      <label
+                        className="font-semibold text-xs sm:text-sm"
+                        htmlFor="year-select"
+                      >
+                        Year:
+                      </label>
+                      <select
+                        id="year-select"
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      >
+                        <option value="1">Year 1</option>
+                        <option value="2">Year 2</option>
+                        <option value="3">Year 3</option>
+                        <option value="4">Year 4</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label
+                        className="font-semibold text-xs sm:text-sm"
+                        htmlFor="branch-select"
+                      >
+                        Branch:
+                      </label>
+                      <select
+                        id="branch-select"
+                        value={selectedBranch}
+                        onChange={(e) => setSelectedBranch(e.target.value)}
+                        className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      >
+                        {branches.map((branch) => (
+                          <option key={branch} value={branch}>
+                            {branch}
+                          </option>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {timetableGrid.length > 0 ? (
-                        timetableGrid.map((row, idx) => (
-                          <tr key={idx} className="border-b last:border-b-0">
-                            <td className="p-2 sm:p-3 text-center font-medium bg-gray-50 dark:bg-gray-800 sticky left-0 z-10">
-                              {row.startTime} - {row.endTime}
-                            </td>
-                            {presentDays.map((day) => (
-                              <td key={day} className="p-2 sm:p-3 text-center">
-                                {row[day] || ""}
-                              </td>
-                            ))}
-                          </tr>
-                        ))
-                      ) : (
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label
+                        className="font-semibold text-xs sm:text-sm"
+                        htmlFor="section-select"
+                      >
+                        Section:
+                      </label>
+                      <select
+                        id="section-select"
+                        value={selectedSection}
+                        onChange={(e) => setSelectedSection(e.target.value)}
+                        className="border rounded px-2 sm:px-3 py-1 min-w-[70px] sm:min-w-[90px] font-semibold focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      >
+                        {sections.map((section) => (
+                          <option key={section} value={section}>
+                            {section}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+                    <Button
+                      onClick={() => navigate("/admin/timetable")}
+                      className="bg-green-600 hover:bg-green-700 px-4 sm:px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 text-xs sm:text-sm"
+                    >
+                      <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
+                      Create Timetable
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        navigate(
+                          `/admin/timetable?year=${selectedYear}&branch=${selectedBranch}&section=${selectedSection}`
+                        )
+                      }
+                      className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 text-xs sm:text-sm"
+                    >
+                      <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
+                      Edit Timetable
+                    </Button>
+                  </div>
+                </div>
+                {/* Timetable Table (minimal, borderless, scrollable) */}
+                <div className="overflow-x-auto w-full">
+                  {timetableData.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      Timetable is not available at the moment.
+                    </div>
+                  ) : (
+                    <table className="min-w-[600px] text-xs sm:text-sm dark:bg-gray-900">
+                      <thead>
                         <tr>
-                          <td colSpan={presentDays.length + 1} className="py-2 sm:py-3 text-gray-600 text-center">
-                            No Data Available at the moment.
-                          </td>
+                          <th className="p-2 sm:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
+                            Time
+                          </th>
+                          {presentDays.map((day) => (
+                            <th
+                              key={day}
+                              className="p-2 sm:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800 sticky top-0 z-10"
+                            >
+                              {day}
+                            </th>
+                          ))}
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+                      </thead>
+                      <tbody>
+                        {timetableGrid.length > 0 ? (
+                          timetableGrid.map((row, idx) => (
+                            <tr key={idx} className="border-b last:border-b-0">
+                              <td className="p-2 sm:p-3 text-center font-medium bg-gray-50 dark:bg-gray-800 sticky left-0 z-10">
+                                {row.startTime} - {row.endTime}
+                              </td>
+                              {presentDays.map((day) => (
+                                <td
+                                  key={day}
+                                  className="p-2 sm:p-3 text-center"
+                                >
+                                  {row[day] || ""}
+                                </td>
+                              ))}
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={presentDays.length + 1}
+                              className="py-2 sm:py-3 text-gray-600 text-center"
+                            >
+                              No Data Available at the moment.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </CardContent>
             </Card>
-        </div>
+          </div>
 
           {/* Reports Section */}
           <div ref={reportsRef} className="pt-4" id="reports">
@@ -1227,23 +1300,25 @@ const AdminDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reports.map((report) => (
-              <Card
-                key={report.title}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {reports.map((report) => (
+                    <Card
+                      key={report.title}
                       className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 flex flex-col items-start gap-4 border border-gray-100 dark:border-gray-700"
-              >
-                <span className="text-3xl">📊</span>
+                    >
+                      <span className="text-3xl">📊</span>
                       <div className="font-semibold text-lg text-gray-900 dark:text-white">
-                  {report.title}
-                </div>
+                        {report.title}
+                      </div>
                       <div className="text-sm text-gray-700 dark:text-gray-300 flex-1">
-                  {report.description}
+                        {report.description}
+                      </div>
+                      <Button className="mt-2 w-full dark:bg-blue-600 dark:hover:bg-blue-700">
+                        Generate Report
+                      </Button>
+                    </Card>
+                  ))}
                 </div>
-                      <Button className="mt-2 w-full dark:bg-blue-600 dark:hover:bg-blue-700">Generate Report</Button>
-              </Card>
-            ))}
-          </div>
               </CardContent>
             </Card>
           </div>
@@ -1257,17 +1332,26 @@ const AdminDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-          <div className="space-y-4">
-            {announcements.map((a, idx) => (
-                    <Card key={idx} className="dark:bg-gray-800 dark:border-gray-700">
-                <CardHeader>
-                        <CardTitle className="dark:text-white">{a.title}</CardTitle>
-                        <CardDescription className="dark:text-gray-300">{a.date}</CardDescription>
-                </CardHeader>
-                      <CardContent className="dark:text-gray-300">{a.content}</CardContent>
-              </Card>
-            ))}
-          </div>
+                <div className="space-y-4">
+                  {announcements.map((a, idx) => (
+                    <Card
+                      key={idx}
+                      className="dark:bg-gray-800 dark:border-gray-700"
+                    >
+                      <CardHeader>
+                        <CardTitle className="dark:text-white">
+                          {a.title}
+                        </CardTitle>
+                        <CardDescription className="dark:text-gray-300">
+                          {a.date}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="dark:text-gray-300">
+                        {a.content}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -1281,23 +1365,35 @@ const AdminDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-              <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center">
-                    <span className="font-semibold dark:text-white">System Backup</span>
-                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">Backup Now</Button>
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold dark:text-white">
+                      System Backup
+                    </span>
+                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">
+                      Backup Now
+                    </Button>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold dark:text-white">
+                      Security
+                    </span>
+                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">
+                      Update Settings
+                    </Button>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold dark:text-white">
+                      User Roles
+                    </span>
+                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">
+                      Manage Roles
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                    <span className="font-semibold dark:text-white">Security</span>
-                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">Update Settings</Button>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="font-semibold dark:text-white">User Roles</span>
-                    <Button className="dark:bg-blue-600 dark:hover:bg-blue-700">Manage Roles</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-      </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
 

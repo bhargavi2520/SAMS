@@ -21,7 +21,10 @@ console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode`);
 
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000,
-  max: 50,
+  max: 100,
+  keyGenerator : (req)=>{
+    return req.user?.id || req.ip;
+  },
   message: "Too many requests from this IP, please try again after 5 minutes",
   standardHeaders: true,
   legacyHeaders: false,

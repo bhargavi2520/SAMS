@@ -153,8 +153,8 @@ const loginValidation = (req, res, next) => {
   if (error) {
     return res.status(400).json({
       success: false,
-      message: "Invalid data",
-      error: error.details[0].message,
+      error: "Invalid data",
+      message: error.details[0].message,
     });
   }
   next();

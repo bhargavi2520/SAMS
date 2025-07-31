@@ -283,7 +283,7 @@ const days = [
 
 const FacultyDashboard = () => {
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
+  const { logout , user } = useAuthStore();
   // Refs for each section
   const [facultyData, setFacultyData] = useState<FacultyDataItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1002,21 +1002,21 @@ const FacultyDashboard = () => {
 
   // Faculty profile state
   const [facultyProfile, setFacultyProfile] = useState(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState(null);
 
-  useEffect(() => {
-    apiClient
-      .get("/auth/me")
-      .then((res) => {
-        setFacultyProfile(res.data.user);
-        setProfileLoading(false);
-      })
-      .catch((err) => {
-        setProfileError("Failed to load profile");
-        setProfileLoading(false);
-      });
-  }, []);
+  // useEffect(() => {
+  //   apiClient
+  //     .get("/auth/me")
+  //     .then((res) => {
+  //       setFacultyProfile(res.data.user);
+  //       setProfileLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       setProfileError("Failed to load profile");
+  //       setProfileLoading(false);
+  //     });
+  // }, []);
 
   const handleAttendanceSubmit = async () => {
     const selected = facultyData.find(
@@ -1109,35 +1109,35 @@ const FacultyDashboard = () => {
             <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
                 <Avatar className="w-16 h-16 md:w-20 md:h-20">
-                  {facultyProfile?.profilePictureUrl ? (
+                  {user?.profilePictureUrl ? (
                     <AvatarImage
-                      src={`data:image/jpeg;base64,${facultyProfile.profilePictureUrl}`}
-                      alt={`${facultyProfile?.firstName} ${facultyProfile?.lastName}`}
+                      src={`data:image/jpeg;base64,${user.profilePictureUrl}`}
+                      alt={`${user?.firstName} ${user?.lastName}`}
                       className="object-cover"
                     />
                   ) : (
                     <AvatarFallback className="bg-blue-600 text-white text-xl md:text-2xl">
-                      {facultyProfile?.firstName?.[0]}
-                      {facultyProfile?.lastName?.[0]}
+                      {user?.firstName?.[0]}
+                      {user?.lastName?.[0]}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row items-center sm:space-x-2 mb-2">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                      {facultyProfile?.firstName} {facultyProfile?.lastName}
+                      {user?.firstName} {user?.lastName}
                     </h2>
                     <button className="p-1 text-gray-400 dark:text-white hover:text-gray-600">
                       <Edit className="w-4 h-4" />
                     </button>
                   </div>
                   <p className="text-gray-600 dark:text-white mb-2 md:mb-4 text-sm md:text-base">
-                    {facultyProfile?.email}
+                    {user?.email}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-gray-600 dark:text-white">
                     <div>
                       <span className="font-medium">Phone:</span>{" "}
-                      {facultyProfile?.phoneNumber || facultyProfile?.phone}
+                      {user?.phoneNumber}
                     </div>
                   </div>
                   <div className="mt-4 md:mt-6">

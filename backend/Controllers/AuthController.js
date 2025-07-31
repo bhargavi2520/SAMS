@@ -248,7 +248,7 @@ const getUserWithProfilePhoto = async (userId) => {
 const getProfile = async (req, res) => {
   try {
     const user = await getUserWithProfilePhoto(req.user.id);
-    if (!userWithPhoto) {
+    if (!user) {
       return res.status(404).json({
         message: "User not found",
         success: false,
@@ -256,6 +256,7 @@ const getProfile = async (req, res) => {
     }
     res.json({ user, success: true });
   } catch (error) {
+    console.log("Something's wrong in getting profile",error);
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };
