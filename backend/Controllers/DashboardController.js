@@ -34,7 +34,53 @@ const getStudentDashboard = async (req, res) => {
         success: false,
       });
     }
-    // extracting subjects and their teachers
+    return res.status(200).json({
+      message: "Student Dashboard fetched successfully",
+      success: true,
+    });
+  } catch (err) {
+    console.log("StudentDashboard Error", err);
+    return res.status(500).json({
+      message: "Internal Server at Student Dashboard",
+    });
+  }
+};
+
+/**
+ * student academic details
+ * returns student academic details like time table , subjects, faculty and attendance
+ */
+
+const getStudentAcademicDetails = async (req, res) => {
+  const studentId = req.user.id;
+  try {
+    const student = await User.findById(studentId)
+      .select("-__v -password")
+      .lean();
+    if (!student) {
+      return res.status(404).json({
+        message: "Student Not found",
+        success: false,
+      });
+    }
+    const {department, year, section, batch} = student;
+    const classDoc = await classInfo
+      .findOne({ department, year, section, batch })
+      .populate({ path: "subjects.subject", select: "name code" })
+      .select("-students");
+
+    if (!classDoc) {
+      return res.status(404).json({
+        message:
+          "You are not registered to any Class, Contact your administrator",
+        success: false,
+      });
+    }
+
+    const schedule = await TimeTable.findOne({ class: classDoc._id })
+      .select("-_id -class -timeSlots._id")
+      .lean();
+
     let attendanceAndFacultyInfo = [];
     if (classDoc.subjects.length > 0) {
       const subjectsInfo = await Promise.all(
@@ -95,9 +141,6 @@ const getStudentDashboard = async (req, res) => {
       );
       attendanceAndFacultyInfo = subjectsInfo;
     }
-    const schedule = await TimeTable.findOne({ class: classDoc._id })
-      .select("-_id -class -timeSlots._id")
-      .lean();
 
     return res.status(200).json({
       message: "Student Dashboard Info are ..",
@@ -108,12 +151,13 @@ const getStudentDashboard = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log("StudentDashboard Error", err);
+    console.log("student academic details Error", err);
     return res.status(500).json({
       message: "Internal Server at Student Dashboard",
     });
   }
 };
+
 /**
  * faculty Dashboard function
  * will get all data that is needed on faculty dashboard
@@ -301,4 +345,5 @@ module.exports = {
   getFacultyDashboard,
   getHodDashboard,
   getAdminDashboard,
+  getStudentAcademicDetails,
 };

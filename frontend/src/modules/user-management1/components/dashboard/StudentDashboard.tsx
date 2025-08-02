@@ -12,27 +12,16 @@ import { Button } from "@/common/components/ui/button";
 import {
   Home,
   FileText, // For Exams
-  ClipboardList, // For Subjects or Attendance
-  BarChart2, // For Performance
   CheckSquare, // For Attendance
   Calendar, // For Timetable and new Calendar option
   MessageCircle, // For new Feedback option
   Megaphone, // For Notifications
-  User, // For My Profile
   Settings,
-  LogOut,
-  Search,
-  Bell, // For Notifications
-  Moon,
+  Bell, 
   Edit,
-  Users,
-  DollarSign, // For Fee Details
-  BookOpen, // For Subjects
-  MessageSquare, // For Tutoring or Feedback
-  FileBarChart, // For Reports
   HelpCircle,
-  Award, // For Achievements and Awards
-  Menu, // Added Menu icon for mobile navigation
+  Award, 
+  Loader2
 } from "lucide-react";
 import { StudentProfile } from "../../types/auth.types";
 import dayjs from "dayjs";
@@ -53,7 +42,11 @@ import {
 import DashboardNav from "./DashboardNav";
 import api from "@/api";
 import apiClient from "@/api";
-import { Avatar, AvatarImage, AvatarFallback } from "@/common/components/ui/avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/common/components/ui/avatar";
 
 // Register Chart.js components
 ChartJS.register(
@@ -591,7 +584,9 @@ const AttendanceGraph = ({
       <h4 className="text-lg font-semibold mb-4">
         Current Semester Attendance
       </h4>
-      <p className="text-gray-600 dark:text-white mb-4">Current Semester: Fall 2025</p>
+      <p className="text-gray-600 dark:text-white mb-4">
+        Current Semester: Fall 2025
+      </p>
       <div className="h-64">
         <Bar data={chartData} options={chartOptions} />
       </div>
@@ -673,7 +668,9 @@ const StudentDashboard = () => {
 
   const [activeSection, setActiveSection] = useState<string>("dashboard"); // Set initial active section to Dashboard
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar visibility
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
+  const [darkMode, setDarkMode] = useState(
+    () => localStorage.getItem("theme") === "dark"
+  );
 
   useEffect(() => {
     const handler = () => setDarkMode(localStorage.getItem("theme") === "dark");
@@ -739,15 +736,12 @@ const StudentDashboard = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Add state for backend data
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null
-  );
+  const [academicDetails, setAcademicDetails] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // For timetable:
-  const timetableSlots = dashboardData?.timeTable || [];
+  const timetableSlots = academicDetails?.timeTable || [];
   const allDays = [
     "Monday",
     "Tuesday",
@@ -769,12 +763,12 @@ const StudentDashboard = () => {
   }
   const timeSlots = Array.from(
     new Set(timetableSlots.map((slot) => `${slot.startTime}-${slot.endTime}`))
-  ).sort((a, b) => {
+  ).sort((a: string, b: string) => {
     const [aStart] = a.split("-");
     const [bStart] = b.split("-");
     return parseTime(aStart) - parseTime(bStart);
   });
-  const timetableGrid = timeSlots.map((time) => {
+  const timetableGrid = timeSlots.map((time: string) => {
     const [startTime, endTime] = time.split("-");
     const row = { startTime, endTime };
     for (const day of presentDays) {
@@ -790,13 +784,13 @@ const StudentDashboard = () => {
   });
   // For subjects faculty and attendance:
   const subjectsFaculty =
-    dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
+    academicDetails?.attendanceAndFacultyInfo?.map((item) => ({
       subjectName: item.subject.subjectName,
       faculty: item.faculty?.facultyName || "N/A",
       book: "-", // No book info from backend
     })) || [];
   const attendanceData =
-    dashboardData?.attendanceAndFacultyInfo?.map((item) => ({
+    academicDetails?.attendanceAndFacultyInfo?.map((item) => ({
       label: item.subject.subjectName,
       attended: item.attendance.totalAttended,
       total: item.attendance.totalClasses,
@@ -837,6 +831,7 @@ const StudentDashboard = () => {
       setFeedbackSubmitting(false);
     }, 1000);
   };
+  const [dashboardLoaded, setDashboardLoaded] = useState(false);
 
   // Fetch dashboard data on mount
   useEffect(() => {
@@ -846,10 +841,10 @@ const StudentDashboard = () => {
       try {
         const res = await apiClient.get("/dashboard/student");
         if (res.data && res.data.success) {
-          setDashboardData(res.data.data);
           const newToken = res.headers["refreshedtoken"];
           localStorage.setItem("authToken", newToken);
-        } 
+          setDashboardLoaded(true);
+        }
       } catch (err: unknown) {
         if (
           err &&
@@ -876,6 +871,45 @@ const StudentDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const [academicDetailsLoading, setAcademicDetailsLoading] =
+    useState<boolean>(true);
+
+  useEffect(() => {
+    if (!dashboardLoaded) return;
+    const fetchAcademicDetails = async () => {
+      try {
+        const res = await apiClient.get(`/userData/student/academicDetails`);
+        if (res.data && res.data.success) {
+          setAcademicDetails(res.data.data);
+        } else {
+          setError("Failed to fetch academic details");
+        }
+      } catch (err: unknown) {
+        if (
+          err &&
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err
+        ) {
+          const errorObj = err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          setError(
+            errorObj.response?.data?.message ||
+              errorObj.message ||
+              "Failed to fetch dashboard data"
+          );
+        } else {
+          setError("Failed to fetch dashboard data");
+        }
+      } finally {
+        setAcademicDetailsLoading(false);
+      }
+    };
+    fetchAcademicDetails();
+  }, [dashboardLoaded]);
+
   // The `if (!studentProfile)` check is no longer strictly necessary since studentProfile is now mocked
   // but keeping it as a safeguard or if the mock logic changes in the future.
   if (loading) {
@@ -894,10 +928,10 @@ const StudentDashboard = () => {
         <div className="text-center">
           <div className="text-red-600 font-semibold mb-2">{error}</div>
           <button
-            onClick={() =>{
+            onClick={() => {
               logout();
-              navigate('/login');
-            } }
+              navigate("/login");
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded"
           >
             Logout / Login Again
@@ -923,7 +957,7 @@ const StudentDashboard = () => {
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
                 <Avatar className="w-16 h-16 md:w-20 md:h-20">
                   {studentProfile?.profilePictureUrl ? (
-                    <AvatarImage 
+                    <AvatarImage
                       src={`data:image/jpeg;base64,${studentProfile.profilePictureUrl}`}
                       alt={`${studentProfile?.firstName} ${studentProfile?.lastName}`}
                       className="object-cover"
@@ -1158,7 +1192,9 @@ const StudentDashboard = () => {
                           <tr
                             key={row.subject}
                             className={
-                              idx % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-800"
+                              idx % 2 === 0
+                                ? "bg-white dark:bg-gray-900"
+                                : "bg-gray-50 dark:bg-gray-800"
                             }
                           >
                             <td className="py-2 px-3 text-gray-800 font-medium">
@@ -1248,62 +1284,68 @@ const StudentDashboard = () => {
                   <h4 className="text-md md:text-lg font-semibold mb-3">
                     Class Timetable
                   </h4>
-                  <div className="overflow-x-auto">
-                    {timetableSlots.length === 0 ? (
-                      <div className="text-center text-gray-500 dark:text-white py-8">
-                        Timetable is not available at the moment.
-                      </div>
-                    ) : (
-                      <table className="min-w-full text-xs md:text-sm">
-                        <thead>
-                          <tr>
-                            <th className="p-2 md:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800">
-                              Time
-                            </th>
-                            {presentDays.map((day) => (
-                              <th
-                                key={day}
-                                className="p-2 md:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800"
-                              >
-                                {day}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {timetableGrid.length > 0 ? (
-                            timetableGrid.map((row, idx) => (
-                              <tr
-                                key={idx}
-                                className="border-b border-gray-100 last:border-b-0"
-                              >
-                                <td className="p-2 md:p-3 text-center font-medium bg-gray-50 dark:bg-gray-800">
-                                  {row.startTime} - {row.endTime}
-                                </td>
-                                {presentDays.map((day) => (
-                                  <td
-                                    key={day}
-                                    className="p-2 md:p-3 text-center"
-                                  >
-                                    {row[day] || ""}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))
-                          ) : (
+                  {academicDetailsLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      {timetableSlots.length === 0 ? (
+                        <div className="text-center text-gray-500 dark:text-white py-8">
+                          Timetable is not available at the moment.
+                        </div>
+                      ) : (
+                        <table className="min-w-full text-xs md:text-sm">
+                          <thead>
                             <tr>
-                              <td
-                                colSpan={presentDays.length + 1}
-                                className="py-2 md:py-3 text-gray-600 dark:text-white text-center"
-                              >
-                                No Data Available at the moment.
-                              </td>
+                              <th className="p-2 md:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800">
+                                Time
+                              </th>
+                              {presentDays.map((day) => (
+                                <th
+                                  key={day}
+                                  className="p-2 md:p-3 font-semibold text-center bg-gray-50 dark:bg-gray-800"
+                                >
+                                  {day}
+                                </th>
+                              ))}
                             </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
+                          </thead>
+                          <tbody>
+                            {timetableGrid.length > 0 ? (
+                              timetableGrid.map((row, idx) => (
+                                <tr
+                                  key={idx}
+                                  className="border-b border-gray-100 last:border-b-0"
+                                >
+                                  <td className="p-2 md:p-3 text-center font-medium bg-gray-50 dark:bg-gray-800">
+                                    {row.startTime} - {row.endTime}
+                                  </td>
+                                  {presentDays.map((day) => (
+                                    <td
+                                      key={day}
+                                      className="p-2 md:p-3 text-center"
+                                    >
+                                      {row[day] || ""}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td
+                                  colSpan={presentDays.length + 1}
+                                  className="py-2 md:py-3 text-gray-600 dark:text-white text-center"
+                                >
+                                  No Data Available at the moment.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Subjects Faculty Section */}
@@ -1418,7 +1460,9 @@ const StudentDashboard = () => {
                             <tr
                               key={index}
                               className={`transition-colors ${
-                                index % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : "bg-white dark:bg-gray-900"
+                                index % 2 === 0
+                                  ? "bg-gray-50 dark:bg-gray-800"
+                                  : "bg-white dark:bg-gray-900"
                               }`}
                             >
                               <td className="py-3 px-2 text-gray-700 dark:text-white capitalize font-medium">

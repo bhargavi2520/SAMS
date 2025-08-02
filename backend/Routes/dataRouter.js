@@ -13,6 +13,9 @@ const {
 const {
   createTimeTableValidation,
 } = require("../Middlewares/CreateTimeTableValidation.js");
+const {
+  getStudentAcademicDetails,
+} = require("../Controllers/DashboardController.js");
 
 DataRouter.get(
   "/students",
@@ -47,5 +50,11 @@ DataRouter.get(
 DataRouter.get("/mySchedule", ensureAuthenticated(["FACULTY"]), mySchedule);
 
 DataRouter.get("/stats", ensureAuthenticated(["ADMIN"]), getStats);
+
+DataRouter.get(
+  "/student/academicDetails",
+  ensureAuthenticated(["STUDENT"]),
+  getStudentAcademicDetails
+);
 
 module.exports = DataRouter;
