@@ -71,8 +71,9 @@ const getSubjectsbyCriteria = async (req, res) => {
  * returns a newly created subject
  */
 const addSubject = async (req, res) => {
-  const { name, code, department, year, semester } = req.body;
+  let { name, code, department, year, semester } = req.body;
   try {
+    code = code.toUpperCase();
     const classInfo = await Class.findOne({ department, year })
       .sort({ batch: -1 })
       .select("batch _id")
@@ -203,9 +204,109 @@ const deleteSubjectAssignment = async (req, res) => {
     });
   }
 };
+
+/**
+ * function for updating subject details
+ * updates subject name, code
+ */
+
+const updateSubject = async (req, res) => {
+  const { subjectId } = req.params;
+  let { name, code } = req.body;
+  try {
+    code = code.toUpperCase();
+    const subject = await Subject.findById(subjectId);
+    if (!subject) {
+      return res.status(404).json({
+        message: "Subject not found",
+        success: false,
+      });
+    }
+    const doesExist = await Subject.findOne({ code: code }).lean();
+    if (doesExist && doesExist._id.toString() !== subjectId) {
+      return res.status(400).json({
+        message: "Subject with this code already exists",
+        success: false,
+      });
+    }
+    subject.name = name ;
+    subject.code = code ;
+    await subject.save();
+    res.status(200).json({
+      message: "Subject updated successfully",
+      subject,
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
+
+/**
+ * function for updating subject assignment
+ * update subject assignment faculty, subject, and section
+ */
+const updateSubjectAssignment = async (req, res) => {
+  const { assignmentId } = req.params;
+  const { facultyId, subjectId} = req.body;
+  try {
+    const assignment = await AssignedSubject.findById(assignmentId);
+    if (!assignment) {
+      return res.status(404).json({
+        message: "Assignment not found",
+        success: false,
+      });
+    }
+
+    // If updating faculty, check if the new faculty exists
+    if (facultyId && facultyId !== String(assignment.faculty)) {
+      const faculty = await User.findById(facultyId);
+      if (!faculty) {
+        return res.status(404).json({
+          message: "Faculty not found",
+          success: false,
+        });
+      }
+      assignment.faculty = facultyId;
+    }
+
+    // If updating subject, check if the new subject exists
+    if (subjectId && subjectId !== String(assignment.subject)) {
+      const subject = await Subject.findById(subjectId);
+      if (!subject) {
+        return res.status(404).json({
+          message: "Subject not found",
+          success: false,
+        });
+      }
+      assignment.subject = subjectId;
+    }
+
+
+    await assignment.save();
+    res.status(200).json({
+      message: "Assignment updated successfully",
+      assignment,
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
+
 module.exports = {
   getSubjectsbyCriteria,
   addSubject,
   assignSubject,
   deleteSubjectAssignment,
+  updateSubject,
+  updateSubjectAssignment,
 };

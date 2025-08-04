@@ -547,7 +547,7 @@ const getStats = async (req, res) => {
       },
       {
         $project: {
-          _id : 0,
+          _id: 0,
           department: "$_id",
           studentCount: 1,
           hod: {

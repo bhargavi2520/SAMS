@@ -1,7 +1,7 @@
 const { User } = require("../Models/User.js");
 const Subject = require("../Models/Subject.js");
 const departmentAssignment = require("../Models/AssignedDepartments.js");
-
+const AssignedSubject = require("../Models/AssignedSubjects.js"); // Add this at the top
 
 const checkAccess = async (req, res, next) => {
   const userId = req.user.id;
@@ -40,6 +40,26 @@ const checkAccess = async (req, res, next) => {
       if (!subject) {
         return res.status(404).json({
           message: "Subject not found",
+          success: false,
+        });
+      }
+      reqDepartment = subject.department;
+      year = subject.year;
+    } else if (req.params.assignmentId) {
+      // New logic for assignment update
+      const assignment = await AssignedSubject.findById(
+        req.params.assignmentId
+      ).lean();
+      if (!assignment) {
+        return res.status(404).json({
+          message: "Assignment not found",
+          success: false,
+        });
+      }
+      const subject = await Subject.findById(assignment.subject).lean();
+      if (!subject) {
+        return res.status(404).json({
+          message: "Subject not found for assignment",
           success: false,
         });
       }

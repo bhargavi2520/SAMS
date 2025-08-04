@@ -36,7 +36,13 @@ import apiClient from "@/api";
 import { toast } from "@/common/hooks/use-toast";
 import { addYears, setYear } from "date-fns";
 import { useAuthStore } from "../../store/authStore";
-import { Avatar, AvatarImage, AvatarFallback } from "@/common/components/ui/avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/common/components/ui/avatar";
+import { EditSubjectModal } from "./HODeditSubjectModal";
+import { EditAssignmentModal } from "./HODeditSubjectAssignmentModal";
 
 // Mock Data
 const summaryCards = [
@@ -263,9 +269,9 @@ const HODDashboard = ({ isHOD = true }) => {
           const newToken = response.headers["refreshedtoken"];
           localStorage.setItem("authToken", newToken);
           setYearsList(data.years);
-          if(data.department != ""){
+          if (data.department != "") {
             setDepartment(data.department);
-          }else{
+          } else {
             setError("NO department assigned to YOu");
           }
           setDashboardLoaded(true);
@@ -415,9 +421,7 @@ const HODDashboard = ({ isHOD = true }) => {
                           onClick={() => handleUpdateStatus(idx)}
                         >
                           Mark as{" "}
-                          {act.status === "pending"
-                            ? "Completed"
-                            : "Pending"}
+                          {act.status === "pending" ? "Completed" : "Pending"}
                         </Button>
                       )}
                     </div>
@@ -959,17 +963,17 @@ const HODDashboard = ({ isHOD = true }) => {
     }
   };
 
-  const handleEditAssignment = (assignment) => {
-    setSelectedFaculty(assignment.faculty);
-    setSelectedSubject(assignment.subject);
-    setSelectedAssignmentYear(assignment.year);
-    setSelectedSemester(assignment.semester);
-    setSelectedSection(assignment.section);
-    setIsClassTeacher(assignment.isClassTeacher);
-    setShowAssignmentForm(true);
-    // Remove the assignment being edited
-    setAssignments(assignments.filter((a) => a.id !== assignment.id));
-  };
+  // const handleEditAssignment = (assignment) => {
+  //   setSelectedFaculty(assignment.faculty);
+  //   setSelectedSubject(assignment.subject);
+  //   setSelectedAssignmentYear(assignment.year);
+  //   setSelectedSemester(assignment.semester);
+  //   setSelectedSection(assignment.section);
+  //   setIsClassTeacher(assignment.isClassTeacher);
+  //   setShowAssignmentForm(true);
+  //   // Remove the assignment being edited
+  //   setAssignments(assignments.filter((a) => a.id !== assignment.id));
+  // };
 
   // Handler to update activity status
   const handleUpdateStatus = (idx) => {
@@ -1020,11 +1024,24 @@ const HODDashboard = ({ isHOD = true }) => {
   const handleSubjectFocus = async () => {
     if (selectedYear && selectedSemester) {
       const res = await apiClient.get(
-        `/subjectData/subjects?department=CSE&year=${Number(
+        `/subjectData/subjects?department=${department}&year=${Number(
           selectedAssignmentYear
         )}&semester=${Number(selectedSemester)}`
       );
       setSubjects(res.data.subjects);
+    }
+  };
+
+  const handleEditAssignmentSubjectFocus = async () => {
+    if (editAssignmentModal.assignment && subjects.length === 0) {
+      try {
+        const res = await apiClient.get(
+          `/subjectData/subjects?department=${department}&year=${editAssignmentModal.assignment.year}&semester=${editAssignmentModal.assignment.semester}`
+        );
+        setSubjects(res.data.subjects);
+      } catch (error) {
+        console.error("Failed to fetch subjects for assignment edit:", error);
+      }
     }
   };
 
@@ -1094,6 +1111,128 @@ const HODDashboard = ({ isHOD = true }) => {
     });
     toast({ title: response.data.message, variant: "default" });
   };
+
+  /**edit subject and subject assignments */
+
+  const [editSubjectModal, setEditSubjectModal] = useState({
+    isOpen: false,
+    subject: null,
+  });
+
+  const [editAssignmentModal, setEditAssignmentModal] = useState({
+    isOpen: false,
+    assignment: null,
+  });
+  const [isEditingSubject, setIsEditingSubject] = useState(false);
+  const [isEditingAssignment, setIsEditingAssignment] = useState(false);
+
+  const handleEditSubject = (subject) => {
+    setEditSubjectModal({
+      isOpen: true,
+      subject: subject,
+    });
+  };
+
+  const handleSaveSubject = async (updatedSubject) => {
+    try {
+      setIsEditingSubject(true);
+      const response = await apiClient.put(
+        `/subjectData/subjects/update/${updatedSubject._id}`,
+        {
+          name: updatedSubject.name,
+          code: updatedSubject.code,
+        }
+      );
+
+      if (response.data.success) {
+        toast({
+          title: "Subject updated successfully",
+          variant: "default",
+        });
+
+        // Refresh subjects list
+        const updatedSubjects = subjectsInfo.map((subject) =>
+          subject._id === updatedSubject._id ? updatedSubject : subject
+        );
+        setSubjectsInfo(updatedSubjects);
+
+        setEditSubjectModal({ isOpen: false, subject: null });
+      } else {
+        toast({
+          title: response.data.message || "Failed to update subject",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to update subject",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEditingSubject(false);
+    }
+  };
+
+  const handleCloseSubjectModal = () => {
+    setEditSubjectModal({ isOpen: false, subject: null });
+  };
+
+  // Assignment Edit Handlers
+  const handleEditAssignment = (assignment) => {
+    setEditAssignmentModal({
+      isOpen: true,
+      assignment: assignment,
+    });
+  };
+
+  const handleSaveAssignment = async (updatedAssignment) => {
+    try {
+      setIsEditingAssignment(true);
+      const response = await apiClient.put(
+        `/subjectData/assignments/update/${updatedAssignment.assignmentId}`,
+        {
+         facultyId: updatedAssignment.facultyId,
+         subjectId: updatedAssignment.subjectId
+        }
+      );
+
+      if (response.data.success) {
+        toast({
+          title: "Assignment updated successfully",
+          variant: "default",
+        });
+
+        fetchAssignments();
+
+        setEditAssignmentModal({ isOpen: false, assignment: null });
+      } else {
+        toast({
+          title: response.data.message || "Failed to update assignment",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to update assignment",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEditingAssignment(false);
+    }
+  };
+
+  const handleCloseAssignmentModal = () => {
+    setEditAssignmentModal({ isOpen: false, assignment: null });
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error || !dashboardLoaded) {
     return (
@@ -1139,7 +1278,7 @@ const HODDashboard = ({ isHOD = true }) => {
                   <div className="flex items-center gap-4 mb-4">
                     <Avatar className="w-16 h-16 md:w-20 md:h-20">
                       {hodProfile?.profilePictureUrl ? (
-                        <AvatarImage 
+                        <AvatarImage
                           src={`data:image/jpeg;base64,${hodProfile.profilePictureUrl}`}
                           alt={`${hodProfile.firstName} ${hodProfile.lastName}`}
                           className="object-cover"
@@ -1160,7 +1299,8 @@ const HODDashboard = ({ isHOD = true }) => {
                           variant="secondary"
                           className="bg-gray-200 dark:bg-neutral-700 text-sm"
                         >
-                          <Building2 className="w-4 h-4 mr-1 inline" /> {department}
+                          <Building2 className="w-4 h-4 mr-1 inline" />{" "}
+                          {department}
                         </Badge>
                       </div>
                     </div>
@@ -1179,7 +1319,9 @@ const HODDashboard = ({ isHOD = true }) => {
                         Name:
                       </span>{" "}
                       <span className="text-xs sm:text-sm">
-                        {hodProfile ? `${hodProfile.firstName} ${hodProfile.lastName}` : "N/A"}
+                        {hodProfile
+                          ? `${hodProfile.firstName} ${hodProfile.lastName}`
+                          : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -1867,7 +2009,9 @@ const HODDashboard = ({ isHOD = true }) => {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  // onClick={() => handleEditAssignment(assignment)}
+                                  onClick={() =>
+                                    handleEditAssignment(assignment)
+                                  }
                                   className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
                                 >
                                   Edit
@@ -2107,7 +2251,7 @@ const HODDashboard = ({ isHOD = true }) => {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    // onClick={() => handleEditAssignment(assignment)}
+                                    onClick={() => handleEditSubject(subject)}
                                     className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
                                   >
                                     Edit
@@ -2532,6 +2676,26 @@ const HODDashboard = ({ isHOD = true }) => {
           </section>
         </div>
       </div>
+      <EditSubjectModal
+        isOpen={editSubjectModal.isOpen}
+        onClose={handleCloseSubjectModal}
+        subject={editSubjectModal.subject}
+        onSave={handleSaveSubject}
+        isLoading={isEditingSubject}
+      />
+
+      {/* Edit Assignment Modal */}
+      <EditAssignmentModal
+        isOpen={editAssignmentModal.isOpen}
+        onClose={handleCloseAssignmentModal}
+        assignment={editAssignmentModal.assignment}
+        onSave={handleSaveAssignment}
+        isLoading={isEditingAssignment}
+        faculties={faculties}
+        subjects={subjects}
+        onFacultyFocus={handleFacultyFocus}
+        onSubjectFocus={handleEditAssignmentSubjectFocus}
+      />
     </div>
   );
 };

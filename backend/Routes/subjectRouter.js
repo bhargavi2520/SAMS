@@ -6,6 +6,8 @@ const {
   addSubject,
   assignSubject,
   deleteSubjectAssignment,
+  updateSubjectAssignment,
+  updateSubject,
 } = require("../Controllers/SubjectController");
 const {
   getSubjectsValidation,
@@ -27,6 +29,7 @@ SubjectRouter.post(
   checkAccess,
   addSubject
 );
+
 SubjectRouter.post(
   "/assignments/add",
   ensureAuthenticated(["HOD", "ADMIN"]),
@@ -34,10 +37,24 @@ SubjectRouter.post(
   checkAccess,
   assignSubject
 );
+
 SubjectRouter.delete(
   "/assignments/delete",
   ensureAuthenticated(["HOD", "ADMIN"]),
   deleteSubjectAssignment
+);
+
+SubjectRouter.put(
+  "/assignments/update/:assignmentId",
+  ensureAuthenticated(["HOD", "ADMIN"]),
+  checkAccess,
+  updateSubjectAssignment
+);
+
+SubjectRouter.put(
+  "/subjects/update/:subjectId",
+  ensureAuthenticated(["HOD","ADMIN"]),
+  updateSubject
 );
 
 module.exports = SubjectRouter;

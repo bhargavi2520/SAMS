@@ -22,10 +22,6 @@ const subjectSchema = new mongoose.Schema(
     year: {
       type: Number,
       required: true,
-    },
-    batch:{
-      type: String,
-      required: true,
     }
   },
   { timestamps: true }
