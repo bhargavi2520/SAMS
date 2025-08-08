@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/common/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
 import {
   Table,
   TableHead,
@@ -365,7 +365,7 @@ const HODDashboard = ({ isHOD = true }) => {
           {summaryCards.map((card) => (
             <Card
               key={card.label}
-              className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800`}
+              className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-gray-800`}
             >
               <CardContent className="flex flex-col gap-1 p-4 w-full">
                 <div className="flex items-center gap-2 text-xs sm:text-sm mb-1">
@@ -382,7 +382,7 @@ const HODDashboard = ({ isHOD = true }) => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Recent Activities */}
-          <Card className="bg-white dark:bg-neutral-800">
+          <Card className="bg-white dark:bg-gray-800">
             <CardContent className="p-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                 <ClipboardList className="w-5 h-5" /> Recent Activities
@@ -391,7 +391,7 @@ const HODDashboard = ({ isHOD = true }) => {
                 {recentActivities.map((act, idx) => (
                   <div
                     key={idx}
-                    className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex items-center justify-between transition-colors"
+                    className="bg-gray-50 dark:bg-gray-700 rounded p-3 flex items-center justify-between transition-colors"
                   >
                     <div>
                       <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">
@@ -431,7 +431,7 @@ const HODDashboard = ({ isHOD = true }) => {
             </CardContent>
           </Card>
           {/* Pending Approvals */}
-          <Card className="bg-white dark:bg-neutral-800">
+          <Card className="bg-white dark:bg-gray-800">
             <CardContent className="p-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5" /> Pending Approvals
@@ -440,10 +440,10 @@ const HODDashboard = ({ isHOD = true }) => {
                 {approvals.map((item, idx) => (
                   <div
                     key={idx}
-                    className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors"
+                    className="bg-gray-50 dark:bg-gray-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors"
                   >
                     <div>
-                      <span className="inline-block bg-gray-200 dark:bg-neutral-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">
+                      <span className="inline-block bg-gray-200 dark:bg-gray-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">
                         {item.type}
                       </span>
                       <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">
@@ -469,7 +469,7 @@ const HODDashboard = ({ isHOD = true }) => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 hover:bg-red-100 dark:hover:bg-red-900"
+                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-red-100 dark:hover:bg-red-900"
                           >
                             Reject
                           </Button>
@@ -489,9 +489,9 @@ const HODDashboard = ({ isHOD = true }) => {
         <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
           <CalendarDays className="w-5 h-5" /> Timetable
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
+        <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
           <table className="min-w-full text-xs sm:text-sm text-center">
-            <thead className="bg-gray-50 dark:bg-neutral-800">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-3 py-2 sm:px-4 sm:py-3 font-semibold text-gray-700 dark:text-gray-200 text-left">
                   Time
@@ -793,7 +793,7 @@ const HODDashboard = ({ isHOD = true }) => {
             Exam Dates
           </h3>
           <table className="min-w-[300px] text-xs sm:text-sm border rounded-lg overflow-hidden">
-            <thead className="bg-gray-100 dark:bg-neutral-800">
+            <thead className="bg-gray-100 dark:bg-gray-800">
               <tr>
                 <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-semibold text-gray-700 dark:text-gray-200">
                   Exam
@@ -845,9 +845,9 @@ const HODDashboard = ({ isHOD = true }) => {
           </Button>
         </div>
         {showAnnouncementTab ? (
-          <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-4 flex flex-col gap-3 border border-primary/30">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4 flex flex-col gap-3 border border-primary/30">
             <textarea
-              className="w-full min-h-[80px] rounded border border-gray-300 dark:border-neutral-600 p-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full min-h-[80px] rounded border border-gray-300 dark:border-gray-600 p-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Write your announcement here..."
               value={announcementText}
               onChange={(e) => setAnnouncementText(e.target.value)}
@@ -863,7 +863,7 @@ const HODDashboard = ({ isHOD = true }) => {
               </Button>
               <Button
                 variant="outline"
-                className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
+                className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                 onClick={() => {
                   setShowAnnouncementTab(false);
                   setAnnouncementText("");
@@ -1255,25 +1255,25 @@ const HODDashboard = ({ isHOD = true }) => {
     );
   }
   return (
-    <div className="w-4/4 mx-auto sm:w-full sm:max-w-7xl py-6 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900 min-h-screen transition-colors flex">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNav
         activeSection={activeSection}
         onNavClick={handleNavClick}
         dashboardType="hod"
       />
-      <div className="flex-1 w-full ml-0 md:ml-40">
+      <main className="flex-1 overflow-auto md:ml-20 pb-16 md:pb-0">
         {" "}
         {/* Ensure inner div takes full width of its parent */}
         {/* Remove DashboardLayout if it adds extra space */}
         {/* <DashboardLayout /> */}
-        <div className="p-4 sm:p-6 space-y-8 md:space-y-10">
+        <div className="p-2 sm:p-4 md:p-6 space-y-4 md:space-y-6">
           {/* Profile Section at the top (not in nav, always visible) */}
           <section className="scroll-mt-24 space-y-6">
             <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
               <User className="w-6 h-6" /> Profile
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-white dark:bg-neutral-800 w-full">
+              <Card className="bg-white dark:bg-gray-800 w-full">
                 <CardContent className="p-4 md:p-6 flex flex-col gap-4">
                   <div className="flex items-center gap-4 mb-4">
                     <Avatar className="w-16 h-16 md:w-20 md:h-20">
@@ -1297,7 +1297,7 @@ const HODDashboard = ({ isHOD = true }) => {
                       <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
                         <Badge
                           variant="secondary"
-                          className="bg-gray-200 dark:bg-neutral-700 text-sm"
+                          className="bg-gray-200 dark:bg-gray-700 text-sm"
                         >
                           <Building2 className="w-4 h-4 mr-1 inline" />{" "}
                           {department}
@@ -1335,7 +1335,7 @@ const HODDashboard = ({ isHOD = true }) => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="bg-white dark:bg-neutral-800 w-full">
+              <Card className="bg-white dark:bg-gray-800 w-full">
                 <CardContent className="p-4 md:p-6 flex flex-col gap-4">
                   <h3 className="text-lg sm:text-xl font-semibold mb-2 flex items-center gap-2">
                     <Mail className="w-5 h-5" /> Contact Information
@@ -1374,7 +1374,7 @@ const HODDashboard = ({ isHOD = true }) => {
               {summaryCards.map((card) => (
                 <Card
                   key={card.label}
-                  className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-neutral-800`}
+                  className={`flex flex-col items-start gap-2 shadow hover:shadow-lg transition-shadow border ${card.color} bg-white dark:bg-gray-800`}
                 >
                   <CardContent className="flex flex-col gap-1 p-4 w-full">
                     <div className="flex items-center gap-2 text-xs sm:text-sm mb-1">
@@ -1392,7 +1392,7 @@ const HODDashboard = ({ isHOD = true }) => {
               ))}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-white dark:bg-neutral-800">
+              <Card className="bg-white dark:bg-gray-800">
                 <CardContent className="p-4 md:p-6">
                   <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                     <ClipboardList className="w-5 h-5" /> Recent Activities
@@ -1401,7 +1401,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     {activities.map((act, idx) => (
                       <div
                         key={idx}
-                        className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex items-center justify-between transition-colors"
+                        className="bg-gray-50 dark:bg-gray-700 rounded p-3 flex items-center justify-between transition-colors"
                       >
                         <div>
                           <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">
@@ -1442,7 +1442,7 @@ const HODDashboard = ({ isHOD = true }) => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="bg-white dark:bg-neutral-800">
+              <Card className="bg-white dark:bg-gray-800">
                 <CardContent className="p-4 md:p-6">
                   <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                     <Clock className="w-5 h-5" /> Pending Approvals
@@ -1451,10 +1451,10 @@ const HODDashboard = ({ isHOD = true }) => {
                     {approvalsWithAction.map((item, idx) => (
                       <div
                         key={idx}
-                        className="bg-gray-50 dark:bg-neutral-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors"
+                        className="bg-gray-50 dark:bg-gray-700 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 transition-colors"
                       >
                         <div>
-                          <span className="inline-block bg-gray-200 dark:bg-neutral-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">
+                          <span className="inline-block bg-gray-200 dark:bg-gray-600 text-xs px-2 py-0.5 rounded mb-1 text-gray-700 dark:text-gray-200">
                             {item.type}
                           </span>
                           <div className="font-medium text-sm md:text-base text-gray-900 dark:text-white">
@@ -1483,7 +1483,7 @@ const HODDashboard = ({ isHOD = true }) => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 hover:bg-red-100 dark:hover:bg-red-900"
+                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-red-100 dark:hover:bg-red-900"
                                 onClick={() =>
                                   handleApprovalAction(idx, "rejected")
                                 }
@@ -1531,12 +1531,13 @@ const HODDashboard = ({ isHOD = true }) => {
             id="user-management"
             className="scroll-mt-24 space-y-6"
           >
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
-              <Users className="w-6 h-6" /> User Management
-            </h2>
-
             {/* Faculty Management Card */}
-            <Card className="bg-white dark:bg-neutral-800">
+            <Card className="bg-white dark:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg font-semibold flex items-center gap-2">
+                  <Users className="w-5 h-5" /> User Management
+                </CardTitle>
+              </CardHeader>
               <CardContent className="p-4 md:p-6">
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                   <UserCog className="w-5 h-5" /> Faculty Management
@@ -1544,7 +1545,7 @@ const HODDashboard = ({ isHOD = true }) => {
                 {/* Unified Table for all screen sizes, scrollable on small screens */}
                 <div className="overflow-x-auto">
                   <Table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-100 dark:bg-neutral-800">
+                    <thead className="bg-gray-100 dark:bg-gray-800">
                       <tr>
                         <th
                           scope="col"
@@ -1584,11 +1585,11 @@ const HODDashboard = ({ isHOD = true }) => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                       {facultyPerformance.map((f, idx) => (
                         <tr
                           key={idx}
-                          className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
                           <td className="px-3 py-2 sm:px-4 sm:py-3 w-1/6 align-middle text-left text-xs sm:text-sm">
                             {f.name}
@@ -1625,7 +1626,7 @@ const HODDashboard = ({ isHOD = true }) => {
             </Card>
 
             {/* Student Management Card */}
-            <Card className="bg-white dark:bg-neutral-800">
+            <Card className="bg-white dark:bg-gray-800">
               <CardContent className="p-4 md:p-6">
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                   <Users className="w-5 h-5" /> Student Management
@@ -1639,7 +1640,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     </label>
                     <select
                       id="year-select"
-                      className="ml-2 border border-gray-300 dark:border-neutral-600 rounded px-2 py-1 text-xs sm:text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="ml-2 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(Number(e.target.value))}
                     >
@@ -1657,8 +1658,8 @@ const HODDashboard = ({ isHOD = true }) => {
                 </h3>
                 {/* Unified Table for all screen sizes, scrollable on small screens */}
                 <div className="overflow-x-auto">
-                  <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700 ">
-                    <thead className="bg-gray-100 dark:bg-neutral-800">
+                  <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ">
+                    <thead className="bg-gray-100 dark:bg-gray-800">
                       <tr>
                         <th
                           scope="col"
@@ -1686,11 +1687,11 @@ const HODDashboard = ({ isHOD = true }) => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {studentPerformance.map((s, idx) => (
                         <tr
                           key={idx}
-                          className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
                           <td className="px-3 py-2 sm:px-4 sm:py-3 w-1/4 align-middle text-left text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                             {s.semester}
@@ -1709,7 +1710,7 @@ const HODDashboard = ({ isHOD = true }) => {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
+                              className="hover:bg-primary/10 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200"
                             >
                               Report
                             </Button>
@@ -1729,11 +1730,12 @@ const HODDashboard = ({ isHOD = true }) => {
             id="teacher-assignment"
             className="scroll-mt-24 space-y-6"
           >
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
-              <UserCog className="w-6 h-6" /> Teacher Assignment
-            </h2>
-
-            <Card className="bg-white dark:bg-neutral-800">
+            <Card className="bg-white dark:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg font-semibold flex items-center gap-2">
+                  <UserCog className="w-5 h-5" /> Teacher Assignment
+                </CardTitle>
+              </CardHeader>
               <CardContent className="p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                   <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
@@ -1749,7 +1751,7 @@ const HODDashboard = ({ isHOD = true }) => {
 
                 {/* Assignment Form */}
                 {showAssignmentForm && (
-                  <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-6 border border-primary/30">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6 border border-primary/30">
                     <h4 className="text-base font-semibold mb-4">
                       New Teacher Assignment
                     </h4>
@@ -1765,7 +1767,7 @@ const HODDashboard = ({ isHOD = true }) => {
                           value={selectedFaculty}
                           onChange={(e) => setSelectedFaculty(e.target.value)}
                           onFocus={handleFacultyFocus}
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
                           <option value="">Select Faculty</option>
@@ -1786,7 +1788,7 @@ const HODDashboard = ({ isHOD = true }) => {
                           onChange={(e) =>
                             setSelectedAssignmentYear(e.target.value)
                           }
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
                           <option value="">Select Year</option>
@@ -1805,7 +1807,7 @@ const HODDashboard = ({ isHOD = true }) => {
                         <select
                           value={selectedSemester}
                           onChange={(e) => setSelectedSemester(e.target.value)}
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
                           <option value="">Select Semester</option>
@@ -1825,7 +1827,7 @@ const HODDashboard = ({ isHOD = true }) => {
                           value={selectedSubject}
                           onFocus={handleSubjectFocus}
                           onChange={(e) => setSelectedSubject(e.target.value)}
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           disabled={!selectedYear || !selectedSemester}
                           required
                         >
@@ -1845,7 +1847,7 @@ const HODDashboard = ({ isHOD = true }) => {
                         <select
                           value={selectedSection}
                           onChange={(e) => setSelectedSection(e.target.value)}
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
                           <option value="">Select Section</option>
@@ -1900,7 +1902,7 @@ const HODDashboard = ({ isHOD = true }) => {
                             setSelectedSection("");
                             setIsClassTeacher(false);
                           }}
-                          className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
+                          className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                         >
                           Cancel
                         </Button>
@@ -1916,8 +1918,8 @@ const HODDashboard = ({ isHOD = true }) => {
                       <Loader2 className="w-6 h-6 animate-spin" />
                     </div>
                   ) : (
-                    <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                      <thead className="bg-gray-100 dark:bg-neutral-800">
+                    <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-100 dark:bg-gray-800">
                         <tr>
                           <th
                             scope="col"
@@ -1969,11 +1971,11 @@ const HODDashboard = ({ isHOD = true }) => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {assignments.map((assignment) => (
                           <tr
                             key={assignment.assignmentId}
-                            className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                            className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           >
                             <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                               {assignment.faculty_name}
@@ -2012,7 +2014,7 @@ const HODDashboard = ({ isHOD = true }) => {
                                   onClick={() =>
                                     handleEditAssignment(assignment)
                                   }
-                                  className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
+                                  className="hover:bg-primary/10 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200"
                                 >
                                   Edit
                                 </Button>
@@ -2044,7 +2046,7 @@ const HODDashboard = ({ isHOD = true }) => {
             id="teacher-assignment"
             className="scroll-mt-24 space-y-6"
           >
-            <Card className="bg-white dark:bg-neutral-800">
+            <Card className="bg-white dark:bg-gray-800">
               <CardContent className="p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                   <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
@@ -2053,7 +2055,7 @@ const HODDashboard = ({ isHOD = true }) => {
                   <div>
                     <select
                       id="year-select"
-                      className="mr-2 border border-gray-300 dark:border-neutral-600 rounded px-2 py-1 text-xs sm:text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="mr-2 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                       value={subjectSelectedYear}
                       onChange={(e) =>
                         setSubjectSelectedYear(Number(e.target.value))
@@ -2080,7 +2082,7 @@ const HODDashboard = ({ isHOD = true }) => {
 
                 {/* Assignment Form */}
                 {showAddSubjectForm && (
-                  <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-6 border border-primary/30">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6 border border-primary/30">
                     <h4 className="text-base font-semibold mb-4">
                       New Subject
                     </h4>
@@ -2091,7 +2093,7 @@ const HODDashboard = ({ isHOD = true }) => {
                         </label>
                         <input
                           type="text"
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           placeholder="Enter Subject Code"
                           value={newSubjectCode}
                           onChange={(e) => setNewSubjectCode(e.target.value)}
@@ -2104,7 +2106,7 @@ const HODDashboard = ({ isHOD = true }) => {
                         </label>
                         <input
                           type="text"
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           placeholder="Enter Subject Name"
                           value={newSubjectName}
                           onChange={(e) => setNewSubjectName(e.target.value)}
@@ -2117,7 +2119,7 @@ const HODDashboard = ({ isHOD = true }) => {
                         <select
                           value={newSubjectYear}
                           onChange={(e) => setNewSubjectYear(e.target.value)}
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
                           <option value="">Select Year</option>
@@ -2138,7 +2140,7 @@ const HODDashboard = ({ isHOD = true }) => {
                           onChange={(e) =>
                             setNewSubjectSemester(e.target.value)
                           }
-                          className="w-full border border-gray-300 dark:border-neutral-600 rounded px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                           required
                         >
                           <option value="">Select Semester</option>
@@ -2167,7 +2169,7 @@ const HODDashboard = ({ isHOD = true }) => {
                         <Button
                           type="button"
                           variant="outline"
-                          className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
+                          className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                         >
                           Cancel
                         </Button>
@@ -2183,8 +2185,8 @@ const HODDashboard = ({ isHOD = true }) => {
                       <Loader2 className="w-6 h-6 animate-spin" />
                     </div>
                   ) : (
-                    <Table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                      <thead className="bg-gray-100 dark:bg-neutral-800">
+                    <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-100 dark:bg-gray-800">
                         <tr>
                           <th
                             scope="col"
@@ -2224,12 +2226,12 @@ const HODDashboard = ({ isHOD = true }) => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {subjectsInfo.length > 0 ? (
                           subjectsInfo.map((subject) => (
                             <tr
                               key={subject.id}
-                              className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                              className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
                               <td className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                                 {subject.code}
@@ -2252,7 +2254,7 @@ const HODDashboard = ({ isHOD = true }) => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleEditSubject(subject)}
-                                    className="hover:bg-primary/10 border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200"
+                                    className="hover:bg-primary/10 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200"
                                   >
                                     Edit
                                   </Button>
@@ -2261,7 +2263,7 @@ const HODDashboard = ({ isHOD = true }) => {
                             </tr>
                           ))
                         ) : (
-                          <tr className="hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">
+                          <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <td
                               colSpan={6}
                               className="px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100 text-center"
@@ -2280,14 +2282,16 @@ const HODDashboard = ({ isHOD = true }) => {
 
           {/* Timetable Section */}
           <section ref={timetableRef} id="timetable" className="scroll-mt-24">
-            <Card className="bg-white dark:bg-neutral-800 mb-6">
-              <CardContent className="p-4 md:p-6">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
+            <Card className="bg-white dark:bg-gray-800 mb-6">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg font-semibold flex items-center gap-2">
                   <CalendarDays className="w-5 h-5" /> Timetable
-                </h2>
-                <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
                   <table className="min-w-full text-xs sm:text-sm text-center">
-                    <thead className="bg-gray-50 dark:bg-neutral-800">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
                         <th className="px-3 py-2 sm:px-4 sm:py-3 font-semibold text-gray-700 dark:text-gray-200 text-left">
                           Time
@@ -2570,11 +2574,13 @@ const HODDashboard = ({ isHOD = true }) => {
 
           {/* Exams Section */}
           <section ref={examsRef} id="exams" className="scroll-mt-24">
-            <Card className="bg-white dark:bg-neutral-800 mb-6">
-              <CardContent className="p-4 md:p-6">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
+            <Card className="bg-white dark:bg-gray-800 mb-6">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg font-semibold flex items-center gap-2">
                   <FileText className="w-5 h-5" /> Exams
-                </h2>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
                 <div className="text-sm text-gray-500 dark:text-gray-300">
                   Exam schedules, results, and management go here.
                 </div>
@@ -2583,7 +2589,7 @@ const HODDashboard = ({ isHOD = true }) => {
                     Exam Dates
                   </h3>
                   <table className="min-w-[300px] text-xs sm:text-sm border rounded-lg overflow-hidden">
-                    <thead className="bg-gray-100 dark:bg-neutral-800">
+                    <thead className="bg-gray-100 dark:bg-gray-800">
                       <tr>
                         <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-semibold text-gray-700 dark:text-gray-200">
                           Exam
@@ -2627,10 +2633,12 @@ const HODDashboard = ({ isHOD = true }) => {
             id="announcements"
             className="scroll-mt-24"
           >
-            <Card className="bg-white dark:bg-neutral-800 mb-6">
+            <Card className="bg-white dark:bg-gray-800 mb-6">
+              <CardHeader>
+                <CardTitle className="text-base md:text-lg font-semibold">Announcements</CardTitle>
+              </CardHeader>
               <CardContent className="p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                  <h2>Announcements</h2>
                   <Button
                     className="ml-auto mb-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-primary/90 transition-colors text-sm font-medium dark:bg-gray-700 dark:hover:bg-gray-600"
                     onClick={() => setShowAnnouncementTab(true)}
@@ -2639,9 +2647,9 @@ const HODDashboard = ({ isHOD = true }) => {
                   </Button>
                 </div>
                 {showAnnouncementTab ? (
-                  <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4 mb-4 flex flex-col gap-3 border border-primary/30">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4 flex flex-col gap-3 border border-primary/30">
                     <textarea
-                      className="w-full min-h-[80px] rounded border border-gray-300 dark:border-neutral-600 p-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full min-h-[80px] rounded border border-gray-300 dark:border-gray-600 p-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
                       placeholder="Write your announcement here..."
                       value={announcementText}
                       onChange={(e) => setAnnouncementText(e.target.value)}
@@ -2657,7 +2665,7 @@ const HODDashboard = ({ isHOD = true }) => {
                       </Button>
                       <Button
                         variant="outline"
-                        className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600"
+                        className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                         onClick={() => {
                           setShowAnnouncementTab(false);
                           setAnnouncementText("");
@@ -2675,7 +2683,7 @@ const HODDashboard = ({ isHOD = true }) => {
             </Card>
           </section>
         </div>
-      </div>
+      </main>
       <EditSubjectModal
         isOpen={editSubjectModal.isOpen}
         onClose={handleCloseSubjectModal}
@@ -2701,3 +2709,7 @@ const HODDashboard = ({ isHOD = true }) => {
 };
 
 export default HODDashboard;
+
+
+
+
